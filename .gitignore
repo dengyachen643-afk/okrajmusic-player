@@ -1,5 +1,12 @@
 *.zip
 preview.html
+apple-link-candidates.json
+apple-links-block.txt
+platform-link-candidates.json
+platform-link-summary.json
+platform-link-trusted.json
+artwork_refs/
+给小O的日音歌单_抽歌版.html
 *.before-*.html
 .DS_Store
 Thumbs.db
