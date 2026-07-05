@@ -1,0 +1,1953 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>小O的日音播放器</title>
+<meta name="description" content="一只安静的日音推荐播放器：随机抽歌、按氛围筛选，并选择 Apple Music、QQ 音乐或网易云音乐收听。">
+<meta name="theme-color" content="#eeeee7">
+<meta property="og:type" content="website">
+<meta property="og:title" content="小O的日音播放器">
+<meta property="og:description" content="随机抽一首今晚的日音，或者按氛围慢慢挑。">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="小O的日音播放器">
+<meta name="twitter:description" content="随机抽歌、日音歌单、音乐平台选择。">
+<style>
+:root{
+  --bg:#eeeee7;--paper:#f8f7f2;--ink:#252722;--muted:#737568;--line:#d9d8cc;
+  --sage:#a9b69c;--sage-dark:#67735f;--stone:#d8d5cb;--charcoal:#30332d;
+  --cream:#fbfaf4;--accent:#7d8b70;--shadow:0 22px 60px rgba(38,40,34,.12);
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",system-ui,sans-serif;
+  --serif:"Noto Serif CJK SC","Source Han Serif SC","Songti SC","SimSun","Hiragino Mincho ProN",Georgia,serif;
+  --radius:24px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;min-height:100vh;color:var(--ink);
+  background:
+    radial-gradient(circle at top left,rgba(169,182,156,.42),transparent 34rem),
+    radial-gradient(circle at bottom right,rgba(216,213,203,.66),transparent 30rem),
+    linear-gradient(120deg,#eeeeea,#e4e4dc 48%,#efeee8);
+  font-family:var(--sans);
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+}
+.wrap{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:54px 0 78px}
+header{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;align-items:stretch;margin-bottom:28px}
+.title-card,.draw-card{border:1px solid rgba(37,39,34,.08);border-radius:32px;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.title-card{padding:36px 38px 38px;background:rgba(248,247,242,.72)}
+.eyebrow{margin:0 0 18px;color:var(--sage-dark);letter-spacing:0;font-size:12px;text-transform:uppercase}
+h1{margin:0;display:grid;gap:2px;font-size:clamp(43px,6.4vw,82px);line-height:1.04;letter-spacing:0;font-weight:820}
+h1 .title-line{display:block}
+h1 .title-line:first-child{font-size:.78em;font-weight:760}
+h1 .title-line:last-child{white-space:nowrap}
+.subtitle{margin:24px 0 0;max-width:720px;color:var(--muted);font-family:var(--serif);font-size:16px;line-height:1.9}
+.draw-card{
+  padding:24px;background:var(--charcoal);color:#f3f2ec;position:relative;overflow:hidden;
+  display:grid;grid-template-columns:170px 1fr;gap:20px;align-items:center;min-height:286px;
+}
+.draw-card:before{content:"";position:absolute;width:260px;height:260px;right:-84px;top:-72px;border-radius:50%;background:radial-gradient(circle,rgba(169,182,156,.78),transparent 66%)}
+.draw-cover{width:170px;aspect-ratio:1/1;border-radius:24px;overflow:hidden;position:relative;z-index:1;box-shadow:0 18px 50px rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.12)}
+.draw-info{position:relative;z-index:1}
+.draw-label{color:#c8cfc0;letter-spacing:0;font-size:12px;text-transform:uppercase;margin-bottom:18px}
+.draw-song{font-size:30px;line-height:1.2;font-weight:690;letter-spacing:0;margin:0}
+.draw-artist{color:#cfd2c7;margin:10px 0 0;font-size:14px}
+.draw-note{color:#d8d8cf;font-family:var(--serif);line-height:1.75;font-size:14px;margin:16px 0 18px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+button,.chip{
+  border:1px solid rgba(37,39,34,.1);color:var(--ink);background:rgba(248,247,242,.72);
+  border-radius:999px;padding:10px 14px;font-size:14px;cursor:pointer;transition:.22s ease;backdrop-filter:blur(12px);
+}
+button:hover,.chip:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
+.draw-card button{color:#f3f2ec;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+.draw-card button.primary{background:var(--sage);color:#20231f;border-color:var(--sage)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0 26px;align-items:center}
+.search{flex:1;min-width:220px;border:1px solid rgba(37,39,34,.1);border-radius:999px;padding:10px 16px;background:rgba(248,247,242,.78);color:var(--ink);outline:none;font-size:14px}
+.chip.active{background:var(--charcoal);color:#f4f3ed;border-color:var(--charcoal)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.card{position:relative;border:1px solid rgba(37,39,34,.08);border-radius:var(--radius);overflow:hidden;background:rgba(248,247,242,.72);backdrop-filter:blur(18px);box-shadow:0 14px 38px rgba(38,40,34,.08);transition:.25s ease;cursor:pointer}
+.card:hover{transform:translateY(-5px);box-shadow:0 26px 54px rgba(38,40,34,.14)}
+.card.hide{display:none}
+.cover{aspect-ratio:1/1;position:relative;overflow:hidden;background:#d9d8cc;border-bottom:1px solid rgba(37,39,34,.08)}
+.cover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.16));mix-blend-mode:multiply}
+.cover .mini{position:absolute;z-index:2;left:18px;bottom:16px;right:18px;color:#f8f7f2;font-size:13px;line-height:1.35;text-shadow:0 1px 8px rgba(0,0,0,.3);letter-spacing:0}
+.body{padding:18px 18px 20px}
+.artist{color:var(--muted);font-size:13px;margin:0 0 8px}
+.song{font-size:19px;line-height:1.28;letter-spacing:0;font-weight:650;min-height:48px;margin:0}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
+.tag{color:#596051;background:#edece5;border:1px solid rgba(37,39,34,.06);border-radius:999px;padding:5px 8px;font-size:12px}
+.play-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.play-link{display:inline-flex;align-items:center;justify-content:center;min-height:30px;border:1px solid rgba(37,39,34,.1);border-radius:999px;padding:6px 10px;color:#30332d;background:rgba(248,247,242,.62);font-size:12px;text-decoration:none;transition:.2s ease;backdrop-filter:blur(10px)}
+.play-link:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
+.draw-card .play-link,.drawer .play-link{color:#f4f3ed;border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.07)}
+.draw-card .play-link.platform-trigger,.drawer .play-link.platform-trigger{background:rgba(255,255,255,.13)}
+.card .play-links{margin-top:14px}
+.drawer .tags{margin:10px 0 4px}
+.drawer .tag{color:#e7e8dd;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12)}
+.drawer{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140%);width:min(760px,calc(100% - 28px));background:rgba(36,38,33,.95);color:#f6f4ed;border:1px solid rgba(255,255,255,.1);border-radius:26px;box-shadow:0 26px 80px rgba(0,0,0,.28);padding:20px 22px;transition:.32s ease;backdrop-filter:blur(16px);z-index:20}
+.drawer.show{transform:translateX(-50%) translateY(0)}
+.drawer .d-meta{color:#c7cabc;font-size:13px;margin-bottom:8px}
+.drawer .d-title{font-size:22px;line-height:1.28;margin-bottom:10px;font-weight:700}
+.drawer .d-note{color:#d8d8cf;font-family:var(--serif);line-height:1.8;font-size:14px;padding-right:24px}
+.drawer button.close{position:absolute;top:14px;right:14px;background:transparent;border:0;color:#edece4;font-size:20px;cursor:pointer;padding:4px 8px}
+.platform-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.26);opacity:0;pointer-events:none;transition:.24s ease;z-index:34;backdrop-filter:blur(4px)}
+.platform-backdrop.show{opacity:1;pointer-events:auto}
+.platform-sheet{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140%);width:min(520px,calc(100% - 28px));background:rgba(248,247,242,.96);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:26px;box-shadow:0 26px 80px rgba(38,40,34,.22);padding:22px;transition:.3s ease;backdrop-filter:blur(18px);z-index:35}
+.platform-sheet.show{transform:translateX(-50%) translateY(0)}
+.platform-sheet .close{position:absolute;top:14px;right:14px;background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer;padding:4px 8px}
+.platform-kicker{color:var(--sage-dark);font-size:12px;text-transform:uppercase;margin-bottom:10px}
+.platform-title{font-size:24px;font-weight:720;line-height:1.2;margin-right:28px}
+.platform-meta{color:var(--muted);font-size:13px;margin-top:8px}
+.platform-note{font-family:var(--serif);color:#626456;line-height:1.75;font-size:14px;margin:14px 0 16px}
+.platform-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.platform-option{display:flex;flex-direction:column;justify-content:center;gap:3px;min-height:64px;border:1px solid rgba(37,39,34,.1);border-radius:18px;padding:11px 12px;color:var(--ink);text-decoration:none;background:#f8f7f2;transition:.2s ease}
+.platform-option:hover{transform:translateY(-2px);border-color:rgba(37,39,34,.22);box-shadow:0 10px 26px rgba(38,40,34,.1)}
+.platform-option strong{font-size:14px}
+.platform-option span{font-size:12px;color:var(--muted)}
+.platform-option.apple{background:#252722;color:#f8f7f2}
+.platform-option.apple span{color:#d6d7cd}
+.platform-option.qq{background:#f8f2dc}
+.platform-option.netease{background:#fff1f1}
+.toast{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120%);background:rgba(36,38,33,.94);color:#f8f7f2;padding:10px 14px;border-radius:999px;font-size:13px;transition:.28s ease;z-index:30}
+.toast.show{transform:translateX(-50%) translateY(0)}
+footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;line-height:1.7;text-align:center}
+footer .credit{display:block;margin-top:4px}
+
+/* stronger cover associations, still handmade CSS covers */
+.akane{background:linear-gradient(0deg,rgba(161,69,55,.92),rgba(161,69,55,.92)) 0 56%/100% 20% no-repeat,linear-gradient(90deg,#e8e1d3 0 48%,#abb09f 48% 50%,#f6f2e8 50% 100%),repeating-linear-gradient(90deg,rgba(45,45,38,.25) 0 1px,transparent 1px 34px)} .akane:before{content:"";position:absolute;inset:auto 0 0;height:39%;background:repeating-linear-gradient(90deg,#2e312e 0 40px,#f3efe5 40px 72px,#51564c 72px 108px);opacity:.58}
+.hitsujibungaku{background:linear-gradient(145deg,#20231f 0 44%,#9fac96 44% 53%,#d8d5cb 53% 100%)} .hitsujibungaku:before{content:"";position:absolute;inset:26px;border:1px solid rgba(248,247,242,.45)}
+.kinmokusei{background:radial-gradient(circle at 72% 20%,#d2a451,transparent 18%),radial-gradient(circle at 22% 72%,#6f7b63,transparent 20%),linear-gradient(135deg,#171914,#3d4636 45%,#c7c1ad)} .kinmokusei:before{content:"";position:absolute;inset:17px;border:1px solid rgba(245,242,232,.35);border-radius:50%}
+.rakujitsu{background:linear-gradient(145deg,#e8e1d4 0 28%,#9fa98d 28% 48%,#22241f 48% 100%)} .rakujitsu:before{content:"";position:absolute;width:70%;height:70%;border-radius:50%;border:1px solid rgba(255,255,255,.55);right:-16%;bottom:-15%}
+.longseason{background:radial-gradient(circle at 50% 50%,#111 0 8%,transparent 9%),conic-gradient(from 20deg,#d9d5c9,#9aa88e,#2b2e28,#b4b9aa,#e8e5da)} .longseason:before{content:"";position:absolute;inset:18%;border-radius:50%;background:#efede4;box-shadow:0 0 0 18px rgba(37,39,34,.85),0 0 0 20px rgba(255,255,255,.25)}
+.lamp{background:radial-gradient(circle at 30% 30%,#f2efe7 0 12%,transparent 13%),radial-gradient(circle at 72% 65%,#1f211d 0 18%,transparent 19%),linear-gradient(120deg,#b7b0a2,#e6e1d5)} .lamp:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 48%,rgba(0,0,0,.18) 48% 52%,transparent 52%)}
+.toe{background:linear-gradient(90deg,#f5f2ea 0 22%,#20231f 22% 24%,#f5f2ea 24% 100%)} .toe:before{content:"";position:absolute;inset:24% 16%;background:repeating-linear-gradient(90deg,#242720 0 10px,#f5f2ea 10px 20px);transform:skewY(-8deg);opacity:.9}
+.tricot{background:linear-gradient(135deg,#151714,#151714 35%,#67735f 35% 52%,#e4e0d3 52%),repeating-linear-gradient(0deg,transparent 0 16px,rgba(255,255,255,.22) 16px 17px)} .tricot:before{content:"";position:absolute;inset:18px;border:1px solid rgba(248,247,242,.45)}
+.kururi{background:linear-gradient(125deg,#f2efe4 0 40%,#8c947d 40% 42%,#30332d 42% 58%,#f2efe4 58%),radial-gradient(circle at 80% 20%,#d4c085,transparent 20%)} .kururi:before{content:"";position:absolute;width:72%;height:1px;background:rgba(48,51,45,.5);left:14%;top:52%;transform:rotate(-14deg)}
+.sakana{background:repeating-linear-gradient(90deg,rgba(255,255,255,.16) 0 2px,transparent 2px 18px),linear-gradient(135deg,#37403a,#a2ad99 52%,#dedbcf)} .sakana:before{content:"";position:absolute;left:18%;top:18%;width:64%;height:64%;border-radius:50%;background:rgba(248,247,242,.16);box-shadow:0 0 0 1px rgba(248,247,242,.42)}
+.yorushika{background:linear-gradient(160deg,#e6e1d5,#aeb7a3 40%,#282b25 40% 100%)} .yorushika:before{content:"";position:absolute;left:18px;top:18px;width:42%;height:78%;border-radius:999px;background:linear-gradient(#f6f1e7,#87917c);opacity:.72}
+.songbirds{background:radial-gradient(circle at 22% 24%,#e9e5d9 0 10%,transparent 11%),radial-gradient(circle at 75% 62%,#7d8b70 0 16%,transparent 17%),linear-gradient(135deg,#f0ede5,#33362f)} .songbirds:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0 16px,rgba(255,255,255,.18) 16px 17px)}
+.betcover{background:radial-gradient(circle at 28% 42%,#ede7db 0 8%,transparent 9%),radial-gradient(circle at 60% 56%,#151714 0 18%,transparent 19%),linear-gradient(135deg,#8e9783,#e8e2d6)} .betcover:before{content:"";position:absolute;inset:22px;border:1px dashed rgba(38,40,34,.42);transform:rotate(6deg)}
+.ichiko{background:linear-gradient(180deg,#ece7dc,#bec8b4 55%,#30332d)} .ichiko:before{content:"";position:absolute;width:72%;height:72%;border-radius:50%;left:14%;top:11%;border:1px solid rgba(255,255,255,.6);background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.32),transparent 55%)}
+.uchu{background:linear-gradient(135deg,#ede9de 0 30%,#252722 30% 32%,#ede9de 32% 100%)} .uchu:before{content:"";position:absolute;left:20%;top:20%;right:20%;bottom:20%;border:1px solid rgba(37,39,34,.48);box-shadow:18px 18px 0 rgba(169,182,156,.55)}
+.mass{background:linear-gradient(135deg,#2d332e,#60715d 42%,#c06f4d 42% 52%,#eee8dc 52%)} .mass:before{content:"";position:absolute;inset:20px;background:linear-gradient(90deg,transparent 48%,rgba(255,255,255,.45) 48% 52%,transparent 52%);opacity:.7}
+.zutomayo{background:linear-gradient(135deg,#18201c,#7b8972 48%,#e8e3d7)} .zutomayo:before{content:"";position:absolute;left:18%;top:24%;width:64%;height:52%;border:1px solid rgba(255,255,255,.55);transform:rotate(-8deg);box-shadow:12px 12px 0 rgba(37,39,34,.38)}
+.ringo{background:linear-gradient(135deg,#2b1f22,#9b3740 48%,#eee6d8)} .ringo:before{content:"";position:absolute;left:18%;right:18%;top:18%;bottom:18%;border:1px solid rgba(248,247,242,.7);border-radius:999px}
+.coshunie{background:radial-gradient(circle at 70% 28%,#f7f1e6 0 11%,transparent 12%),linear-gradient(135deg,#6f7d69,#d7d1c4 45%,#252722)} .coshunie:before{content:"";position:absolute;left:12%;right:12%;top:58%;height:1px;background:rgba(255,255,255,.68);transform:rotate(-8deg)}
+.aoshiori{background:linear-gradient(180deg,#d8e0df,#a7b6aa 55%,#f1ecd9)} .aoshiori:before{content:"";position:absolute;left:20%;top:20%;width:60%;height:60%;border:1px solid rgba(37,39,34,.35);background:rgba(255,255,255,.2)}
+.rad{background:conic-gradient(from 90deg,#d9d5ca,#252722,#8e9b86,#efe9da,#252722)} .rad:before{content:"";position:absolute;inset:24%;border-radius:50%;border:12px solid rgba(248,247,242,.85)}
+.vaundy{background:linear-gradient(135deg,#f3eee1 0 38%,#7f8d75 38% 62%,#252722 62% 100%)} .vaundy:before{content:"";position:absolute;left:22%;top:18%;width:56%;height:64%;border-radius:50%;background:rgba(255,255,255,.18)}
+.ziyoou{background:linear-gradient(135deg,#1d1515,#8b2f2b 38%,#e9dfcf)} .ziyoou:before{content:"";position:absolute;left:10%;top:10%;right:10%;bottom:10%;background:repeating-linear-gradient(45deg,rgba(255,255,255,.24) 0 2px,transparent 2px 16px)}
+.soutaisei{background:linear-gradient(90deg,#f6f1e5 0 50%,#22241f 50% 100%)} .soutaisei:before{content:"";position:absolute;left:22%;top:28%;width:56%;height:44%;border-radius:50%;background:#a9b69c;mix-blend-mode:multiply}
+.spitz{background:linear-gradient(180deg,#e6e1d6,#a9b69c)} .spitz:before{content:"";position:absolute;left:16%;top:16%;right:16%;bottom:16%;background:radial-gradient(circle at 50% 50%,#f5f0e5 0 16%,transparent 17%),repeating-linear-gradient(90deg,rgba(37,39,34,.28) 0 1px,transparent 1px 16px)}
+.sakamoto{background:linear-gradient(135deg,#30332d,#8a927f 50%,#e5dfd1)} .sakamoto:before{content:"";position:absolute;left:22%;top:18%;width:56%;height:68%;border-radius:44% 56% 45% 55%;background:rgba(248,247,242,.26)}
+.cero{background:linear-gradient(135deg,#f0eadf,#88977e 52%,#252722)} .cero:before{content:"";position:absolute;inset:16%;background:repeating-linear-gradient(0deg,rgba(255,255,255,.24) 0 10px,transparent 10px 20px)}
+.rikon{background:linear-gradient(135deg,#eee7d8,#a8b49c 42%,#806b5e 42% 60%,#2c3029 60%)} .rikon:before{content:"";position:absolute;left:24%;top:24%;width:52%;height:52%;border-radius:50%;border:1px solid rgba(255,255,255,.65)}
+.lk{background:radial-gradient(circle at 30% 30%,#e1b36b 0 10%,transparent 11%),linear-gradient(135deg,#20231f,#7d8b70 52%,#e9e3d5)} .lk:before{content:"";position:absolute;left:15%;right:15%;top:62%;height:2px;background:rgba(255,255,255,.7)}
+.lite{background:linear-gradient(135deg,#f4efe4 0 20%,#252722 20% 22%,#f4efe4 22% 100%)} .lite:before{content:"";position:absolute;inset:22%;border:1px solid #252722;transform:rotate(45deg)}
+.mono{background:linear-gradient(180deg,#d9d5ca,#f7f4ed 45%,#30332d)} .mono:before{content:"";position:absolute;left:18%;top:18%;right:18%;bottom:18%;background:radial-gradient(circle,#f8f7f2 0 6%,transparent 7%),repeating-linear-gradient(0deg,transparent 0 14px,rgba(37,39,34,.22) 14px 15px)}
+.te{background:linear-gradient(135deg,#171914,#596353 52%,#e9e2d4)} .te:before{content:"";position:absolute;left:18%;top:20%;right:18%;bottom:20%;background:repeating-linear-gradient(90deg,rgba(255,255,255,.3) 0 1px,transparent 1px 12px);transform:skewX(-14deg)}
+.numbergirl{background:linear-gradient(135deg,#f3eee2,#252722 44%,#7f8c76 44% 54%,#f3eee2 54%)} .numbergirl:before{content:"";position:absolute;inset:18px;border:2px solid rgba(37,39,34,.65)}
+.andymori{background:linear-gradient(160deg,#e9e3d7,#87947d 55%,#252722)} .andymori:before{content:"";position:absolute;left:20%;top:20%;width:60%;height:4px;background:#f7f4ed;box-shadow:0 24px 0 #f7f4ed,0 48px 0 #f7f4ed}
+.tsubakiya{background:radial-gradient(circle at 26% 26%,#b8a5c7 0 14%,transparent 15%),linear-gradient(135deg,#302b30,#6f7b63 48%,#e8e1d5)} .tsubakiya:before{content:"";position:absolute;inset:20px;border:1px solid rgba(248,247,242,.55)}
+.frederic{background:repeating-linear-gradient(90deg,#f3eee2 0 22px,#252722 22px 44px,#a9b69c 44px 66px)} .frederic:before{content:"";position:absolute;inset:20%;border-radius:50%;background:rgba(248,247,242,.75)}
+.lemon{background:radial-gradient(circle at 72% 24%,#d3ad55 0 14%,transparent 15%),linear-gradient(135deg,#f0eadf,#67735f 52%,#252722)} .lemon:before{content:"";position:absolute;left:16%;right:16%;top:55%;height:1px;background:rgba(255,255,255,.65)}
+.hasunuma{background:linear-gradient(135deg,#f5f0e5,#b7c1ac 48%,#30332d)} .hasunuma:before{content:"";position:absolute;left:12%;top:12%;right:12%;bottom:12%;background:repeating-radial-gradient(circle at 50% 50%,rgba(255,255,255,.42) 0 2px,transparent 2px 14px)}
+
+/* real-cover inspired CSS abstractions */
+.cover{isolation:isolate}
+.cover:before,.cover:after{pointer-events:none}
+.cover .mini{font-size:11px;letter-spacing:0;max-width:80%;padding:5px 8px;border-radius:8px;background:rgba(18,19,16,.24);backdrop-filter:blur(6px)}
+.akane{background:linear-gradient(180deg,#ebe0d0 0 34%,#c86b43 34% 57%,#22231e 57%)} .akane:before{content:"";position:absolute;left:9%;right:9%;top:18%;height:50%;background:linear-gradient(90deg,rgba(37,39,34,.55) 0 2px,transparent 2px 16px),linear-gradient(180deg,transparent 0 46%,#f2e9dc 46% 52%,transparent 52%),linear-gradient(100deg,transparent 0 35%,rgba(38,39,33,.72) 35% 40%,transparent 40%);border-top:10px solid rgba(245,236,218,.9);border-bottom:18px solid rgba(36,36,31,.88)} .akane:after{content:"";position:absolute;left:0;right:0;bottom:0;height:27%;background:repeating-linear-gradient(90deg,#30332d 0 34px,#e5dccb 34px 50px,#4c5146 50px 78px)}
+.hitsujibungaku{background:linear-gradient(180deg,#d9e0d5 0 25%,#294452 25% 100%)} .hitsujibungaku:before{content:"";position:absolute;right:12%;top:13%;width:46%;height:60%;border-radius:46% 54% 48% 52%;background:linear-gradient(180deg,#91c8c8 0 45%,#e75b47 45% 70%,#2b2f2d 70%);box-shadow:-42px 24px 0 rgba(30,48,57,.68)} .hitsujibungaku:after{content:"";position:absolute;left:14%;top:12%;width:52%;height:10px;background:#f0ede4;box-shadow:0 18px 0 rgba(240,237,228,.58)}
+.kinmokusei{background:radial-gradient(circle at 20% 18%,rgba(220,28,64,.9) 0 2%,rgba(224,31,69,.62) 3% 8%,rgba(236,81,94,.34) 9% 17%,transparent 18%),radial-gradient(circle at 78% 20%,rgba(218,64,69,.62) 0 4%,transparent 5%),linear-gradient(180deg,#0b1725 0 48%,#203247 48% 63%,#5a4c42 63% 74%,#1b2026 74% 100%)} .kinmokusei:before{content:"";position:absolute;left:6%;right:6%;top:17%;height:58%;padding:0;border:0;border-radius:0;clip-path:none;background:radial-gradient(circle at 67% 62%,#f7de8a 0 2%,transparent 3%),radial-gradient(circle at 71% 55%,#f5cf62 0 2%,transparent 3%),radial-gradient(circle at 75% 49%,#fee7a3 0 2%,transparent 3%),radial-gradient(circle at 59% 58%,#f3cc6b 0 2%,transparent 3%),linear-gradient(90deg,transparent 0 8%,#0a121b 8% 11%,transparent 11% 100%),linear-gradient(90deg,transparent 0 27%,#d6d0b9 27% 29%,transparent 29% 100%),repeating-linear-gradient(90deg,transparent 0 16px,rgba(248,218,128,.85) 16px 19px,transparent 19px 28px),linear-gradient(180deg,transparent 0 48%,rgba(246,214,129,.82) 48% 52%,transparent 52% 100%);box-shadow:0 44px 0 -18px rgba(235,230,202,.6),0 58px 0 -24px rgba(217,111,62,.68);filter:drop-shadow(0 12px 13px rgba(0,0,0,.38))} .kinmokusei:after{content:"";position:absolute;left:12%;bottom:19%;width:9px;height:30px;padding:0;border:0;border-radius:7px 7px 3px 3px;clip-path:none;background:#080c12;box-shadow:20px 3px 0 -1px #141618,38px -1px 0 -1px #d8d0a7,39px -11px 0 -4px #16120f,57px 5px 0 -1px #376177,58px -8px 0 -4px #ded2a1,124px -6px 0 -1px #f9e9a4,136px -7px 0 -1px #fff0b6,148px -10px 0 -2px #e7cc75;color:transparent;font-size:0;text-shadow:none}
+.rakujitsu{background:#b42326} .rakujitsu:before{content:"";position:absolute;left:16%;top:14%;width:68%;height:68%;border-radius:50%;background:#f6f0e7} .rakujitsu:after{content:"";position:absolute;left:35%;top:22%;width:36%;height:42%;background:linear-gradient(35deg,transparent 0 46%,#b42326 46% 58%,transparent 58%),linear-gradient(-35deg,transparent 0 45%,#b42326 45% 57%,transparent 57%);clip-path:polygon(50% 0,100% 46%,66% 46%,82% 100%,50% 62%,18% 100%,34% 46%,0 46%)}
+.longseason{background:radial-gradient(circle at 25% 22%,rgba(237,235,198,.42) 0 7%,transparent 8%),radial-gradient(circle at 76% 23%,rgba(240,236,199,.54) 0 9%,transparent 10%),radial-gradient(circle at 64% 64%,rgba(229,235,205,.5) 0 15%,transparent 16%),repeating-linear-gradient(145deg,rgba(19,52,33,.84) 0 12px,rgba(69,103,66,.74) 12px 25px,rgba(191,205,157,.45) 25px 36px),linear-gradient(135deg,#07120e 0 32%,#2d5b3d 32% 62%,#d4dcc0 62% 100%)} .longseason:before{content:"";position:absolute;left:9%;top:18%;width:55%;height:60%;padding:0;border:0;border-radius:0;clip-path:none;background:linear-gradient(112deg,transparent 0 45%,rgba(231,231,205,.78) 45% 48%,transparent 48%),linear-gradient(112deg,transparent 0 58%,rgba(214,218,189,.78) 58% 61%,transparent 61%),linear-gradient(18deg,transparent 0 50%,rgba(255,247,213,.75) 50% 53%,transparent 53%),linear-gradient(18deg,transparent 0 66%,rgba(255,247,213,.62) 66% 68%,transparent 68%);filter:drop-shadow(0 10px 12px rgba(9,17,13,.34))} .longseason:after{content:"";position:absolute;right:10%;bottom:10%;width:31%;height:31%;padding:0;border:0;border-radius:50%;clip-path:none;background:radial-gradient(ellipse at 58% 72%,#f3efe0 0 15%,transparent 16%),linear-gradient(180deg,transparent 0 59%,#f3efe0 59% 63%,transparent 63%),radial-gradient(circle,#0c0d0d 0 100%);box-shadow:-142px -118px 0 -31px #101416,-122px -111px 0 -34px #e0dfcf,-107px -116px 0 -32px #1b231e,-89px -116px 0 -34px #d9d8ca,-73px -121px 0 -32px #242e24,-55px -124px 0 -34px #d5d2c2;color:transparent;font-size:0;text-shadow:none}
+.lamp{background:linear-gradient(180deg,#657546 0 64%,#d8c59d 64%)} .lamp:before{content:"";position:absolute;inset:8%;background:radial-gradient(circle at 30% 18%,rgba(234,215,158,.65) 0 10%,transparent 11%),radial-gradient(circle at 68% 26%,rgba(31,45,27,.72) 0 18%,transparent 19%),repeating-linear-gradient(115deg,rgba(31,45,27,.34) 0 3px,transparent 3px 18px)} .lamp:after{content:"";position:absolute;left:22%;bottom:16%;width:56%;height:30%;background:radial-gradient(ellipse at 20% 88%,#2a2b23 0 12%,transparent 13%),radial-gradient(ellipse at 50% 80%,#2a2b23 0 14%,transparent 15%),radial-gradient(ellipse at 78% 86%,#2a2b23 0 10%,transparent 11%)}
+.toe{background:linear-gradient(180deg,#d8c3a0 0 62%,#171a16 62%)} .toe:before{content:"";position:absolute;left:10%;right:10%;top:14%;height:58%;background:repeating-linear-gradient(90deg,#2a2c27 0 5px,transparent 5px 15px),linear-gradient(180deg,transparent 0 46%,rgba(246,236,212,.75) 46% 51%,transparent 51%);transform:skewY(-8deg)} .toe:after{content:"";position:absolute;left:15%;right:15%;bottom:17%;height:18%;background:radial-gradient(circle at 18% 50%,#f1e4c7 0 10%,transparent 11%),radial-gradient(circle at 50% 50%,#f1e4c7 0 10%,transparent 11%),radial-gradient(circle at 82% 50%,#f1e4c7 0 10%,transparent 11%)}
+.tricot{background:linear-gradient(180deg,#151617 0 68%,#dbd2bf 68%)} .tricot:before{content:"";position:absolute;left:12%;top:18%;width:76%;height:52%;background:radial-gradient(ellipse at 18% 48%,#2d2f30 0 12%,transparent 13%),radial-gradient(ellipse at 42% 45%,#2d2f30 0 13%,transparent 14%),radial-gradient(ellipse at 64% 50%,#2d2f30 0 12%,transparent 13%),radial-gradient(ellipse at 84% 48%,#2d2f30 0 11%,transparent 12%)} .tricot:after{content:"";position:absolute;left:17%;right:17%;bottom:17%;height:5%;background:#151617;box-shadow:0 -12px 0 rgba(21,22,23,.55)}
+.kururi{background:linear-gradient(135deg,#c58f55 0 24%,#ecd4a4 24% 49%,#47647b 49% 70%,#f0e2c5 70%)} .kururi:before{content:"";position:absolute;inset:14%;background:radial-gradient(ellipse at 35% 58%,rgba(248,222,166,.9) 0 19%,transparent 20%),radial-gradient(ellipse at 67% 42%,rgba(119,96,78,.72) 0 14%,transparent 15%),linear-gradient(18deg,transparent 0 45%,rgba(255,255,255,.7) 45% 49%,transparent 49%);filter:saturate(.95)}
+.sakana{background:#f4efe3} .sakana:before{content:"";position:absolute;left:11%;right:11%;top:28%;height:46%;background:radial-gradient(ellipse at 50% 50%,#2d3530 0 12%,transparent 13%),radial-gradient(ellipse at 43% 46%,#6d8d83 0 22%,transparent 23%),linear-gradient(180deg,#7a9f82 0 48%,#365e58 48% 60%,#1b302f 60% 100%);box-shadow:0 -58px 0 #f4efe3,0 1px 0 rgba(37,39,34,.26);overflow:hidden} .sakana:after{content:"Book of Fishes";position:absolute;left:12%;right:12%;top:13%;color:#111;font-family:Georgia,serif;font-size:20px;font-weight:700;line-height:1;border-top:1px solid rgba(37,39,34,.18);padding-top:18px;text-align:center;text-shadow:none}
+.yorushika{background:#f6f4ee} .yorushika:before{content:"";position:absolute;left:20%;top:20%;width:60%;height:60%;border-radius:50%;background:radial-gradient(circle,#f6f4ee 0 23%,#111411 24% 29%,#f6f4ee 30% 42%,#111411 43% 48%,transparent 49%)} .yorushika:after{content:"";position:absolute;left:18%;right:18%;top:48%;height:2px;background:#111411}
+.songbirds{background:linear-gradient(180deg,#92bac6 0 57%,#e8e2d5 57%)} .songbirds:before{content:"";position:absolute;inset:10%;background:radial-gradient(ellipse at 24% 28%,rgba(247,246,235,.85) 0 14%,transparent 15%),radial-gradient(ellipse at 68% 34%,rgba(247,246,235,.75) 0 18%,transparent 19%),linear-gradient(165deg,transparent 0 56%,#2b332f 56% 57%,transparent 57%)} .songbirds:after{content:"";position:absolute;right:16%;top:20%;width:30%;height:20%;background:radial-gradient(ellipse at 20% 50%,#232b29 0 8%,transparent 9%),radial-gradient(ellipse at 50% 40%,#232b29 0 7%,transparent 8%),radial-gradient(ellipse at 80% 58%,#232b29 0 6%,transparent 7%)}
+.betcover{background:linear-gradient(180deg,#c4bbb0 0 36%,#22231f 36%)} .betcover:before{content:"";position:absolute;left:22%;top:10%;width:48%;height:70%;border-radius:42% 58% 47% 53%;background:linear-gradient(180deg,#ded2c4 0 28%,#b9845e 28% 44%,#191a17 44%);box-shadow:18px 13px 0 rgba(0,0,0,.22)} .betcover:after{content:"";position:absolute;left:31%;top:28%;width:27%;height:6%;background:#23241f;border-radius:999px;box-shadow:24px 2px 0 #23241f}
+.ichiko{background:linear-gradient(180deg,#f0d8d7 0 52%,#e9e2d8 52%)} .ichiko:before{content:"";position:absolute;left:17%;top:13%;width:66%;height:72%;background:radial-gradient(ellipse at 48% 44%,rgba(250,244,236,.7) 0 28%,transparent 29%),linear-gradient(90deg,transparent 0 48%,rgba(70,62,58,.26) 48% 50%,transparent 50%);border:1px solid rgba(85,73,66,.22)} .ichiko:after{content:"";position:absolute;left:50%;top:11%;bottom:11%;width:1px;background:rgba(83,75,70,.35)}
+.uchu{background:linear-gradient(180deg,#dfe7e1 0 45%,#7aa0a5 45% 71%,#26352f 71%)} .uchu:before{content:"";position:absolute;left:9%;right:9%;bottom:22%;height:38%;background:linear-gradient(135deg,transparent 0 38%,#f5efe0 38% 56%,transparent 56%),linear-gradient(45deg,transparent 0 42%,#455246 42% 58%,transparent 58%)} .uchu:after{content:"";position:absolute;left:18%;top:17%;width:18%;height:18%;border-radius:50%;background:#f4ead6;box-shadow:88px 20px 0 rgba(244,234,214,.42)}
+.mass{background:#eee9dc} .mass:before{content:"";position:absolute;left:13%;top:12%;width:74%;height:70%;background:radial-gradient(circle at 20% 22%,#d05949 0 9%,transparent 10%),radial-gradient(circle at 78% 18%,#4c7b95 0 8%,transparent 9%),radial-gradient(circle at 58% 35%,#dfb759 0 7%,transparent 8%),linear-gradient(105deg,transparent 0 45%,#272923 45% 47%,transparent 47%),linear-gradient(75deg,transparent 0 55%,#272923 55% 57%,transparent 57%)} .mass:after{content:"";position:absolute;left:34%;top:36%;width:30%;height:32%;border:2px solid #252722;border-top:0;border-radius:0 0 45% 45%}
+.zutomayo{background:linear-gradient(180deg,#452f72 0 45%,#1e2338 45%)} .zutomayo:before{content:"";position:absolute;left:17%;top:16%;width:66%;height:54%;background:repeating-linear-gradient(90deg,#e9d56a 0 9px,#c64f6d 9px 18px,#5aa19a 18px 27px,#211d34 27px 36px);border:3px solid #e8ddc7;box-shadow:10px 12px 0 rgba(21,20,34,.65)} .zutomayo:after{content:"";position:absolute;left:25%;right:25%;bottom:17%;height:13%;background:#d6ead0;border-radius:999px 999px 18px 18px}
+.ringo{background:radial-gradient(circle at 16% 33%,#e3c5ad 0 4%,transparent 5%),radial-gradient(circle at 28% 22%,#8c6b5a 0 4%,transparent 5%),radial-gradient(circle at 42% 31%,#d0a891 0 5%,transparent 6%),radial-gradient(circle at 63% 19%,#c99a7e 0 4%,transparent 5%),radial-gradient(circle at 76% 34%,#ead0bb 0 5%,transparent 6%),radial-gradient(circle at 18% 63%,#9d7560 0 5%,transparent 6%),radial-gradient(circle at 36% 72%,#d3a88e 0 4%,transparent 5%),radial-gradient(circle at 58% 66%,#84604e 0 5%,transparent 6%),radial-gradient(circle at 81% 73%,#c9a08c 0 4%,transparent 5%),linear-gradient(135deg,#f4f3ef 0 8%,#d8d6cf 8% 18%,#a99b8d 18% 28%,#efe9de 28% 36%,#7b7067 36% 48%,#d8c9ba 48% 60%,#6e625a 60% 72%,#e8ded0 72% 100%)} .ringo:before{content:"";position:absolute;left:9%;top:7%;width:27%;height:69%;padding:0;border:0;border-radius:2px;clip-path:polygon(12% 0,100% 9%,82% 100%,0 91%);background:linear-gradient(83deg,transparent 0 30%,#20201d 30% 36%,transparent 36% 47%,#20201d 47% 53%,transparent 53% 64%,#20201d 64% 69%,transparent 69%),linear-gradient(180deg,#f8f7f1 0 100%);box-shadow:0 10px 18px rgba(39,34,29,.22);transform:rotate(-13deg)} .ringo:after{content:"";position:absolute;left:46%;top:26%;width:28%;height:52%;padding:0;border:0;border-radius:47% 53% 42% 58%;clip-path:none;background:radial-gradient(circle at 51% 25%,#161414 0 22%,transparent 23%),radial-gradient(circle at 50% 31%,#ead6c4 0 16%,transparent 17%),linear-gradient(180deg,transparent 0 34%,#191817 34% 68%,#5f463b 68% 100%);box-shadow:-34px 19px 0 -22px #2c2925,28px 16px 0 -21px #2f2c28;color:transparent;font-size:0;text-shadow:none}
+.coshunie{background:linear-gradient(180deg,#e5e7dc 0 48%,#9cb9b5 48%)} .coshunie:before{content:"";position:absolute;left:16%;top:18%;width:68%;height:46%;border-radius:50%;background:radial-gradient(circle at 50% 50%,#1a1d1a 0 8%,#efece4 9% 26%,#2f3532 27% 32%,transparent 33%)} .coshunie:after{content:"";position:absolute;left:13%;right:13%;bottom:18%;height:18%;background:repeating-linear-gradient(0deg,rgba(29,34,31,.35) 0 2px,transparent 2px 10px)}
+.aoshiori{background:#f4ead4} .aoshiori:before{content:"";position:absolute;left:16%;top:15%;width:48%;height:58%;background:radial-gradient(circle at 40% 22%,#3b6fa3 0 13%,transparent 14%),radial-gradient(circle at 55% 40%,#5685ba 0 18%,transparent 19%),radial-gradient(circle at 32% 56%,#799fc3 0 12%,transparent 13%)} .aoshiori:after{content:"";position:absolute;right:15%;top:14%;width:23%;height:60%;background:linear-gradient(180deg,#bd3d36 0 12%,transparent 12% 24%,#2f3d49 24% 27%,transparent 27%)}
+.rad{background:linear-gradient(180deg,#6ba6d4 0 58%,#f5edd9 58%)} .rad:before{content:"";position:absolute;left:14%;right:14%;top:13%;height:56%;background:radial-gradient(ellipse at 50% 24%,rgba(255,255,255,.74) 0 18%,transparent 19%),linear-gradient(130deg,transparent 0 49%,#20231f 49% 51%,transparent 51%)} .rad:after{content:"";position:absolute;left:40%;top:36%;width:22%;height:24%;background:#20231f;clip-path:polygon(46% 0,58% 34%,100% 44%,62% 55%,76% 100%,43% 65%,8% 100%,24% 55%,0 42%,35% 34%)}
+.vaundy{background:radial-gradient(circle at 84% 16%,rgba(132,191,164,.6) 0 6%,transparent 7%),radial-gradient(circle at 12% 22%,rgba(124,189,156,.46) 0 7%,transparent 8%),linear-gradient(135deg,#0d1716 0 46%,#233f37 46% 100%)} .vaundy:before{content:"";position:absolute;left:22%;top:10%;width:56%;height:72%;border-radius:46% 54% 44% 56%;background:radial-gradient(circle at 45% 36%,#f0c2a1 0 15%,transparent 16%),radial-gradient(circle at 60% 38%,#e8b48e 0 12%,transparent 13%),linear-gradient(180deg,#171c1c 0 28%,#d8463f 28% 64%,#141817 64%);box-shadow:0 0 0 1px rgba(240,222,200,.18)} .vaundy:after{content:"";position:absolute;left:19%;top:50%;width:34%;height:20%;border-radius:999px;background:radial-gradient(circle at 28% 50%,#c9c0aa 0 24%,#202522 25% 34%,transparent 35%),linear-gradient(90deg,#252a27,#d8d0bd 52%,#252a27);transform:rotate(-18deg);box-shadow:52px 42px 0 -18px rgba(255,255,255,.88)}
+.ziyoou{background:linear-gradient(180deg,#f5eadf 0 64%,#ead7c8 64% 100%)} .ziyoou:before{content:"";position:absolute;left:27%;top:7%;width:46%;height:88%;padding:0;border:0;border-radius:45% 45% 18% 18%;clip-path:polygon(19% 0,81% 0,100% 42%,78% 100%,22% 100%,0 42%);background:radial-gradient(ellipse at 50% 8%,#496f77 0 25%,transparent 26%),linear-gradient(112deg,#172126 0 25%,transparent 25% 100%),linear-gradient(248deg,#192229 0 27%,transparent 27% 100%),radial-gradient(ellipse at 50% 35%,#c8957d 0 31%,transparent 32%),linear-gradient(180deg,transparent 0 54%,#bc856f 54% 64%,#d5ad96 64% 100%),radial-gradient(circle at 50% 78%,#43b6c1 0 5%,transparent 6%),radial-gradient(circle at 50% 85%,#d9b661 0 4%,transparent 5%);box-shadow:-36px 16px 0 -20px #111b21,36px 16px 0 -20px #111b21;filter:drop-shadow(0 10px 12px rgba(72,45,35,.18));transform:rotate(-1deg)} .ziyoou:after{content:"";position:absolute;left:4%;right:4%;top:8%;height:35%;padding:0;border:0;border-radius:0;clip-path:none;background:linear-gradient(18deg,transparent 0 18%,#d2a084 18% 25%,transparent 25% 100%),linear-gradient(-18deg,transparent 0 18%,#d2a084 18% 25%,transparent 25% 100%),linear-gradient(27deg,transparent 0 40%,#d4a287 40% 47%,transparent 47% 100%),linear-gradient(-27deg,transparent 0 40%,#d4a287 40% 47%,transparent 47% 100%),linear-gradient(64deg,transparent 0 48%,#b77b65 48% 51%,transparent 51% 100%),linear-gradient(-64deg,transparent 0 48%,#b77b65 48% 51%,transparent 51% 100%);box-shadow:none;color:transparent;font-size:0;text-shadow:none}
+.soutaisei{background:#161616} .soutaisei:before{content:"";position:absolute;left:20%;top:16%;width:60%;height:60%;border-radius:50%;background:radial-gradient(circle at 42% 34%,#f1efe4 0 12%,#161616 13% 16%,#8a8f84 17% 42%,transparent 43%)} .soutaisei:after{content:"";position:absolute;left:12%;right:12%;bottom:16%;height:12%;background:repeating-linear-gradient(90deg,#f4f0e6 0 14px,transparent 14px 22px)}
+.spitz{background:linear-gradient(180deg,#355e82 0 56%,#dbd5bb 56%)} .spitz:before{content:"";position:absolute;left:22%;top:20%;width:48%;height:45%;background:radial-gradient(circle at 50% 22%,#e1b550 0 14%,transparent 15%),linear-gradient(180deg,#2a3130 0 48%,transparent 48%),linear-gradient(120deg,transparent 0 44%,#21231e 44% 48%,transparent 48%)} .spitz:after{content:"";position:absolute;right:14%;top:15%;width:10%;height:62%;background:repeating-linear-gradient(180deg,#eee7d2 0 8px,transparent 8px 13px)}
+.sakamoto{background:linear-gradient(135deg,#efe1a6 0 32%,#77a89e 32% 58%,#c75159 58%)} .sakamoto:before{content:"";position:absolute;left:26%;top:13%;width:48%;height:68%;border-radius:45% 55% 47% 53%;background:linear-gradient(180deg,#23241f 0 28%,#ead6b7 28% 52%,#ee8a78 52%);box-shadow:0 0 0 1px rgba(37,39,34,.2)} .sakamoto:after{content:"";position:absolute;left:18%;right:18%;bottom:11%;height:8%;background:#f4ead7}
+.cero{background:linear-gradient(180deg,#0f1616 0 64%,#d18a54 64%)} .cero:before{content:"";position:absolute;inset:13%;background:radial-gradient(ellipse at 26% 62%,rgba(238,218,179,.35) 0 14%,transparent 15%),radial-gradient(ellipse at 58% 52%,rgba(238,218,179,.32) 0 16%,transparent 17%),radial-gradient(ellipse at 82% 64%,rgba(238,218,179,.28) 0 12%,transparent 13%),repeating-linear-gradient(115deg,rgba(64,99,82,.35) 0 3px,transparent 3px 18px)}
+.rikon{background:linear-gradient(90deg,#ece7db 0 50%,#181a17 50%)} .rikon:before{content:"";position:absolute;left:13%;top:12%;width:31%;height:70%;border-radius:45% 55% 47% 53%;background:linear-gradient(180deg,#252722 0 28%,#d9c5aa 28% 52%,#5c443b 52%)} .rikon:after{content:"";position:absolute;right:13%;top:12%;width:31%;height:70%;border-radius:50% 44% 53% 47%;background:linear-gradient(180deg,#e6d0b3 0 31%,#22241f 31% 52%,#eee6d7 52%);box-shadow:-48px 48px 0 #c87347}
+.lk{background:linear-gradient(180deg,#74b7d6 0 55%,#f3efe5 55%)} .lk:before{content:"";position:absolute;left:15%;top:16%;width:70%;height:54%;background:radial-gradient(circle at 34% 42%,#e05d39 0 13%,transparent 14%),radial-gradient(circle at 68% 33%,#20231f 0 10%,transparent 11%),linear-gradient(150deg,transparent 0 49%,#20231f 49% 52%,transparent 52%)} .lk:after{content:"";position:absolute;left:12%;right:12%;bottom:18%;height:9%;background:#20231f}
+.lite{background:linear-gradient(180deg,#dce9df 0 52%,#f2ead9 52%)} .lite:before{content:"";position:absolute;left:14%;top:18%;width:72%;height:48%;background:radial-gradient(ellipse at 30% 50%,#252722 0 18%,transparent 19%),radial-gradient(ellipse at 70% 50%,#252722 0 18%,transparent 19%),linear-gradient(90deg,transparent 0 49%,#252722 49% 51%,transparent 51%)} .lite:after{content:"";position:absolute;left:24%;right:24%;bottom:19%;height:20%;background:repeating-linear-gradient(90deg,#7da08e 0 8px,transparent 8px 16px)}
+.mono{background:linear-gradient(180deg,#506f72 0 68%,#f4ead7 68%)} .mono:before{content:"";position:absolute;left:17%;top:16%;width:66%;height:54%;background:radial-gradient(circle at 42% 57%,#f4ead7 0 4%,transparent 5%),radial-gradient(circle at 58% 57%,#f4ead7 0 4%,transparent 5%),linear-gradient(180deg,transparent 0 58%,rgba(244,234,215,.7) 58% 61%,transparent 61%)} .mono:after{content:"";position:absolute;left:33%;top:44%;width:34%;height:12%;background:linear-gradient(90deg,#f4ead7 0 44%,transparent 44% 56%,#f4ead7 56%)}
+.te{background:repeating-linear-gradient(90deg,#d34b3f 0 18px,#e1b24b 18px 36px,#6c9c85 36px 54px,#3f6f96 54px 72px,#211f25 72px 90px)} .te:before{content:"";position:absolute;left:25%;top:14%;width:50%;height:70%;border-radius:48% 52% 45% 55%;background:linear-gradient(180deg,rgba(245,235,209,.86) 0 48%,rgba(39,36,38,.72) 48%)} .te:after{content:"";position:absolute;left:14%;right:14%;top:48%;height:3px;background:#f5ead2;box-shadow:0 18px 0 rgba(245,234,210,.72)}
+.numbergirl{background:#f5f1e8} .numbergirl:before{content:"";position:absolute;left:12%;top:20%;width:76%;height:60%;background:radial-gradient(ellipse at 22% 54%,#262820 0 16%,transparent 17%),radial-gradient(ellipse at 51% 48%,#262820 0 18%,transparent 19%),radial-gradient(ellipse at 78% 56%,#262820 0 14%,transparent 15%)} .numbergirl:after{content:"";position:absolute;left:12%;right:12%;top:10%;height:8%;background:repeating-linear-gradient(90deg,#262820 0 18px,transparent 18px 25px)}
+.andymori{background:#f2eee4} .andymori:before{content:"";position:absolute;left:13%;top:14%;width:74%;height:58%;background:linear-gradient(180deg,#7f2e2c 0 21%,#efe8d7 21% 42%,#2d6f80 42% 63%,#efe8d7 63% 78%,#22241f 78%);box-shadow:0 0 0 1px rgba(37,39,34,.18)} .andymori:after{content:"";position:absolute;left:17%;right:17%;bottom:17%;height:7%;background:#252722}
+.tsubakiya{background:linear-gradient(180deg,#2a141a 0 48%,#a72e40 48%)} .tsubakiya:before{content:"";position:absolute;left:22%;top:10%;width:56%;height:74%;border-radius:46% 54% 44% 56%;background:linear-gradient(180deg,#dbc1ad 0 37%,#5c1b27 37% 58%,#201318 58%);box-shadow:0 0 0 1px rgba(243,223,203,.32)} .tsubakiya:after{content:"";position:absolute;left:14%;right:14%;top:18%;height:38%;background:radial-gradient(circle at 26% 26%,rgba(151,57,86,.8) 0 10%,transparent 11%),radial-gradient(circle at 74% 36%,rgba(218,107,136,.7) 0 8%,transparent 9%)}
+.frederic{background:#111416} .frederic:before{content:"";position:absolute;inset:13%;background:linear-gradient(90deg,#ff6b4a 0 17%,transparent 17% 83%,#4bb4b2 83%),linear-gradient(180deg,transparent 0 45%,#f2e865 45% 56%,transparent 56%),repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 2px,transparent 2px 18px);border:1px solid rgba(255,255,255,.45)} .frederic:after{content:"";position:absolute;left:31%;top:28%;width:38%;height:38%;border-radius:50%;background:radial-gradient(circle,#111416 0 34%,#f2e865 35% 42%,transparent 43%)}
+.lemon{background:#dbe7e7} .lemon:before{content:"";position:absolute;left:28%;top:16%;width:45%;height:58%;border-radius:58% 42% 55% 45%;background:#d8b039;transform:rotate(-20deg);box-shadow:13px 20px 0 rgba(54,81,67,.45)} .lemon:after{content:"";position:absolute;left:23%;top:22%;width:58%;height:42%;background:linear-gradient(126deg,transparent 0 49%,#4f6f5b 49% 52%,transparent 52%),radial-gradient(ellipse at 68% 22%,#6c8b6d 0 10%,transparent 11%)}
+.hasunuma{background:linear-gradient(135deg,#f1eddf 0 38%,#67b7c4 38% 58%,#e85b4e 58% 72%,#2d332d 72%)} .hasunuma:before{content:"";position:absolute;inset:13%;background:radial-gradient(circle at 24% 28%,#e4c64b 0 9%,transparent 10%),radial-gradient(circle at 76% 34%,#6ba75d 0 8%,transparent 9%),radial-gradient(circle at 48% 68%,#f0ede5 0 12%,transparent 13%),repeating-radial-gradient(circle at 50% 50%,rgba(255,255,255,.45) 0 2px,transparent 2px 13px);border:1px solid rgba(37,39,34,.18)}
+.bara{background:#d8ead6} .bara:before{content:"";position:absolute;left:14%;top:12%;width:72%;height:62%;background:radial-gradient(circle at 36% 46%,#f7f2e9 0 13%,transparent 14%),radial-gradient(circle at 60% 38%,#f7f2e9 0 12%,transparent 13%),radial-gradient(circle at 46% 62%,#c54249 0 8%,transparent 9%),linear-gradient(135deg,transparent 0 52%,#5a7b53 52% 55%,transparent 55%);filter:saturate(.9)} .bara:after{content:"";position:absolute;left:15%;right:15%;bottom:14%;height:12%;background:#26302b;box-shadow:0 -120px 0 -52px rgba(255,255,255,.65)}
+.aliens{background:linear-gradient(180deg,#d6d5b0 0 45%,#314941 45%)} .aliens:before{content:"";position:absolute;left:13%;top:14%;width:74%;height:58%;background:radial-gradient(ellipse at 30% 50%,#dcc7a8 0 21%,transparent 22%),radial-gradient(ellipse at 68% 48%,#c9b292 0 20%,transparent 21%),linear-gradient(90deg,transparent 0 47%,rgba(32,38,34,.58) 47% 52%,transparent 52%)} .aliens:after{content:"";position:absolute;left:20%;right:20%;top:12%;height:8%;background:#f4ead2;box-shadow:0 140px 0 -12px #f4ead2}
+.chronostasis{background:linear-gradient(180deg,#f2eadf 0 36%,#d94b42 36% 62%,#20231f 62%)} .chronostasis:before{content:"";position:absolute;inset:13%;background:radial-gradient(circle at 28% 28%,#1e2325 0 9%,transparent 10%),radial-gradient(circle at 68% 44%,#f4d35e 0 10%,transparent 11%),linear-gradient(90deg,transparent 0 47%,#f5efe4 47% 53%,transparent 53%),repeating-linear-gradient(0deg,rgba(32,35,31,.38) 0 2px,transparent 2px 18px);border:1px solid rgba(32,35,31,.28)}
+.nightcruising{background:linear-gradient(180deg,#f5f3f2 0 55%,#ddd1cc 55% 68%,#b99082 68% 84%,#8f6258 84% 100%)} .nightcruising:before{content:"";position:absolute;left:19%;top:17%;width:12px;height:56px;padding:0;border:0;border-radius:8px 8px 5px 5px;clip-path:none;background:radial-gradient(circle at 50% 7%,#15141b 0 13%,transparent 14%),linear-gradient(90deg,#1f2d4c 0 23%,#f4e9d7 23% 55%,#d79255 55% 100%);box-shadow:45px -8px 0 2px #bd2458,45px -20px 0 -1px #16141b,88px -4px 0 7px #172330,88px -24px 0 1px #d73245,88px 39px 0 -1px #d7b066,0 57px 0 -3px #d1a05d,45px 53px 0 -3px #c68662,88px 62px 0 -2px #c6a05a;filter:drop-shadow(0 15px 10px rgba(62,39,33,.24));transform:translateY(-2px)} .nightcruising:after{content:"";position:absolute;left:7%;right:7%;bottom:8%;top:auto;height:23%;padding:0;border:0;border-radius:0;clip-path:none;background:linear-gradient(90deg,rgba(248,246,240,.9) 0 3%,transparent 3% 8%,rgba(248,246,240,.9) 8% 10%,transparent 10% 100%),linear-gradient(180deg,transparent 0 42%,rgba(248,246,240,.92) 42% 46%,transparent 46% 60%,rgba(248,246,240,.78) 60% 63%,transparent 63%),repeating-linear-gradient(90deg,rgba(91,68,62,.52) 0 8px,rgba(226,202,188,.48) 8px 16px);box-shadow:0 -22px 28px rgba(255,255,255,.35);color:transparent;font-size:0;text-shadow:none}
+.grapevine{background:linear-gradient(180deg,#d8c7a8 0 55%,#1f211e 55%)} .grapevine:before{content:"";position:absolute;left:14%;top:15%;width:72%;height:50%;background:radial-gradient(ellipse at 32% 48%,#22241f 0 16%,transparent 17%),radial-gradient(ellipse at 68% 45%,#22241f 0 16%,transparent 17%),linear-gradient(180deg,transparent 0 47%,#f1e4ca 47% 52%,transparent 52%)} .grapevine:after{content:"";position:absolute;left:18%;right:18%;bottom:17%;height:8%;background:#d8c7a8}
+.kodoku{background:radial-gradient(circle at 18% 58%,rgba(145,169,177,.2) 0 18%,transparent 19%),linear-gradient(90deg,rgba(2,12,11,.92) 0 22%,transparent 22%),repeating-linear-gradient(90deg,rgba(3,24,24,.72) 0 14px,rgba(6,47,50,.55) 14px 28px,rgba(3,17,23,.7) 28px 46px),linear-gradient(135deg,#02110f 0 28%,#0a3236 28% 58%,#071827 58% 100%)} .kodoku:before{content:"";position:absolute;left:3%;top:26%;width:72%;height:61%;border:0;border-radius:54% 44% 42% 52%;clip-path:polygon(0 56%,10% 39%,31% 25%,56% 13%,83% 20%,97% 43%,85% 66%,50% 86%,17% 82%);background:radial-gradient(circle at 42% 37%,#061821 0 4%,#9fb5bd 5% 8%,transparent 9%),radial-gradient(ellipse at 8% 68%,#d6d0c8 0 10%,transparent 11%),radial-gradient(ellipse at 2% 58%,#101417 0 8%,transparent 9%),linear-gradient(104deg,transparent 0 30%,rgba(221,226,224,.76) 30% 37%,transparent 37%),linear-gradient(84deg,#6f8792 0 18%,#aebbc0 18% 38%,#657986 38% 60%,#314653 60% 100%);filter:drop-shadow(0 16px 20px rgba(0,0,0,.42));transform:rotate(-5deg)} .kodoku:after{content:"";position:absolute;left:55%;top:3%;width:25%;height:50%;border:0;border-radius:0;clip-path:polygon(30% 100%,45% 18%,70% 0,88% 78%);background:linear-gradient(90deg,#d5dde0 0 22%,#7f98a4 22% 54%,#324856 54% 100%);box-shadow:-21px 31px 0 -13px #506a7a;transform:rotate(-12deg);filter:drop-shadow(0 8px 10px rgba(0,0,0,.34))}
+.pool{background:linear-gradient(180deg,#e0d8cd 0 45%,#18202b 45%)} .pool:before{content:"";position:absolute;left:13%;top:12%;width:74%;height:68%;background:radial-gradient(circle at 30% 28%,#c84352 0 8%,transparent 9%),radial-gradient(circle at 70% 34%,#f0e8d9 0 10%,transparent 11%),radial-gradient(circle at 50% 68%,#1b1f2a 0 20%,transparent 21%),linear-gradient(120deg,transparent 0 48%,#8fa3a4 48% 52%,transparent 52%)} .pool:after{content:"";position:absolute;left:17%;right:17%;top:16%;height:2px;background:#18202b;box-shadow:0 24px 0 rgba(24,32,43,.58),0 48px 0 rgba(24,32,43,.36)}
+.staytune{background:linear-gradient(180deg,#ece6d8 0 18%,#151515 18% 100%)} .staytune:before{content:"";position:absolute;left:12%;top:22%;width:76%;height:48%;background:linear-gradient(90deg,rgba(238,232,220,.25) 0 18%,transparent 18% 27%,rgba(238,232,220,.2) 27% 44%,transparent 44% 57%,rgba(238,232,220,.16) 57% 72%,transparent 72%),linear-gradient(180deg,transparent 0 58%,rgba(238,232,220,.45) 58% 62%,transparent 62%)} .staytune:after{content:"";position:absolute;left:16%;right:16%;bottom:15%;height:9%;background:#d8b450;box-shadow:0 -120px 0 -18px rgba(216,180,80,.9)}
+.akarui{background:linear-gradient(180deg,#f3dfbb 0 48%,#5c744f 48% 100%)} .akarui:before{content:"";position:absolute;left:13%;top:12%;width:74%;height:62%;background:radial-gradient(circle at 30% 32%,#f5eee0 0 10%,transparent 11%),radial-gradient(circle at 72% 40%,#263028 0 11%,transparent 12%),linear-gradient(25deg,transparent 0 46%,rgba(244,238,224,.78) 46% 51%,transparent 51%)} .akarui:after{content:"";position:absolute;left:18%;right:18%;bottom:16%;height:10%;background:#263028}
+.climax{background:linear-gradient(180deg,#3b6d92 0 54%,#efc15c 54% 100%)} .climax:before{content:"";position:absolute;left:16%;top:14%;width:68%;height:58%;background:radial-gradient(circle at 34% 30%,#f3ead3 0 12%,transparent 13%),radial-gradient(circle at 70% 42%,#243647 0 10%,transparent 11%),linear-gradient(150deg,transparent 0 49%,rgba(246,238,214,.72) 49% 53%,transparent 53%)} .climax:after{content:"";position:absolute;left:15%;right:15%;bottom:15%;height:2px;background:#253543;box-shadow:0 12px 0 rgba(37,53,67,.55),0 24px 0 rgba(37,53,67,.28)}
+.suisei{background:linear-gradient(135deg,#f2e8d6 0 38%,#6db5c7 38% 58%,#d65348 58% 75%,#252722 75%)} .suisei:before{content:"";position:absolute;left:16%;top:18%;width:68%;height:52%;background:linear-gradient(135deg,#fff2c8 0 18%,transparent 18% 31%,#6cae9d 31% 48%,transparent 48% 61%,#f08c57 61% 78%,transparent 78%),linear-gradient(90deg,transparent 0 46%,#20231f 46% 51%,transparent 51%);box-shadow:10px 12px 0 rgba(37,39,34,.18)}
+.tendre{background:#e9dfc9} .tendre:before{content:"";position:absolute;left:18%;top:12%;width:64%;height:70%;border-radius:48% 52% 45% 55%;background:linear-gradient(180deg,#1f2b2c 0 32%,#c9865a 32% 55%,#f1e2c5 55%);box-shadow:0 0 0 1px rgba(37,39,34,.2)} .tendre:after{content:"";position:absolute;left:10%;right:10%;top:52%;height:3px;background:#1f2b2c;box-shadow:0 18px 0 rgba(31,43,44,.42)}
+.sirup{background:linear-gradient(180deg,#f2ebe0 0 66%,#1f2a28 66%)} .sirup:before{content:"";position:absolute;left:28%;top:17%;width:44%;height:52%;border-radius:50%;background:radial-gradient(circle at 50% 30%,#c8865d 0 22%,transparent 23%),linear-gradient(180deg,#f2ebe0 0 48%,#2d3c38 48%)} .sirup:after{content:"";position:absolute;left:15%;right:15%;bottom:15%;height:10%;background:#d65c47;box-shadow:0 -118px 0 -28px rgba(214,92,71,.65)}
+.ajikan{background:linear-gradient(180deg,#d7d0be 0 49%,#b73a33 49%)} .ajikan:before{content:"";position:absolute;left:14%;top:14%;width:72%;height:58%;background:radial-gradient(circle at 28% 44%,#f2eadb 0 11%,transparent 12%),radial-gradient(circle at 64% 36%,#22241f 0 12%,transparent 13%),linear-gradient(120deg,transparent 0 48%,#22241f 48% 51%,transparent 51%);border:1px solid rgba(34,36,31,.32)} .ajikan:after{content:"";position:absolute;left:20%;right:20%;bottom:16%;height:8%;background:#22241f}
+.wasurerarenaino{background:linear-gradient(90deg,#f0e4cc 0 50%,#1b1d1c 50%)} .wasurerarenaino:before{content:"";position:absolute;left:15%;top:13%;width:70%;height:70%;background:radial-gradient(ellipse at 28% 50%,#c64b43 0 17%,transparent 18%),radial-gradient(ellipse at 72% 50%,#f1e4cc 0 17%,transparent 18%),linear-gradient(90deg,transparent 0 48%,#d8b450 48% 53%,transparent 53%)} .wasurerarenaino:after{content:"";position:absolute;left:20%;right:20%;bottom:14%;height:7%;background:#d8b450}
+.powers1999{background:linear-gradient(180deg,#eee3d6 0 47%,#282c31 47%)} .powers1999:before{content:"";position:absolute;left:20%;top:13%;width:60%;height:64%;background:radial-gradient(circle at 50% 30%,#f2d0bd 0 16%,transparent 17%),linear-gradient(180deg,#2f3d43 0 43%,#d95d47 43% 58%,#22282d 58%);border-radius:42% 58% 45% 55%} .powers1999:after{content:"";position:absolute;left:13%;right:13%;top:18%;height:7%;background:#24282d;box-shadow:0 124px 0 -8px #24282d}
+.kaneko{background:#151515} .kaneko:before{content:"";position:absolute;left:19%;top:14%;width:62%;height:60%;border-radius:48% 52% 42% 58%;background:radial-gradient(circle at 42% 42%,#f2ead9 0 11%,transparent 12%),radial-gradient(circle at 62% 43%,#f2ead9 0 10%,transparent 11%),linear-gradient(180deg,#7a705f 0 52%,#2d2924 52%);box-shadow:0 0 0 1px rgba(242,234,217,.24)} .kaneko:after{content:"";position:absolute;left:18%;right:18%;bottom:15%;height:8%;background:#e9ddc6}
+.bluehour{background:linear-gradient(180deg,#9cc7d4 0 57%,#f0e7d5 57%)} .bluehour:before{content:"";position:absolute;left:15%;top:18%;width:70%;height:45%;background:radial-gradient(ellipse at 24% 52%,#f5efe0 0 16%,transparent 17%),radial-gradient(ellipse at 62% 45%,#f5efe0 0 19%,transparent 20%),linear-gradient(25deg,transparent 0 54%,#26312e 54% 57%,transparent 57%)} .bluehour:after{content:"";position:absolute;left:18%;right:18%;bottom:18%;height:8%;background:#26312e}
+.modal{background:radial-gradient(circle at 17% 31%,rgba(255,242,211,.8) 0 2%,transparent 3%),radial-gradient(circle at 34% 20%,rgba(255,235,201,.7) 0 2%,transparent 3%),radial-gradient(circle at 66% 26%,rgba(255,226,188,.55) 0 2%,transparent 3%),linear-gradient(180deg,#b84a4d 0 8%,#203c78 8% 19%,#1aa8c2 19% 24%,#d85a49 24% 86%,#b94b4a 86% 100%)} .modal:before{content:"";position:absolute;left:22%;top:25%;width:51%;height:56%;padding:0;border:0;border-radius:0;clip-path:none;background:linear-gradient(112deg,transparent 0 46%,rgba(82,84,88,.34) 46% 48%,transparent 48%),linear-gradient(68deg,transparent 0 51%,rgba(82,84,88,.26) 51% 53%,transparent 53%),radial-gradient(ellipse at 45% 31%,transparent 0 31%,rgba(72,73,79,.38) 32% 34%,transparent 35%),radial-gradient(ellipse at 39% 54%,transparent 0 27%,rgba(72,73,79,.28) 28% 30%,transparent 31%),linear-gradient(180deg,transparent 0 38%,rgba(70,72,79,.22) 38% 40%,transparent 40% 58%,rgba(70,72,79,.18) 58% 60%,transparent 60%);box-shadow:-28px 18px 0 -23px rgba(255,236,204,.72),37px -14px 0 -30px rgba(255,238,205,.7);filter:drop-shadow(0 6px 8px rgba(90,42,34,.18));transform:rotate(-4deg)} .modal:after{content:"modal soul";position:absolute;right:9%;bottom:19%;left:auto;top:auto;width:auto;height:auto;padding:0;border:0;border-radius:0;clip-path:none;background:transparent;color:rgba(255,244,232,.9);font-family:var(--serif);font-size:13px;font-style:italic;letter-spacing:.02em;text-shadow:0 1px 4px rgba(91,42,34,.34);box-shadow:-148px -126px 0 -4px rgba(255,242,225,.85),-100px -111px 0 -5px rgba(255,226,202,.74),-47px -128px 0 -6px rgba(255,240,223,.68)}
+.ultrablue{background:radial-gradient(ellipse at 50% 35%,rgba(255,255,255,.94) 0 28%,transparent 29%),linear-gradient(180deg,#eef5f7 0 48%,#f7fbfb 48% 100%)} .ultrablue:before{content:"";position:absolute;left:24%;top:7%;width:52%;height:70%;padding:0;border:0;border-radius:50% 50% 45% 45%;clip-path:polygon(18% 0,82% 0,100% 48%,84% 100%,16% 100%,0 48%);background:linear-gradient(116deg,#0a111b 0 24%,transparent 24% 100%),linear-gradient(246deg,#0b121c 0 28%,transparent 28% 100%),linear-gradient(180deg,#f6dcca 0 100%);box-shadow:-31px 4px 0 -10px #07101a,29px 0 0 -13px #111923;filter:drop-shadow(0 8px 14px rgba(24,28,32,.16));transform:rotate(-2deg)} .ultrablue:after{content:"";position:absolute;left:-8%;right:-8%;bottom:-3%;top:auto;height:43%;padding:0;border:0;border-radius:45% 45% 0 0;clip-path:polygon(0 36%,20% 12%,39% 45%,54% 18%,76% 9%,100% 42%,100% 100%,0 100%);background:linear-gradient(135deg,#8f0016 0 26%,#c90525 26% 54%,#ec213b 54% 73%,#9e0018 73% 100%);box-shadow:0 -18px 24px rgba(145,0,24,.24);color:transparent;font-size:0;text-shadow:none}
+.yuunagi{background:#f2ece2} .yuunagi:before{content:"";position:absolute;left:18%;top:11%;width:64%;height:74%;border-radius:46% 54% 44% 56%;background:linear-gradient(180deg,#c99a7b 0 34%,#2e3130 34% 58%,#f2ece2 58%);box-shadow:0 0 0 1px rgba(37,39,34,.2)} .yuunagi:after{content:"";position:absolute;left:19%;right:19%;bottom:15%;height:2px;background:#22241f;box-shadow:0 -100px 0 -10px rgba(34,36,31,.65)}
+.oshiroi{background:linear-gradient(180deg,#efe8dc 0 43%,#74a9b8 43% 100%)} .oshiroi:before{content:"";position:absolute;left:17%;top:16%;width:66%;height:58%;background:radial-gradient(circle at 35% 26%,#f6f0e6 0 10%,transparent 11%),radial-gradient(circle at 68% 42%,#2a3131 0 13%,transparent 14%),linear-gradient(135deg,transparent 0 50%,#f6f0e6 50% 55%,transparent 55%);border:1px solid rgba(42,49,49,.22)} .oshiroi:after{content:"";position:absolute;left:22%;right:22%;bottom:16%;height:10%;background:#2a3131}
+.alpenglow{background:linear-gradient(180deg,#1c2f56 0 42%,#e98461 42% 66%,#f0e0c0 66%)} .alpenglow:before{content:"";position:absolute;left:12%;right:12%;bottom:26%;height:36%;background:linear-gradient(135deg,transparent 0 33%,#f5ead5 33% 50%,transparent 50%),linear-gradient(45deg,transparent 0 46%,#7ba0b6 46% 62%,transparent 62%)} .alpenglow:after{content:"";position:absolute;left:23%;top:18%;width:54%;height:54%;border-radius:50%;background:radial-gradient(circle,#f3d36c 0 10%,transparent 11%);box-shadow:0 0 0 1px rgba(245,234,213,.35)}
+.kaerou{background:#181818} .kaerou:before{content:"";position:absolute;left:22%;top:10%;width:56%;height:74%;border-radius:45% 55% 44% 56%;background:linear-gradient(180deg,#d9c2aa 0 28%,#252525 28% 72%,#0f0f0f 72%);box-shadow:0 0 0 1px rgba(245,234,217,.22)} .kaerou:after{content:"";position:absolute;left:11%;right:11%;bottom:13%;height:10%;background:#e8dfd1;box-shadow:0 -122px 0 -34px rgba(232,223,209,.52)}
+.sonare{background:#f2eee3} .sonare:before{content:"";position:absolute;left:18%;top:15%;width:64%;height:62%;background:radial-gradient(circle at 32% 32%,#e6d8c7 0 12%,transparent 13%),radial-gradient(circle at 66% 44%,#bfc4b7 0 15%,transparent 16%),linear-gradient(135deg,transparent 0 47%,#1f2423 47% 51%,transparent 51%);border:1px solid rgba(37,39,34,.22)} .sonare:after{content:"";position:absolute;left:23%;right:23%;bottom:17%;height:7%;background:#22241f}
+.kotodute{background:linear-gradient(180deg,#301a73 0 52%,#151522 52%)} .kotodute:before{content:"";position:absolute;left:17%;top:14%;width:66%;height:60%;background:radial-gradient(circle at 32% 30%,#8b6cff 0 12%,transparent 13%),radial-gradient(circle at 68% 45%,#5f47c8 0 18%,transparent 19%),linear-gradient(145deg,transparent 0 48%,rgba(240,235,255,.7) 48% 51%,transparent 51%);filter:saturate(1.08)} .kotodute:after{content:"";position:absolute;left:16%;right:16%;bottom:15%;height:8%;background:#ebe6ff}
+.rere{background:linear-gradient(180deg,#e5d4a8 0 48%,#2f5d73 48%)} .rere:before{content:"";position:absolute;left:14%;top:13%;width:72%;height:62%;background:radial-gradient(circle at 28% 42%,#f0e8cc 0 12%,transparent 13%),radial-gradient(circle at 63% 35%,#c03f35 0 11%,transparent 12%),linear-gradient(115deg,transparent 0 48%,#252722 48% 52%,transparent 52%);border:1px solid rgba(37,39,34,.24)} .rere:after{content:"";position:absolute;left:17%;right:17%;bottom:15%;height:9%;background:#252722}
+.toccatina{background:#0c0d0d} .toccatina:before{content:"";position:absolute;left:13%;top:15%;width:74%;height:56%;background:repeating-linear-gradient(90deg,#151918 0 9px,#313936 9px 12px,#101212 12px 22px),linear-gradient(180deg,transparent 0 48%,#ece6d9 48% 52%,transparent 52%)} .toccatina:after{content:"";position:absolute;left:18%;right:18%;bottom:17%;height:6%;background:#ece6d9;box-shadow:0 -36px 0 rgba(236,230,217,.2)}
+.luvsic4{background:#f0eadb} .luvsic4:before{content:"";position:absolute;left:14%;top:12%;width:72%;height:64%;background:radial-gradient(circle at 32% 34%,#9dbb8f 0 13%,transparent 14%),radial-gradient(circle at 68% 45%,#e0b78c 0 15%,transparent 16%),linear-gradient(135deg,transparent 0 50%,#2b3330 50% 53%,transparent 53%);border:1px solid rgba(43,51,48,.2)} .luvsic4:after{content:"";position:absolute;left:18%;right:18%;bottom:16%;height:8%;background:#2b3330}
+.flowers{background:linear-gradient(180deg,#d84d3e 0 52%,#e7dcc8 52%)} .flowers:before{content:"";position:absolute;left:15%;top:14%;width:70%;height:58%;background:radial-gradient(circle at 28% 30%,#f2df9a 0 8%,transparent 9%),radial-gradient(circle at 48% 43%,#f4ecd8 0 10%,transparent 11%),radial-gradient(circle at 69% 28%,#e9bb6a 0 7%,transparent 8%),linear-gradient(180deg,transparent 0 58%,rgba(40,44,38,.4) 58% 61%,transparent 61%)} .flowers:after{content:"";position:absolute;left:18%;right:18%;bottom:16%;height:8%;background:#29302b}
+.aimitsushu{background:linear-gradient(180deg,#9dc1cf 0 52%,#222d3b 52%)} .aimitsushu:before{content:"";position:absolute;left:13%;top:14%;width:74%;height:54%;background:radial-gradient(circle at 28% 34%,#f3ead6 0 9%,transparent 10%),radial-gradient(circle at 66% 42%,#d7bb67 0 7%,transparent 8%),linear-gradient(175deg,transparent 0 58%,#f3ead6 58% 62%,transparent 62%)} .aimitsushu:after{content:"";position:absolute;left:0;right:0;bottom:0;height:31%;background:linear-gradient(180deg,#36465a 0 44%,#101720 44%)}
+
+/* metadata-corrected cover pass */
+.akane{background:linear-gradient(180deg,#eadfce 0 38%,#be6546 38% 58%,#22231f 58% 100%)} .akane:before{content:"";position:absolute;left:7%;right:7%;top:14%;height:54%;background:repeating-linear-gradient(90deg,rgba(35,36,31,.36) 0 2px,transparent 2px 21px),linear-gradient(180deg,rgba(246,238,222,.82) 0 17%,transparent 17% 63%,rgba(246,238,222,.82) 63% 68%,transparent 68%),linear-gradient(104deg,transparent 0 38%,rgba(37,39,34,.66) 38% 42%,transparent 42%);box-shadow:0 15px 0 rgba(52,51,44,.3)} .akane:after{content:"";position:absolute;left:0;right:0;bottom:0;height:28%;background:repeating-linear-gradient(90deg,#2b2e28 0 33px,#e5d9c6 33px 50px,#53594d 50px 78px)}
+.rakujitsu{background:radial-gradient(circle at 15% 18%,rgba(61,205,214,.9) 0 9%,transparent 10%),linear-gradient(132deg,transparent 0 26%,rgba(119,130,203,.76) 26% 43%,transparent 43%),linear-gradient(142deg,transparent 0 55%,rgba(9,28,83,.93) 55% 100%),linear-gradient(160deg,#08a5bf 0 38%,#2689b5 38% 63%,#082057 63% 100%)} .rakujitsu:before{content:"";position:absolute;left:27%;top:25%;width:52%;height:39%;padding:0;border:0;border-radius:58% 42% 46% 54%;box-shadow:none;clip-path:polygon(4% 50%,24% 20%,70% 14%,100% 36%,82% 72%,36% 82%);background:radial-gradient(circle at 70% 33%,#24285f 0 14%,transparent 15%),radial-gradient(circle at 62% 42%,#c0b7de 0 10%,transparent 11%),linear-gradient(116deg,transparent 0 22%,#6e73be 22% 60%,transparent 60%),linear-gradient(136deg,#8794d6 0 42%,#5968b7 42% 100%);filter:drop-shadow(0 12px 16px rgba(3,19,59,.28));transform:rotate(-25deg);transform-origin:center} .rakujitsu:after{content:"";position:absolute;left:12%;right:auto;top:43%;bottom:auto;width:79%;height:18%;padding:0;border:0;border-radius:0;box-shadow:none;clip-path:none;background:linear-gradient(13deg,transparent 0 16%,#f7f3ea 16% 26%,transparent 26% 100%),linear-gradient(13deg,transparent 0 43%,rgba(246,241,231,.94) 43% 53%,transparent 53% 100%),linear-gradient(13deg,transparent 0 69%,rgba(20,30,76,.78) 69% 75%,transparent 75% 100%);color:transparent;font-size:0;text-shadow:none;transform:rotate(1deg)}
+.tricot{background:linear-gradient(180deg,#201b18 0 71%,#c9b8a2 71%)} .tricot:before{content:"";position:absolute;left:10%;top:15%;width:80%;height:58%;background:radial-gradient(ellipse at 15% 42%,#c29a7b 0 13%,#231c19 14% 22%,transparent 23%),radial-gradient(ellipse at 38% 44%,#d1a384 0 14%,#2c211d 15% 24%,transparent 25%),radial-gradient(ellipse at 61% 43%,#c89676 0 13%,#211917 14% 22%,transparent 23%),radial-gradient(ellipse at 84% 45%,#d6ad8f 0 12%,#2a201c 13% 21%,transparent 22%)} .tricot:after{content:"";position:absolute;left:12%;right:12%;bottom:18%;height:7%;background:#1d1916;box-shadow:0 -21px 0 rgba(33,27,24,.62)}
+.kururi{background:#0d0e0c} .kururi:before{content:"";position:absolute;left:8%;top:8%;width:84%;height:76%;background:radial-gradient(ellipse at 32% 62%,#d8b186 0 17%,transparent 18%),radial-gradient(ellipse at 43% 49%,#e5c29b 0 13%,transparent 14%),radial-gradient(ellipse at 54% 40%,#d29b79 0 10%,transparent 11%),radial-gradient(ellipse at 70% 32%,#aa2f2d 0 5%,transparent 6%),repeating-linear-gradient(112deg,rgba(241,213,171,.38) 0 2px,transparent 2px 16px);filter:saturate(.95)} .kururi:after{content:"";position:absolute;left:12%;right:12%;bottom:12%;height:2px;background:#c43b35;box-shadow:0 -70px 0 -1px rgba(196,59,53,.55)}
+.sakana{background:#f2efe4} .sakana:before{content:"";position:absolute;left:11%;right:11%;top:34%;height:38%;background:radial-gradient(ellipse at 49% 42%,#182420 0 8%,transparent 9%),radial-gradient(ellipse at 47% 43%,#6d9782 0 18%,transparent 19%),radial-gradient(ellipse at 58% 38%,#f1efe3 0 8%,transparent 9%),linear-gradient(180deg,#7a9f82 0 52%,#345954 52% 66%,#1f3330 66% 100%);box-shadow:0 -62px 0 #f2efe4,0 1px 0 rgba(37,39,34,.24)} .sakana:after{content:"魚図鑑";position:absolute;left:12%;right:12%;top:13%;color:#111;font-family:Georgia,"Yu Mincho",serif;font-size:22px;font-weight:700;text-align:center;border-top:1px solid rgba(37,39,34,.2);padding-top:17px;text-shadow:none}
+.yorushika{background:linear-gradient(180deg,#76cbd1 0 60%,#1f6d88 60% 100%)} .yorushika:before{content:"";position:absolute;inset:11%;background:radial-gradient(circle at 25% 24%,#f6e690 0 8%,transparent 9%),radial-gradient(circle at 74% 22%,#e36e66 0 7%,transparent 8%),linear-gradient(18deg,transparent 0 45%,#f4ead6 45% 52%,transparent 52%),linear-gradient(180deg,transparent 0 59%,rgba(244,234,214,.5) 59% 63%,transparent 63%)} .yorushika:after{content:"";position:absolute;left:33%;top:42%;width:34%;height:16%;background:#efe4cc;border-radius:999px 999px 16px 16px;box-shadow:0 16px 0 -7px #82523d}
+.betcover{background:linear-gradient(180deg,#83a9c5 0 58%,#253d59 58%)} .betcover:before{content:"";position:absolute;left:25%;top:11%;width:48%;height:73%;border-radius:44% 56% 48% 52%;background:linear-gradient(180deg,#24364d 0 25%,#b7cfdd 25% 49%,#2d4565 49%);box-shadow:-18px 16px 0 rgba(45,69,101,.46)} .betcover:after{content:"";position:absolute;left:31%;top:28%;width:30%;height:8%;background:#20314a;border-radius:999px;box-shadow:24px 8px 0 rgba(32,49,74,.9)}
+.mass{background:linear-gradient(90deg,#efeadf 0 77%,#bd2e35 77% 100%)} .mass:before{content:"";position:absolute;left:10%;top:9%;width:64%;height:76%;background:radial-gradient(ellipse at 46% 40%,#f1e9dc 0 26%,transparent 27%),radial-gradient(ellipse at 38% 31%,#161714 0 10%,transparent 11%),radial-gradient(ellipse at 60% 32%,#161714 0 8%,transparent 9%),linear-gradient(120deg,transparent 0 48%,#191a17 48% 51%,transparent 51%),linear-gradient(65deg,transparent 0 48%,#191a17 48% 51%,transparent 51%);border:1px solid rgba(37,39,34,.2)} .mass:after{content:"";position:absolute;right:8%;top:13%;width:8%;height:70%;background:repeating-linear-gradient(180deg,#f4e9da 0 10px,transparent 10px 18px)}
+.zutomayo{background:radial-gradient(circle at 22% 21%,rgba(255,255,255,.75) 0 2px,transparent 3px),radial-gradient(circle at 78% 31%,rgba(255,255,255,.55) 0 2px,transparent 3px),linear-gradient(180deg,#4ca3b4 0 62%,#274b68 62%)} .zutomayo:before{content:"";position:absolute;left:18%;top:21%;width:58%;height:44%;background:#e8efe7;border-radius:8px;box-shadow:10px 10px 0 rgba(36,54,76,.55),inset 0 0 0 3px #26374d} .zutomayo:after{content:"";position:absolute;left:27%;top:31%;width:39%;height:17%;background:radial-gradient(circle at 25% 50%,#273b51 0 16%,transparent 17%),radial-gradient(circle at 75% 50%,#273b51 0 16%,transparent 17%),linear-gradient(180deg,#d3d8d2 0 45%,#b0bbaf 45%);border-radius:5px;text-shadow:none}
+.coshunie{background:linear-gradient(135deg,#efeae0 0 44%,#8ab18b 44% 65%,#d8d0bd 65%)} .coshunie:before{content:"";position:absolute;left:10%;top:22%;width:80%;height:40%;border-radius:50%;background:radial-gradient(circle at 50% 50%,#171817 0 9%,#e9eadf 10% 20%,#1e241f 21% 25%,transparent 26%);box-shadow:0 0 0 16px rgba(113,150,109,.4)} .coshunie:after{content:"";position:absolute;left:13%;right:13%;top:35%;height:2px;background:#171817;box-shadow:0 -10px 0 rgba(23,24,23,.35),0 10px 0 rgba(23,24,23,.26)}
+.aoshiori{background:#f5eddc} .aoshiori:before{content:"";position:absolute;left:18%;top:17%;width:48%;height:56%;background:radial-gradient(circle at 45% 26%,#406f9d 0 10%,transparent 11%),radial-gradient(circle at 58% 42%,#719dc5 0 13%,transparent 14%),radial-gradient(circle at 35% 58%,#9db7cc 0 10%,transparent 11%),linear-gradient(120deg,transparent 0 47%,#4d6d83 47% 50%,transparent 50%)} .aoshiori:after{content:"";position:absolute;right:15%;top:13%;width:21%;height:66%;background:linear-gradient(180deg,#b73530 0 11%,transparent 11% 25%,#2f3b45 25% 28%,transparent 28%);border-left:1px solid rgba(47,59,69,.25)}
+.soutaisei{background:radial-gradient(circle at 17% 17%,#f0eef0 0 8%,#bfc0c4 9% 12%,transparent 13%),radial-gradient(ellipse at 93% 93%,#2b8dc4 0 20%,#0e5a92 21% 31%,transparent 32%),radial-gradient(ellipse at 89% 90%,transparent 0 24%,rgba(245,247,239,.7) 25% 27%,transparent 28%),linear-gradient(135deg,#090a0d 0 57%,#111922 57% 100%)} .soutaisei:before{content:"";position:absolute;left:28%;top:32%;width:31%;height:36%;padding:0;border:0;border-radius:0;clip-path:none;background:radial-gradient(circle at 48% 16%,#f4f2e8 0 17%,#191b1e 18% 21%,transparent 22%),linear-gradient(108deg,transparent 0 21%,#efe9d2 21% 31%,transparent 31% 100%),linear-gradient(72deg,transparent 0 67%,#efe9d2 67% 77%,transparent 77% 100%),linear-gradient(22deg,transparent 0 18%,#e9e2ca 18% 29%,transparent 29% 100%),linear-gradient(-24deg,transparent 0 65%,#e9e2ca 65% 76%,transparent 76% 100%),linear-gradient(180deg,transparent 0 28%,#f2ecd8 28% 72%,transparent 72%),radial-gradient(ellipse at 50% 72%,#d9d0b6 0 18%,transparent 19%);filter:drop-shadow(0 8px 8px rgba(0,0,0,.45));transform:rotate(-24deg)} .soutaisei:after{content:"シフォン主義";position:absolute;right:8%;top:13%;left:auto;bottom:auto;width:auto;height:auto;padding:0;border:0;border-radius:0;background:transparent;color:#f2f0e8;font-size:16px;font-weight:780;letter-spacing:.04em;text-shadow:0 2px 8px rgba(0,0,0,.5);box-shadow:-142px 142px 0 -2px rgba(242,240,232,.88),-112px 142px 0 -2px rgba(242,240,232,.88),-82px 142px 0 -2px rgba(242,240,232,.88)}
+.sakamoto{background:#cfd6b7} .sakamoto:before{content:"";position:absolute;left:16%;top:12%;width:68%;height:74%;background:radial-gradient(ellipse at 35% 34%,#e9d0b1 0 13%,#272822 14% 24%,transparent 25%),radial-gradient(ellipse at 68% 39%,#d7c0a1 0 16%,#35322a 17% 25%,transparent 26%),linear-gradient(180deg,rgba(238,231,205,.72) 0 58%,rgba(121,139,101,.68) 58%);border:1px solid rgba(71,84,58,.35)} .sakamoto:after{content:"";position:absolute;left:20%;right:20%;bottom:13%;height:8%;background:#edf0dc;box-shadow:0 -116px 0 -43px rgba(238,240,220,.62)}
+.rikon{background:linear-gradient(90deg,#eeeeea 0 50%,#151515 50%)} .rikon:before{content:"";position:absolute;left:12%;top:14%;width:32%;height:68%;border-radius:45% 55% 46% 54%;background:linear-gradient(180deg,#151515 0 30%,#cfc5b6 30% 52%,#3c3731 52%)} .rikon:after{content:"";position:absolute;right:12%;top:13%;width:32%;height:70%;border-radius:52% 42% 55% 45%;background:linear-gradient(180deg,#ded7cc 0 31%,#151515 31% 54%,#e9e7e1 54%);box-shadow:-50px 47px 0 -25px #b65a42}
+.lk{background:#62c5d6} .lk:before{content:"";position:absolute;left:12%;top:15%;width:76%;height:58%;background:radial-gradient(circle at 30% 38%,#df553c 0 13%,transparent 14%),radial-gradient(circle at 57% 31%,#1e2629 0 9%,transparent 10%),linear-gradient(118deg,transparent 0 49%,#f0e46c 49% 54%,transparent 54%),linear-gradient(180deg,transparent 0 67%,#f4efe3 67%)} .lk:after{content:"";position:absolute;left:14%;right:14%;bottom:16%;height:11%;background:#f1d84b;box-shadow:0 -12px 0 #20231f;text-shadow:none}
+.te{background:repeating-linear-gradient(180deg,#edc0c9 0 11px,#f5d9df 11px 23px)} .te:before{content:"";position:absolute;left:10%;right:10%;top:14%;height:68%;background:repeating-linear-gradient(180deg,rgba(168,64,83,.42) 0 2px,transparent 2px 15px)} .te:after{content:"te'";position:absolute;left:45%;top:42%;color:#2a2425;font-size:21px;font-weight:800;text-shadow:none}
+.andymori{background:linear-gradient(180deg,#79b5d4 0 34%,#e9dec8 34% 68%,#2e302a 68%)} .andymori:before{content:"";position:absolute;left:7%;top:28%;width:86%;height:48%;background:radial-gradient(circle at 12% 65%,#df5641 0 5%,transparent 6%),radial-gradient(circle at 29% 53%,#f0e6d5 0 6%,transparent 7%),radial-gradient(circle at 47% 67%,#2b3a43 0 6%,transparent 7%),radial-gradient(circle at 66% 55%,#b64d35 0 5%,transparent 6%),radial-gradient(circle at 83% 65%,#f1d069 0 5%,transparent 6%),repeating-linear-gradient(90deg,rgba(35,39,33,.45) 0 2px,transparent 2px 18px)} .andymori:after{content:"";position:absolute;left:12%;right:12%;bottom:17%;height:8%;background:#242720;box-shadow:0 -28px 0 rgba(36,39,32,.38)}
+.tsubakiya{background:#edece4} .tsubakiya:before{content:"";position:absolute;inset:9%;background:radial-gradient(ellipse at 18% 23%,#101411 0 14%,transparent 15%),radial-gradient(ellipse at 34% 42%,#101411 0 12%,transparent 13%),radial-gradient(ellipse at 65% 34%,#101411 0 15%,transparent 16%),radial-gradient(ellipse at 81% 58%,#101411 0 12%,transparent 13%),linear-gradient(128deg,transparent 0 48%,#5d8b70 48% 51%,transparent 51%)} .tsubakiya:after{content:"";position:absolute;left:12%;right:12%;bottom:13%;height:2px;background:#111411;box-shadow:0 -92px 0 -1px rgba(17,20,17,.62)}
+.hasunuma{background:linear-gradient(180deg,#d8ded1 0 54%,#78946a 54% 100%)} .hasunuma:before{content:"";position:absolute;inset:10%;background:repeating-linear-gradient(100deg,rgba(67,92,54,.32) 0 2px,transparent 2px 13px),radial-gradient(ellipse at 64% 58%,#f3f1e8 0 11%,transparent 12%),radial-gradient(ellipse at 72% 63%,#e8e5dc 0 7%,transparent 8%);border:1px solid rgba(59,80,50,.22)} .hasunuma:after{content:"";position:absolute;left:21%;right:21%;bottom:15%;height:7%;background:#2d3b2a;opacity:.36}
+.powers1999{background:linear-gradient(180deg,#dedecf 0 43%,#364944 43%)} .powers1999:before{content:"";position:absolute;left:21%;top:12%;width:58%;height:70%;border-radius:42% 58% 44% 56%;background:radial-gradient(circle at 48% 22%,#e9c4a9 0 12%,transparent 13%),linear-gradient(180deg,#6a7755 0 38%,#e7799a 38% 61%,#29362f 61%);box-shadow:-20px 21px 0 rgba(56,73,68,.45)} .powers1999:after{content:"1999";position:absolute;left:14%;top:15%;color:#f0ce48;font-size:22px;font-weight:900;text-shadow:0 1px 0 rgba(0,0,0,.18)}
+.sonare{background:#eee8dd} .sonare:before{content:"";position:absolute;inset:15%;border:1px solid #cfc1ab;background:radial-gradient(circle at 14% 14%,#d5c3a7 0 5%,transparent 6%),radial-gradient(circle at 86% 14%,#d5c3a7 0 5%,transparent 6%),radial-gradient(circle at 14% 86%,#d5c3a7 0 5%,transparent 6%),radial-gradient(circle at 86% 86%,#d5c3a7 0 5%,transparent 6%)} .sonare:after{content:"ソナーレ";position:absolute;left:18%;right:18%;top:43%;color:#34332e;font-family:Georgia,"Yu Mincho",serif;font-size:19px;font-weight:700;text-align:center;text-shadow:none}
+.kotodute{background:linear-gradient(180deg,#5d39b5 0 55%,#1b1732 55%)} .kotodute:before{content:"";position:absolute;left:12%;right:12%;top:18%;height:48%;background:radial-gradient(circle at 72% 24%,#8e70d8 0 17%,transparent 18%),linear-gradient(155deg,transparent 0 47%,rgba(230,221,255,.7) 47% 50%,transparent 50%)} .kotodute:after{content:"";position:absolute;left:49%;top:31%;width:28%;height:16%;background:#0f0e18;clip-path:polygon(0 48%,35% 30%,100% 0,72% 48%,100% 100%,35% 70%)}
+.rere{background:linear-gradient(180deg,#f2ead8 0 54%,#222728 54%)} .rere:before{content:"";position:absolute;left:10%;top:12%;width:80%;height:62%;background:radial-gradient(circle at 30% 35%,#202427 0 12%,transparent 13%),radial-gradient(circle at 64% 40%,#d7cfba 0 14%,transparent 15%),linear-gradient(90deg,transparent 0 59%,#f1d84c 59% 63%,transparent 63%),linear-gradient(135deg,transparent 0 48%,#111416 48% 52%,transparent 52%);border:1px solid rgba(34,39,40,.28)} .rere:after{content:"";position:absolute;left:20%;right:20%;top:23%;height:2px;background:#f0d84d;box-shadow:0 72px 0 rgba(240,216,77,.62)}
+.toccatina{background:#0a0b0b} .toccatina:before{content:"sezession  sezession  sezession";position:absolute;left:12%;right:12%;top:30%;color:#2f3433;font-size:11px;line-height:2;text-align:center;text-shadow:0 26px 0 #202524,0 52px 0 #161a19} .toccatina:after{content:"toccatina";position:absolute;left:17%;right:17%;bottom:18%;color:#e9e4d7;font-size:13px;font-weight:600;text-align:center;text-shadow:none}
+.aimitsushu{background:linear-gradient(180deg,#b7cfe0 0 45%,#826f9a 45% 67%,#20304a 67%)} .aimitsushu:before{content:"";position:absolute;left:0;right:0;bottom:24%;height:30%;background:linear-gradient(165deg,transparent 0 34%,#2c4561 34% 55%,transparent 55%),linear-gradient(20deg,transparent 0 47%,#efe6d1 47% 50%,transparent 50%);opacity:.9} .aimitsushu:after{content:"";position:absolute;left:0;right:0;bottom:0;height:31%;background:linear-gradient(180deg,#35445e 0 43%,#0d1826 43%);box-shadow:0 -90px 0 -42px rgba(240,232,215,.56)}
+
+@media(max-width:980px){header{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){
+  .wrap{width:min(100% - 22px,1180px);padding-top:24px}
+  .title-card,.draw-card{border-radius:26px;padding:24px}
+  h1{font-size:clamp(40px,14vw,64px);line-height:1.08}
+  h1 .title-line:last-child{white-space:normal}
+  .draw-card{grid-template-columns:1fr}
+  .draw-cover{width:100%;max-width:260px}
+  .grid{grid-template-columns:1fr}
+  .song{min-height:auto}
+  .platform-options{grid-template-columns:1fr}
+  .platform-option{min-height:56px}
+  .toolbar{position:sticky;top:0;z-index:10;padding:10px 0;backdrop-filter:blur(14px)}
+}
+</style>
+</head>
+<body>
+<div class="toast" id="toast">已复制抽歌结果</div>
+<main class="wrap">
+  <header>
+    <section class="title-card">
+      <p class="eyebrow">A quiet J-music shelf for Okra</p>
+      <h1><span class="title-line">小O的</span><span class="title-line">日音播放器</span></h1>
+      <p class="subtitle">鼠尾草绿、石灰白、炭黑。现在它不只是歌单，也是一个可以给朋友抽歌的小盒子：按氛围筛选，或者直接抽一首今晚的歌。</p>
+    </section>
+
+    <aside class="draw-card">
+      <div class="draw-cover cover akane" id="drawCover"><div class="mini">茜色の夕日</div></div>
+      <div class="draw-info">
+        <div class="draw-label">random pick</div>
+        <h2 class="draw-song" id="drawSong">茜色の夕日</h2>
+        <div class="draw-artist" id="drawArtist">フジファブリック · 茜色の夕日</div>
+        <p class="draw-note" id="drawNote">不是把情绪推到脸上，而是你走过一段路之后，才发现心里有一块地方暗下来了。</p>
+        <div class="actions">
+          <button class="primary" id="drawBtn">抽一首</button>
+          <button id="copyBtn">复制结果</button>
+          <button class="play-link" id="drawListen">去听这首</button>
+        </div>
+      </div>
+    </aside>
+  </header>
+
+  <section class="toolbar">
+    <input class="search" id="searchInput" placeholder="搜乐队 / 歌名 / 氛围，比如：夜、东京、后劲">
+    <button class="chip active" data-filter="all">全部</button>
+    <button class="chip" data-filter="city">城市</button>
+    <button class="chip" data-filter="night">夜色</button>
+    <button class="chip" data-filter="afterglow">后劲</button>
+    <button class="chip" data-filter="math">器乐 / 数摇</button>
+    <button class="chip" data-filter="anime">动画记忆</button>
+    <button class="chip" data-filter="groove">律动</button>
+  </section>
+
+  <section class="grid" id="grid"></section>
+</main>
+
+<aside class="drawer" id="drawer" aria-live="polite">
+  <button class="close" id="closeDrawer" aria-label="关闭">×</button>
+  <div class="d-meta" id="drawerMeta"></div>
+  <div class="d-title" id="drawerTitle"></div>
+  <div class="tags" id="drawerTags"></div>
+  <div class="d-note" id="drawerNote"></div>
+  <div class="play-links" id="drawerLinks"></div>
+</aside>
+
+<div class="platform-backdrop" id="platformBackdrop"></div>
+<aside class="platform-sheet" id="platformSheet" aria-live="polite">
+  <button class="close" id="closePlatform" aria-label="关闭">×</button>
+  <div class="platform-kicker">选择播放平台</div>
+  <div class="platform-title" id="platformTitle"></div>
+  <div class="platform-meta" id="platformMeta"></div>
+  <div class="tags" id="platformTags"></div>
+  <p class="platform-note" id="platformNote"></p>
+  <div class="platform-options" id="platformOptions"></div>
+</aside>
+
+<footer>
+  <span>v0.2 · random J-music draw box · made for 小O</span>
+  <span class="credit">歌单 by Okra& GPT 5.5&nbsp;&nbsp;&nbsp;&nbsp;文案 by GPT 5.5</span>
+</footer>
+
+<script>
+const tracks = [
+  {
+    "artist": "フジファブリック",
+    "song": "茜色の夕日",
+    "album": "茜色の夕日 - Single",
+    "tags": [
+      "afterglow",
+      "city",
+      "rock"
+    ],
+    "mood": [
+      "傍晚",
+      "回头看",
+      "后劲"
+    ],
+    "cover": "akane",
+    "note": "不是把情绪推到脸上，而是你走过一段路之后，才发现心里有一块地方暗下来了。"
+  },
+  {
+    "artist": "羊文学",
+    "song": "more than words",
+    "album": "more than words - EP",
+    "tags": [
+      "anime",
+      "city",
+      "clear"
+    ],
+    "mood": [
+      "东京",
+      "清透",
+      "人生BGM"
+    ],
+    "cover": "hitsujibungaku",
+    "note": "它最好的地方是没有用力告别。旋律一出来，东京傍晚、车站灯光和走远的人都会慢慢浮出来。"
+  },
+  {
+    "artist": "きのこ帝国",
+    "song": "金木犀の夜",
+    "album": "タイム・ラプス",
+    "tags": [
+      "night",
+      "afterglow",
+      "dream"
+    ],
+    "mood": [
+      "金木犀",
+      "夜",
+      "旧伤"
+    ],
+    "cover": "kinmokusei",
+    "note": "这首不要白天听。它是那种晚上突然闻到某种气味，然后想起一段已经不该再想的时间。"
+  },
+  {
+    "artist": "東京事変",
+    "song": "落日",
+    "album": "深夜枠",
+    "tags": [
+      "afterglow",
+      "city",
+      "jazz"
+    ],
+    "mood": [
+      "本命",
+      "落日",
+      "成熟"
+    ],
+    "cover": "rakujitsu",
+    "note": "不是治愈系。它更像成年人给自己留的一点体面：难过可以，但不要散架。"
+  },
+  {
+    "artist": "Fishmans",
+    "song": "LONG SEASON",
+    "album": "LONG SEASON",
+    "tags": [
+      "night",
+      "afterglow",
+      "dream"
+    ],
+    "mood": [
+      "长梦",
+      "漂浮",
+      "循环"
+    ],
+    "cover": "longseason",
+    "note": "点开前可以慢一点。它不会很快给你副歌，也不会急着结束，只是把时间拉长，拉到人开始发呆。"
+  },
+  {
+    "artist": "Lamp",
+    "song": "夜風",
+    "album": "木洩陽通りにて",
+    "tags": [
+      "night",
+      "city",
+      "retro"
+    ],
+    "mood": [
+      "昭和感",
+      "清纯",
+      "夜风"
+    ],
+    "cover": "lamp",
+    "note": "很轻，但不是廉价的轻。像晚上洗完澡开窗，风进来一点，人突然没那么想说话。"
+  },
+  {
+    "artist": "toe",
+    "song": "グッドバイ",
+    "album": "For Long Tomorrow",
+    "tags": [
+      "math",
+      "afterglow",
+      "instrumental"
+    ],
+    "mood": [
+      "器乐推进",
+      "告别",
+      "清醒"
+    ],
+    "cover": "toe",
+    "note": "没有歌词反而留了空间。鼓点和吉他往前走，听到后面，会有一点像告别后的空场。"
+  },
+  {
+    "artist": "tricot",
+    "song": "庭",
+    "album": "A N D",
+    "tags": [
+      "math",
+      "city",
+      "sharp"
+    ],
+    "mood": [
+      "数摇",
+      "锋利",
+      "跳跃"
+    ],
+    "cover": "tricot",
+    "note": "脑子乱的时候可以听。它不负责安慰你，只负责把乱线打成一个更漂亮的结。"
+  },
+  {
+    "artist": "くるり",
+    "song": "琥珀色の街、上海蟹の朝",
+    "album": "琥珀色の街、上海蟹の朝 - EP",
+    "tags": [
+      "city",
+      "night",
+      "retro"
+    ],
+    "mood": [
+      "街道",
+      "食物",
+      "晨光"
+    ],
+    "cover": "kururi",
+    "note": "日常、街道、食物和一点点离题的温柔混在一起。"
+  },
+  {
+    "artist": "サカナクション",
+    "song": "目が明く藍色",
+    "album": "魚図鑑",
+    "tags": [
+      "night",
+      "afterglow",
+      "electro"
+    ],
+    "mood": [
+      "蓝色",
+      "清醒",
+      "层次"
+    ],
+    "cover": "sakana",
+    "note": "像从深蓝色里醒来。冷、漂亮、有空间感。"
+  },
+  {
+    "artist": "ヨルシカ",
+    "song": "老人と海",
+    "album": "老人と海 - Single",
+    "tags": [
+      "afterglow",
+      "city",
+      "literary"
+    ],
+    "mood": [
+      "文学感",
+      "海",
+      "明亮"
+    ],
+    "cover": "yorushika",
+    "note": "把文学感做得很轻，像一个故事的边缘，不必全讲完。"
+  },
+  {
+    "artist": "Homecomings",
+    "song": "Songbirds",
+    "album": "WHALE LIVING",
+    "tags": [
+      "anime",
+      "afterglow",
+      "clear"
+    ],
+    "mood": [
+      "利兹与青鸟",
+      "青春",
+      "温柔"
+    ],
+    "cover": "songbirds",
+    "note": "像一只鸟飞远以后，空气还留着一点振动。"
+  },
+  {
+    "artist": "betcover!!",
+    "song": "回転・天使",
+    "album": "時間",
+    "tags": [
+      "night",
+      "city",
+      "weird"
+    ],
+    "mood": [
+      "怪美",
+      "夜",
+      "失控边缘"
+    ],
+    "cover": "betcover",
+    "note": "这首适合放在歌单中间，让气氛稍微歪一下。它不是好好走路的歌，更像突然拐进一条怪街。"
+  },
+  {
+    "artist": "青葉市子",
+    "song": "いきのこり●ぼくら",
+    "album": "0",
+    "tags": [
+      "night",
+      "afterglow",
+      "dream"
+    ],
+    "mood": [
+      "透明",
+      "低声",
+      "梦"
+    ],
+    "cover": "ichiko",
+    "note": "它很淡，所以不能硬听。要在房间安静下来以后放，声音小一点，那层轻轻的重量会更明显。"
+  },
+  {
+    "artist": "宇宙コンビニ",
+    "song": "8films",
+    "album": "染まる音を確認したら",
+    "tags": [
+      "math",
+      "city",
+      "clear"
+    ],
+    "mood": [
+      "清亮",
+      "数摇",
+      "青春"
+    ],
+    "cover": "uchu",
+    "note": "轻巧、复杂、干净。像一个精密的小机械突然开始运转。"
+  },
+  {
+    "artist": "Mass of the Fermenting Dregs",
+    "song": "青い、濃い、橙色の日",
+    "album": "ワールドイズユアーズ - EP",
+    "tags": [
+      "afterglow",
+      "city",
+      "rock"
+    ],
+    "mood": [
+      "密度",
+      "青春",
+      "橙色"
+    ],
+    "cover": "mass",
+    "note": "不是轻飘飘的青春，是有重量、有汗、有一点疼的青春。"
+  },
+  {
+    "artist": "ずっと真夜中でいいのに。",
+    "song": "ろんりねす",
+    "album": "ぐされ",
+    "tags": [
+      "night",
+      "electro",
+      "sharp"
+    ],
+    "mood": [
+      "孤独",
+      "跳跃",
+      "夜"
+    ],
+    "cover": "zutomayo",
+    "note": "它把孤独写得不太沉，像夜里突然多走了一段路，身体比心情先轻了一点。"
+  },
+  {
+    "artist": "椎名林檎",
+    "song": "丸ノ内サディスティック",
+    "album": "無罪モラトリアム",
+    "tags": [
+      "city",
+      "jazz",
+      "sharp"
+    ],
+    "mood": [
+      "都市",
+      "锋利",
+      "性感"
+    ],
+    "cover": "ringo",
+    "note": "东京事变前的那种危险感，像霓虹、香烟、制服和一把很亮的刀。"
+  },
+  {
+    "artist": "Cö shu Nie",
+    "song": "give it back",
+    "album": "give it back - Single",
+    "tags": [
+      "anime",
+      "afterglow",
+      "clear"
+    ],
+    "mood": [
+      "咒术回战",
+      "脆弱",
+      "收束"
+    ],
+    "cover": "coshunie",
+    "note": "高处很亮，低处很轻，像把伤口包起来但不假装它不存在。"
+  },
+  {
+    "artist": "Galileo Galilei",
+    "song": "青い栞",
+    "album": "青い栞 - Single",
+    "tags": [
+      "anime",
+      "clear",
+      "afterglow"
+    ],
+    "mood": [
+      "未闻花名",
+      "夏天",
+      "青春"
+    ],
+    "cover": "aoshiori",
+    "note": "一听就是夏天。不是热烈的夏天，是回忆里有点发白的夏天。"
+  },
+  {
+    "artist": "RADWIMPS",
+    "song": "前前前世",
+    "album": "人間開花",
+    "tags": [
+      "anime",
+      "rock",
+      "city"
+    ],
+    "mood": [
+      "日音启蒙",
+      "速度",
+      "命运"
+    ],
+    "cover": "rad",
+    "note": "很大声，也很亮。放在这里像一个入口，适合从熟悉的旋律走进更热闹的日音。"
+  },
+  {
+    "artist": "Vaundy",
+    "song": "踊り子",
+    "album": "replica",
+    "tags": [
+      "night",
+      "city",
+      "groove"
+    ],
+    "mood": [
+      "霓虹",
+      "舞步",
+      "复古感"
+    ],
+    "cover": "vaundy",
+    "note": "像暗处亮起一小片舞台灯，复古、轻巧，又有一点让人移不开眼的暧昧。"
+  },
+  {
+    "artist": "女王蜂",
+    "song": "火炎",
+    "album": "十",
+    "tags": [
+      "anime",
+      "sharp",
+      "rock"
+    ],
+    "mood": [
+      "张力",
+      "危险",
+      "火"
+    ],
+    "cover": "ziyoou",
+    "note": "不是漂亮，是锋利、艳、带攻击性。适合歌单里突然亮出一簇火。"
+  },
+  {
+    "artist": "相対性理論",
+    "song": "LOVEずっきゅん",
+    "album": "シフォン主義 - EP",
+    "tags": [
+      "city",
+      "weird",
+      "clear"
+    ],
+    "mood": [
+      "轻怪",
+      "少女",
+      "冷幽默"
+    ],
+    "cover": "soutaisei",
+    "note": "像很轻的玩笑，但里面有一种冷静的怪。"
+  },
+  {
+    "artist": "スピッツ",
+    "song": "チェリー",
+    "album": "インディゴ地平線",
+    "tags": [
+      "retro",
+      "clear",
+      "afterglow"
+    ],
+    "mood": [
+      "国民感",
+      "清新",
+      "旧夏天"
+    ],
+    "cover": "spitz",
+    "note": "简单、耐听、像很久以前的阳光。"
+  },
+  {
+    "artist": "坂本慎太郎",
+    "song": "幽霊の気分で",
+    "album": "幻とのつきあい方",
+    "tags": [
+      "night",
+      "weird",
+      "city"
+    ],
+    "mood": [
+      "幽灵",
+      "松弛",
+      "迷幻"
+    ],
+    "cover": "sakamoto",
+    "note": "不是大起大落，是一种懒散又清醒的游荡感。"
+  },
+  {
+    "artist": "cero",
+    "song": "Summer Soul",
+    "album": "Obscure Ride",
+    "tags": [
+      "city",
+      "night",
+      "groove"
+    ],
+    "mood": [
+      "夏夜",
+      "城市",
+      "律动"
+    ],
+    "cover": "cero",
+    "note": "很适合从室内走到街上，空气还热，但人已经松开了。"
+  },
+  {
+    "artist": "離婚伝説",
+    "song": "愛が一層メロウ",
+    "album": "愛が一層メロウ - Single",
+    "tags": [
+      "city",
+      "retro",
+      "groove"
+    ],
+    "mood": [
+      "复古",
+      "都会",
+      "柔软"
+    ],
+    "cover": "rikon",
+    "note": "名字很怪，歌很顺。像城市夜里的柔光滤镜。"
+  },
+  {
+    "artist": "Lucky Kilimanjaro",
+    "song": "Burning Friday Night",
+    "album": "Fullcolor - EP",
+    "tags": [
+      "city",
+      "groove",
+      "electro"
+    ],
+    "mood": [
+      "周五",
+      "跳舞",
+      "轻快"
+    ],
+    "cover": "lk",
+    "note": "适合下班以后把脑子从工作里拔出来。"
+  },
+  {
+    "artist": "LITE",
+    "song": "Ef",
+    "album": "Phantasia",
+    "tags": [
+      "math",
+      "instrumental",
+      "sharp"
+    ],
+    "mood": [
+      "器乐",
+      "几何",
+      "清醒"
+    ],
+    "cover": "lite",
+    "note": "更像一组漂亮的结构，不撒娇，不解释，只把线条搭好。"
+  },
+  {
+    "artist": "MONO",
+    "song": "Ashes in the Snow",
+    "album": "Hymn to the Immortal Wind",
+    "tags": [
+      "instrumental",
+      "afterglow",
+      "night"
+    ],
+    "mood": [
+      "后摇",
+      "雪",
+      "宏大"
+    ],
+    "cover": "mono",
+    "note": "适合想要一点大空间的时候听。它不会替人处理什么，只是让那些声音在远处慢慢展开。"
+  },
+  {
+    "artist": "te'",
+    "song": "美しき旋律も、音を語る言を持たずしては心にも『留』めがたし。",
+    "album": "それは、鳴り響く世界から現実的な音を「歌」おうとする思考。",
+    "tags": [
+      "math",
+      "instrumental",
+      "sharp"
+    ],
+    "mood": [
+      "长歌名",
+      "器乐",
+      "锐利"
+    ],
+    "cover": "te",
+    "note": "歌名长到像论文题目，声音却比文字直接。适合试味 te' 的入口。"
+  },
+  {
+    "artist": "NUMBER GIRL",
+    "song": "透明少女",
+    "album": "SCHOOL GIRL DISTORTIONAL ADDICT",
+    "tags": [
+      "rock",
+      "sharp",
+      "city"
+    ],
+    "mood": [
+      "透明",
+      "噪音",
+      "青春"
+    ],
+    "cover": "numbergirl",
+    "note": "青春不是干净的，是带噪点、带失真、带突然冲出去的速度。"
+  },
+  {
+    "artist": "andymori",
+    "song": "1984",
+    "album": "ファンファーレと熱狂",
+    "tags": [
+      "rock",
+      "city",
+      "afterglow"
+    ],
+    "mood": [
+      "奔跑",
+      "短促",
+      "年轻"
+    ],
+    "cover": "andymori",
+    "note": "很短，很急，像还没想清楚就已经跑起来。"
+  },
+  {
+    "artist": "椿屋四重奏",
+    "song": "紫陽花",
+    "album": "紫陽花/螺旋階段 - EP",
+    "tags": [
+      "night",
+      "retro",
+      "rock"
+    ],
+    "mood": [
+      "紫阳花",
+      "歌謡",
+      "湿度"
+    ],
+    "cover": "tsubakiya",
+    "note": "有一点昭和歌谣的湿润感，像雨天路灯下的花。"
+  },
+  {
+    "artist": "フレデリック",
+    "song": "オドループ",
+    "album": "oddloop",
+    "tags": [
+      "electro",
+      "city",
+      "groove"
+    ],
+    "mood": [
+      "循环",
+      "跳舞",
+      "轻怪"
+    ],
+    "cover": "frederic",
+    "note": "洗脑但不笨，像在城市里绕圈走，越绕越上头。"
+  },
+  {
+    "artist": "米津玄師",
+    "song": "Lemon",
+    "album": "STRAY SHEEP",
+    "tags": [
+      "afterglow",
+      "city",
+      "clear"
+    ],
+    "mood": [
+      "流行",
+      "悲伤",
+      "记忆"
+    ],
+    "cover": "lemon",
+    "note": "它太有名，但那种直白还是会留下来。像把悲伤收进一个每个人都认得的抽屉。"
+  },
+  {
+    "artist": "蓮沼執太フィル",
+    "song": "Eco Echo",
+    "album": "Eco Echo - Single",
+    "tags": [
+      "instrumental",
+      "city",
+      "clear"
+    ],
+    "mood": [
+      "编织",
+      "轻盈",
+      "实验"
+    ],
+    "cover": "hasunuma",
+    "note": "像很多小声音一起搭房子，轻，但不空。"
+  },
+  {
+    "artist": "くるり",
+    "song": "ばらの花",
+    "album": "TEAM ROCK",
+    "tags": [
+      "afterglow",
+      "city",
+      "rock"
+    ],
+    "mood": [
+      "玫瑰",
+      "雨后",
+      "低温浪漫"
+    ],
+    "cover": "bara",
+    "note": "像雨停以后还没完全放晴，心里有一点湿润，但路已经可以继续走了。"
+  },
+  {
+    "artist": "KIRINJI",
+    "song": "エイリアンズ",
+    "album": "3",
+    "tags": [
+      "night",
+      "city",
+      "groove"
+    ],
+    "mood": [
+      "夜街",
+      "宇宙感",
+      "都市余温"
+    ],
+    "cover": "aliens",
+    "note": "城市夜里很温柔的外星频率，像霓虹和窗帘之间漏出来的一点孤独。"
+  },
+  {
+    "artist": "きのこ帝国",
+    "song": "クロノスタシス",
+    "album": "フェイクワールドワンダーランド",
+    "tags": [
+      "night",
+      "afterglow",
+      "dream"
+    ],
+    "mood": [
+      "时间暂停",
+      "夜路",
+      "梦游"
+    ],
+    "cover": "chronostasis",
+    "note": "不是失眠那种夜，是走着走着忽然觉得世界被按下暂停键的夜。"
+  },
+  {
+    "artist": "フィッシュマンズ",
+    "song": "ナイトクルージング",
+    "album": "空中キャンプ",
+    "tags": [
+      "night",
+      "dream",
+      "groove"
+    ],
+    "mood": [
+      "巡航",
+      "漂浮",
+      "深夜"
+    ],
+    "cover": "nightcruising",
+    "note": "低速飞行的歌，适合把房间、车窗和城市灯光都听成一片海。"
+  },
+  {
+    "artist": "GRAPEVINE",
+    "song": "光について",
+    "album": "Lifetime",
+    "tags": [
+      "afterglow",
+      "rock",
+      "clear"
+    ],
+    "mood": [
+      "光",
+      "九十年代",
+      "清醒"
+    ],
+    "cover": "grapevine",
+    "note": "有一种不急着解释的明亮，像站在旧照片里看见新的光。"
+  },
+  {
+    "artist": "toe",
+    "song": "孤独の発明",
+    "album": "the book about my idle plot on a vague anxiety",
+    "tags": [
+      "math",
+      "instrumental",
+      "afterglow"
+    ],
+    "mood": [
+      "器乐",
+      "独处",
+      "结构"
+    ],
+    "cover": "kodoku",
+    "note": "把孤独拆成节拍和线条，不安还在，但被摆成了可以观看的形状。"
+  },
+  {
+    "artist": "tricot",
+    "song": "POOL",
+    "album": "T H E",
+    "tags": [
+      "math",
+      "sharp",
+      "rock"
+    ],
+    "mood": [
+      "数摇",
+      "跳跃",
+      "锐利"
+    ],
+    "cover": "pool",
+    "note": "像一脚踩进不规则的水面，越乱越有弹性，越绕越清醒。"
+  },
+  {
+    "artist": "Suchmos",
+    "song": "STAY TUNE",
+    "album": "THE KIDS",
+    "tags": [
+      "city",
+      "groove",
+      "night"
+    ],
+    "mood": [
+      "街头",
+      "律动",
+      "开车"
+    ],
+    "cover": "staytune",
+    "note": "适合把步伐调松一点，像夜里的马路自己带着贝斯线。"
+  },
+  {
+    "artist": "never young beach",
+    "song": "明るい未来",
+    "album": "fam fam",
+    "tags": [
+      "city",
+      "retro",
+      "clear"
+    ],
+    "mood": [
+      "海边",
+      "轻松",
+      "晴天"
+    ],
+    "cover": "akarui",
+    "note": "不把未来说得很大，只是让它变得像一件晒过太阳的衬衫。"
+  },
+  {
+    "artist": "Yogee New Waves",
+    "song": "Climax Night",
+    "album": "PARAISO",
+    "tags": [
+      "night",
+      "groove",
+      "city"
+    ],
+    "mood": [
+      "海风",
+      "派对后",
+      "夜色"
+    ],
+    "cover": "climax",
+    "note": "像夏夜最后一杯冰饮，甜味过去以后，剩下很轻的风。"
+  },
+  {
+    "artist": "tofubeats",
+    "song": "水星 feat.オノマトペ大臣",
+    "album": "lost decade",
+    "tags": [
+      "city",
+      "electro",
+      "groove"
+    ],
+    "mood": [
+      "水星",
+      "电子",
+      "轻飘"
+    ],
+    "cover": "suisei",
+    "note": "把都市感做得很轻，像彩色纸片在空调风里慢慢转。"
+  },
+  {
+    "artist": "TENDRE",
+    "song": "RIDE",
+    "album": "NOT IN ALMIGHTY",
+    "tags": [
+      "city",
+      "groove",
+      "clear"
+    ],
+    "mood": [
+      "顺滑",
+      "键盘",
+      "夜行"
+    ],
+    "cover": "tendre",
+    "note": "松弛但不散，像把夜路开成一条很柔软的曲线。"
+  },
+  {
+    "artist": "SIRUP",
+    "song": "LOOP",
+    "album": "FEEL GOOD",
+    "tags": [
+      "groove",
+      "city",
+      "clear"
+    ],
+    "mood": [
+      "循环",
+      "轻快",
+      "周末"
+    ],
+    "cover": "sirup",
+    "note": "节奏和声线都收得很舒服。适合不想太兴奋、也不想沉下去的时候。"
+  },
+  {
+    "artist": "ASIAN KUNG-FU GENERATION",
+    "song": "新世紀のラブソング",
+    "album": "マジックディスク",
+    "tags": [
+      "rock",
+      "city",
+      "afterglow"
+    ],
+    "mood": [
+      "世纪感",
+      "吉他",
+      "热血"
+    ],
+    "cover": "ajikan",
+    "note": "像把很大的时代感塞进吉他里，热，但不是盲目的热。"
+  },
+  {
+    "artist": "サカナクション",
+    "song": "忘れられないの",
+    "album": "834.194",
+    "tags": [
+      "city",
+      "groove",
+      "retro"
+    ],
+    "mood": [
+      "昭和感",
+      "舞步",
+      "记忆"
+    ],
+    "cover": "wasurerarenaino",
+    "note": "复古到像从电视机里走出来，但律动又非常现在。"
+  },
+  {
+    "artist": "羊文学",
+    "song": "1999",
+    "album": "1999 - Single",
+    "tags": [
+      "afterglow",
+      "city",
+      "rock"
+    ],
+    "mood": [
+      "青春",
+      "冷光",
+      "后劲"
+    ],
+    "cover": "powers1999",
+    "note": "把青春唱得不太用力，却会在某个傍晚突然回来敲门。"
+  },
+  {
+    "artist": "カネコアヤノ",
+    "song": "光の方へ",
+    "album": "燦々",
+    "tags": [
+      "afterglow",
+      "clear",
+      "rock"
+    ],
+    "mood": [
+      "光",
+      "生活",
+      "朴素"
+    ],
+    "cover": "kaneko",
+    "note": "很生活，很近，像把小小的勇气放进普通的一天里。"
+  },
+  {
+    "artist": "Homecomings",
+    "song": "Blue Hour",
+    "album": "WHALE LIVING",
+    "tags": [
+      "afterglow",
+      "clear",
+      "city"
+    ],
+    "mood": [
+      "蓝调时刻",
+      "清透",
+      "回家路"
+    ],
+    "cover": "bluehour",
+    "note": "天还没全暗下来的那一小段时间，最适合把心事放慢。"
+  },
+  {
+    "artist": "Nujabes",
+    "song": "Reflection Eternal",
+    "album": "Modal Soul",
+    "tags": [
+      "night",
+      "groove",
+      "instrumental"
+    ],
+    "mood": [
+      "爵士嘻哈",
+      "月光",
+      "沉静"
+    ],
+    "cover": "modal",
+    "note": "像夜里水面上的一层光。节拍很轻，适合把音量放低一点，让房间慢慢暗下来。"
+  },
+  {
+    "artist": "Nujabes",
+    "song": "Sea of Cloud",
+    "album": "Modal Soul",
+    "tags": [
+      "night",
+      "groove",
+      "instrumental"
+    ],
+    "mood": [
+      "云海",
+      "漂浮",
+      "器乐"
+    ],
+    "cover": "modal",
+    "note": "比起向前走，更像视线慢慢抬起来。云和风都在，脚步也跟着放轻。"
+  },
+  {
+    "artist": "宇多田ヒカル",
+    "song": "BLUE",
+    "album": "ULTRA BLUE",
+    "tags": [
+      "night",
+      "city",
+      "clear"
+    ],
+    "mood": [
+      "深蓝",
+      "电子",
+      "孤独"
+    ],
+    "cover": "ultrablue",
+    "note": "蓝得很深，但不是冷冰冰的蓝，更像一个人待着时的体温。"
+  },
+  {
+    "artist": "宇多田ヒカル",
+    "song": "夕凪",
+    "album": "初恋",
+    "tags": [
+      "afterglow",
+      "clear",
+      "night"
+    ],
+    "mood": [
+      "夕凪",
+      "静止",
+      "温柔"
+    ],
+    "cover": "yuunagi",
+    "note": "风停下来以后，情绪才真正浮上来，很轻，也很深。"
+  },
+  {
+    "artist": "水中スピカ",
+    "song": "Oshiroi",
+    "album": "mEq",
+    "tags": [
+      "math",
+      "instrumental",
+      "clear"
+    ],
+    "mood": [
+      "水色",
+      "器乐",
+      "几何"
+    ],
+    "cover": "oshiroi",
+    "note": "像透明的线条在水里互相折射，清亮，但有一点锋利。"
+  },
+  {
+    "artist": "水中スピカ",
+    "song": "Alpenglow",
+    "album": "Osm",
+    "tags": [
+      "math",
+      "instrumental",
+      "afterglow"
+    ],
+    "mood": [
+      "山光",
+      "后摇",
+      "橙色"
+    ],
+    "cover": "alpenglow",
+    "note": "像山脊被晚光点亮，器乐慢慢铺开，颜色一点点变热。"
+  },
+  {
+    "artist": "藤井風",
+    "song": "帰ろう",
+    "album": "HELP EVER HURT NEVER",
+    "tags": [
+      "afterglow",
+      "clear",
+      "city"
+    ],
+    "mood": [
+      "归去",
+      "温柔",
+      "释然"
+    ],
+    "cover": "kaerou",
+    "note": "像把很重的东西轻轻放下。不是逃走，而是往回看的时候没有那么急。"
+  },
+  {
+    "artist": "TOMOO",
+    "song": "ソナーレ",
+    "album": "ソナーレ - Single",
+    "tags": [
+      "anime",
+      "clear",
+      "city"
+    ],
+    "mood": [
+      "片头曲",
+      "清亮",
+      "步伐"
+    ],
+    "cover": "sonare",
+    "note": "旋律像把门推开，明亮但不刺眼，适合从日常里走出去。"
+  },
+  {
+    "artist": "Bialystocks",
+    "song": "言伝",
+    "album": "言伝 - Single",
+    "tags": [
+      "anime",
+      "afterglow",
+      "clear"
+    ],
+    "mood": [
+      "片尾曲",
+      "留言",
+      "余韵"
+    ],
+    "cover": "kotodute",
+    "note": "像没能当面说出口的话，绕了一圈之后，还是落到心里某个安静的位置。"
+  },
+  {
+    "artist": "ASIAN KUNG-FU GENERATION",
+    "song": "Re:Re:",
+    "album": "ソルファ",
+    "tags": [
+      "anime",
+      "rock",
+      "afterglow"
+    ],
+    "mood": [
+      "回环",
+      "吉他",
+      "青春"
+    ],
+    "cover": "rere",
+    "note": "像把旧日子的门再次打开，吉他一响，时间就开始倒带。"
+  },
+  {
+    "artist": "Nujabes",
+    "song": "Flowers",
+    "album": "Modal Soul",
+    "tags": [
+      "night",
+      "groove",
+      "instrumental"
+    ],
+    "mood": [
+      "花",
+      "爵士嘻哈",
+      "轻盈"
+    ],
+    "cover": "modal",
+    "note": "很轻的鼓点和旋律，像花瓣落在水面上，一圈一圈散开。"
+  },
+  {
+    "artist": "mouse on the keys",
+    "song": "toccatina",
+    "album": "Sezession - EP",
+    "tags": [
+      "math",
+      "instrumental",
+      "sharp"
+    ],
+    "mood": [
+      "钢琴",
+      "急速",
+      "精密"
+    ],
+    "cover": "toccatina",
+    "note": "钢琴像细密齿轮一样转起来，冷静、快、带一点危险的漂亮。"
+  },
+  {
+    "artist": "Nujabes / Shing02",
+    "song": "Luv (sic) pt4",
+    "album": "Luv(sic) Hexalogy",
+    "tags": [
+      "night",
+      "groove",
+      "afterglow"
+    ],
+    "mood": [
+      "诗意",
+      "爵士嘻哈",
+      "长夜"
+    ],
+    "cover": "luvsic4",
+    "note": "像夜里写给自己的长信，节拍不慌，情绪慢慢展开。"
+  },
+  {
+    "artist": "Yakkle & Shing02",
+    "song": "愛密集",
+    "album": "愛密集 - EP",
+    "tags": [
+      "clear",
+      "afterglow",
+      "groove"
+    ],
+    "mood": [
+      "爱",
+      "密集",
+      "远景"
+    ],
+    "cover": "aimitsushu",
+    "note": "像很多句温柔的话叠在一起，密度很高，但仍然有光透出来。"
+  }
+];
+
+const appleMusicLinks = {
+  "フジファブリック||茜色の夕日": "https://music.apple.com/cn/song/%E8%8C%9C%E8%89%B2%E3%81%AE%E5%A4%95%E6%97%A5/1445122494",
+  "羊文学||more than words": "https://music.apple.com/cn/song/more%20than%20words/1702627144",
+  "きのこ帝国||金木犀の夜": "https://music.apple.com/cn/song/%E9%87%91%E6%9C%A8%E7%8A%80%E3%81%AE%E5%A4%9C/1429356262",
+  "東京事変||落日": "https://music.apple.com/cn/song/rakujitsu-dusk/1440654727",
+  "Fishmans||LONG SEASON": "https://music.apple.com/cn/song/LONG%20SEASON/1416925644",
+  "Lamp||夜風": "https://music.apple.com/cn/song/%E5%A4%9C%E9%A2%A8/121946785",
+  "toe||グッドバイ": "https://music.apple.com/cn/song/%E3%82%B0%E3%83%83%E3%83%89%E3%83%90%E3%82%A4/205862599",
+  "tricot||庭": "https://music.apple.com/cn/song/%E5%BA%AD/969875221",
+  "くるり||琥珀色の街、上海蟹の朝": "https://music.apple.com/cn/song/%E7%90%A5%E7%8F%80%E8%89%B2%E3%81%AE%E8%A1%97%E3%80%81%E4%B8%8A%E6%B5%B7%E8%9F%B9%E3%81%AE%E6%9C%9D/1127329098",
+  "サカナクション||目が明く藍色": "https://music.apple.com/cn/song/%E7%9B%AE%E3%81%8C%E6%98%8E%E3%81%8F%E8%97%8D%E8%89%B2/1358578816",
+  "ヨルシカ||老人と海": "https://music.apple.com/cn/song/%E8%80%81%E4%BA%BA%E3%81%A8%E6%B5%B7/1674467772",
+  "Homecomings||Songbirds": "https://music.apple.com/cn/song/Songbirds/1436832614",
+  "betcover!!||回転・天使": "https://music.apple.com/cn/song/%E5%9B%9E%E8%BB%A2%E3%83%BB%E5%A4%A9%E4%BD%BF/1579826447",
+  "青葉市子||いきのこり●ぼくら": "https://music.apple.com/cn/song/%E3%81%84%E3%81%8D%E3%81%AE%E3%81%93%E3%82%8A%E2%97%8F%E3%81%BC%E3%81%8F%E3%82%89/720743504",
+  "宇宙コンビニ||8films": "https://music.apple.com/cn/song/8films/724331310",
+  "Mass of the Fermenting Dregs||青い、濃い、橙色の日": "https://music.apple.com/cn/song/%E9%9D%92%E3%81%84%E3%80%81%E6%BF%83%E3%81%84%E3%80%81%E6%A9%99%E8%89%B2%E3%81%AE%E6%97%A5/1575739740",
+  "ずっと真夜中でいいのに。||ろんりねす": "https://music.apple.com/cn/song/%E3%82%8D%E3%82%93%E3%82%8A%E3%81%AD%E3%81%99/1548835934",
+  "椎名林檎||丸ノ内サディスティック": "https://music.apple.com/cn/song/%E4%B8%B8%E3%83%8E%E5%86%85%E3%82%B5%E3%83%87%E3%82%A3%E3%82%B9%E3%83%86%E3%82%A3%E3%83%83%E3%82%AF/1384341683",
+  "Cö shu Nie||give it back": "https://music.apple.com/cn/song/give%20it%20back/1545881892",
+  "Galileo Galilei||青い栞": "https://music.apple.com/cn/song/%E9%9D%92%E3%81%84%E6%A0%9E/1537241579",
+  "RADWIMPS||前前前世": "https://music.apple.com/cn/song/%E5%89%8D%E5%89%8D%E5%89%8D%E4%B8%96/1518844828",
+  "Vaundy||踊り子": "https://music.apple.com/cn/song/%E8%B8%8A%E3%82%8A%E5%AD%90/1714599984",
+  "女王蜂||火炎": "https://music.apple.com/cn/song/%E7%81%AB%E7%82%8E/1538103615",
+  "相対性理論||LOVEずっきゅん": "https://music.apple.com/cn/song/LOVE%E3%81%9A%E3%81%A3%E3%81%8D%E3%82%85%E3%82%93/480158620",
+  "スピッツ||チェリー": "https://music.apple.com/cn/song/%E3%83%81%E3%82%A7%E3%83%AA%E3%83%BC/1440747285",
+  "坂本慎太郎||幽霊の気分で": "https://music.apple.com/cn/song/%E5%B9%BD%E9%9C%8A%E3%81%AE%E6%B0%97%E5%88%86%E3%81%A7/483508559",
+  "cero||Summer Soul": "https://music.apple.com/cn/song/Summer%20Soul/994807584",
+  "離婚伝説||愛が一層メロウ": "https://music.apple.com/cn/song/%E6%84%9B%E3%81%8C%E4%B8%80%E5%B1%A4%E3%83%A1%E3%83%AD%E3%82%A6/1735894904",
+  "Lucky Kilimanjaro||Burning Friday Night": "https://music.apple.com/cn/song/Burning%20Friday%20Night/1016378830",
+  "LITE||Ef": "https://music.apple.com/cn/song/Ef/279609244",
+  "MONO||Ashes in the Snow": "https://music.apple.com/cn/song/Ashes%20In%20the%20Snow/309459667",
+  "te'||美しき旋律も、音を語る言を持たずしては心にも『留』めがたし。": "https://music.apple.com/cn/song/%E7%BE%8E%E3%81%97%E3%81%8D%E6%97%8B%E5%BE%8B%E3%82%82%E3%80%81%E9%9F%B3%E3%82%92%E8%AA%9E%E3%82%8B%E8%A8%80%E3%82%92%E6%8C%81%E3%81%9F%E3%81%9A%E3%81%97%E3%81%A6%E3%81%AF%E5%BF%83%E3%81%AB%E3%82%82%E3%80%8E%E7%95%99%E3%80%8F%E3%82%81%E3%81%8C%E3%81%9F%E3%81%97%E3%80%82/1627838397",
+  "NUMBER GIRL||透明少女": "https://music.apple.com/cn/song/%E9%80%8F%E6%98%8E%E5%B0%91%E5%A5%B3/720415455",
+  "andymori||1984": "https://music.apple.com/cn/song/1984/347792601",
+  "椿屋四重奏||紫陽花": "https://music.apple.com/cn/song/%E7%B4%AB%E9%99%BD%E8%8A%B1/1440021442",
+  "フレデリック||オドループ": "https://music.apple.com/cn/song/%E3%82%AA%E3%83%89%E3%83%AB%E3%83%BC%E3%83%97/1838917575",
+  "米津玄師||Lemon": "https://music.apple.com/cn/song/Lemon/1538265741",
+  "蓮沼執太フィル||Eco Echo": "https://music.apple.com/cn/song/Eco%20Echo/1668951024",
+  "くるり||ばらの花": "https://music.apple.com/cn/song/%E3%81%B0%E3%82%89%E3%81%AE%E8%8A%B1/1860778017",
+  "KIRINJI||エイリアンズ": "https://music.apple.com/cn/song/%E3%82%A8%E3%82%A4%E3%83%AA%E3%82%A2%E3%83%B3%E3%82%BA/258412002",
+  "きのこ帝国||クロノスタシス": "https://music.apple.com/cn/song/%E3%82%AF%E3%83%AD%E3%83%8E%E3%82%B9%E3%82%BF%E3%82%B7%E3%82%B9/926192009",
+  "フィッシュマンズ||ナイトクルージング": "https://music.apple.com/cn/song/%E3%83%8A%E3%82%A4%E3%83%88%E3%82%AF%E3%83%AB%E3%83%BC%E3%82%B8%E3%83%B3%E3%82%B0/1416941921",
+  "GRAPEVINE||光について": "https://music.apple.com/cn/song/%E5%85%89%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6/260370355",
+  "toe||孤独の発明": "https://music.apple.com/cn/song/%E5%AD%A4%E7%8B%AC%E3%81%AE%E7%99%BA%E6%98%8E/532411259",
+  "tricot||POOL": "https://music.apple.com/cn/song/POOL/714895321",
+  "Suchmos||STAY TUNE": "https://music.apple.com/cn/song/STAY%20TUNE/1188915173",
+  "never young beach||明るい未来": "https://music.apple.com/cn/song/%E6%98%8E%E3%82%8B%E3%81%84%E6%9C%AA%E6%9D%A5/1115134632",
+  "Yogee New Waves||Climax Night": "https://music.apple.com/cn/song/Climax%20Night/917233620",
+  "tofubeats||水星 feat.オノマトペ大臣": "https://music.apple.com/cn/song/%E6%B0%B4%E6%98%9F%20(feat.%20%E3%82%AA%E3%83%8E%E3%83%9E%E3%83%88%E3%83%9A%E5%A4%A7%E8%87%A3)/1605980114",
+  "TENDRE||RIDE": "https://music.apple.com/cn/song/RIDE/1437755793",
+  "SIRUP||LOOP": "https://music.apple.com/cn/song/LOOP/1459412566",
+  "ASIAN KUNG-FU GENERATION||新世紀のラブソング": "https://music.apple.com/cn/song/%E6%96%B0%E4%B8%96%E7%B4%80%E3%81%AE%E3%83%A9%E3%83%96%E3%82%BD%E3%83%B3%E3%82%B0/1536382817",
+  "サカナクション||忘れられないの": "https://music.apple.com/cn/song/%E5%BF%98%E3%82%8C%E3%82%89%E3%82%8C%E3%81%AA%E3%81%84%E3%81%AE/1465208768",
+  "羊文学||1999": "https://music.apple.com/cn/song/1999/1443706788",
+  "カネコアヤノ||光の方へ": "https://music.apple.com/cn/song/%E5%85%89%E3%81%AE%E6%96%B9%E3%81%B8/1476048316",
+  "Homecomings||Blue Hour": "https://music.apple.com/cn/song/Blue%20Hour/1436832535",
+  "Nujabes||Reflection Eternal": "https://music.apple.com/cn/song/Reflection%20Eternal/1078914487",
+  "Nujabes||Sea of Cloud": "https://music.apple.com/cn/song/sea%20of%20cloud/1078915008",
+  "宇多田ヒカル||BLUE": "https://music.apple.com/cn/song/BLUE%20(Remastered%202018)/1444982647",
+  "宇多田ヒカル||夕凪": "https://music.apple.com/cn/song/%E5%A4%95%E5%87%AA/1538152441",
+  "水中スピカ||Oshiroi": "https://music.apple.com/cn/song/Oshiroi/1709936571",
+  "水中スピカ||Alpenglow": "https://music.apple.com/cn/song/Alpenglow/1709938795",
+  "藤井風||帰ろう": "https://music.apple.com/cn/song/%E5%B8%B0%E3%82%8D%E3%81%86/1505498795",
+  "TOMOO||ソナーレ": "https://music.apple.com/cn/song/%E3%82%BD%E3%83%8A%E3%83%BC%E3%83%AC/1862338474",
+  "Bialystocks||言伝": "https://music.apple.com/cn/song/%E8%A8%80%E4%BC%9D/1860510461",
+  "ASIAN KUNG-FU GENERATION||Re:Re:": "https://music.apple.com/cn/song/Re%3ARe%3A/1536364102",
+  "Nujabes||Flowers": "https://music.apple.com/cn/song/flowers/1078915007",
+  "mouse on the keys||toccatina": "https://music.apple.com/cn/song/toccatina/268839534",
+  "Nujabes / Shing02||Luv (sic) pt4": "https://music.apple.com/cn/song/Luv%20(sic)%20pt4%20(feat.%20Shing02)/1361503707",
+  "Yakkle & Shing02||愛密集": "https://music.apple.com/cn/song/%E6%84%9B%E5%AF%86%E9%9B%86/1499713196"
+};
+
+
+const qqMusicLinks = {
+  "フジファブリック||茜色の夕日": "https://y.qq.com/n/ryqq/songDetail/000b91dM0ur7d2",
+  "きのこ帝国||金木犀の夜": "https://y.qq.com/n/ryqq/songDetail/000ngu7o1MIOcY",
+  "東京事変||落日": "https://y.qq.com/n/ryqq/songDetail/002Fjn2Y1W8M8b",
+  "Fishmans||LONG SEASON": "https://y.qq.com/n/ryqq/songDetail/000XgRFV0yDkgt",
+  "Lamp||夜風": "https://y.qq.com/n/ryqq/songDetail/002RxYqr0GsxyR",
+  "toe||グッドバイ": "https://y.qq.com/n/ryqq/songDetail/004eaW7r2YjUFV",
+  "tricot||庭": "https://y.qq.com/n/ryqq/songDetail/003iOdmw2H2jWX",
+  "くるり||琥珀色の街、上海蟹の朝": "https://y.qq.com/n/ryqq/songDetail/002PQ0uu3Vnh7e",
+  "ヨルシカ||老人と海": "https://y.qq.com/n/ryqq/songDetail/002Ywd1y2uHFkM",
+  "Homecomings||Songbirds": "https://y.qq.com/n/ryqq/songDetail/002gguRu37l48q",
+  "betcover!!||回転・天使": "https://y.qq.com/n/ryqq/songDetail/000H6MPp1yL4tP",
+  "青葉市子||いきのこり●ぼくら": "https://y.qq.com/n/ryqq/songDetail/001IwMya3mnQWv",
+  "宇宙コンビニ||8films": "https://y.qq.com/n/ryqq/songDetail/0037tbI82CO0jZ",
+  "Mass of the Fermenting Dregs||青い、濃い、橙色の日": "https://y.qq.com/n/ryqq/songDetail/004LiKPC1qXCuv",
+  "ずっと真夜中でいいのに。||ろんりねす": "https://y.qq.com/n/ryqq/songDetail/002ABROi3DMCbV",
+  "椎名林檎||丸ノ内サディスティック": "https://y.qq.com/n/ryqq/songDetail/000xLw2D0E5Xjm",
+  "Cö shu Nie||give it back": "https://y.qq.com/n/ryqq/songDetail/001LBp3J0KNJ7z",
+  "Galileo Galilei||青い栞": "https://y.qq.com/n/ryqq/songDetail/001trTHI1Bdy0r",
+  "RADWIMPS||前前前世": "https://y.qq.com/n/ryqq/songDetail/000norGN4KcMnt",
+  "Vaundy||踊り子": "https://y.qq.com/n/ryqq/songDetail/000E3n3T2ehQGB",
+  "女王蜂||火炎": "https://y.qq.com/n/ryqq/songDetail/0032YaIT4Icm2P",
+  "相対性理論||LOVEずっきゅん": "https://y.qq.com/n/ryqq/songDetail/003a1gOX1xfbrj",
+  "坂本慎太郎||幽霊の気分で": "https://y.qq.com/n/ryqq/songDetail/001ofRQW0KTGLz",
+  "cero||Summer Soul": "https://y.qq.com/n/ryqq/songDetail/0000D6hs2PBX1G",
+  "離婚伝説||愛が一層メロウ": "https://y.qq.com/n/ryqq/songDetail/001kdDTC4EGR44",
+  "Lucky Kilimanjaro||Burning Friday Night": "https://y.qq.com/n/ryqq/songDetail/004WDu881tTx5Z",
+  "LITE||Ef": "https://y.qq.com/n/ryqq/songDetail/004P7gGE02CbwE",
+  "MONO||Ashes in the Snow": "https://y.qq.com/n/ryqq/songDetail/000C8tYo48YJAW",
+  "NUMBER GIRL||透明少女": "https://y.qq.com/n/ryqq/songDetail/003CBKoc3ZtcGr",
+  "andymori||1984": "https://y.qq.com/n/ryqq/songDetail/004YIGZA38Umb6",
+  "椿屋四重奏||紫陽花": "https://y.qq.com/n/ryqq/songDetail/001Qu2Rj1AQcHO",
+  "フレデリック||オドループ": "https://y.qq.com/n/ryqq/songDetail/0011rYqe1zlIc9",
+  "米津玄師||Lemon": "https://y.qq.com/n/ryqq/songDetail/004ONb771EvyJr",
+  "蓮沼執太フィル||Eco Echo": "https://y.qq.com/n/ryqq/songDetail/002dv8Rk2FLe4c",
+  "くるり||ばらの花": "https://y.qq.com/n/ryqq/songDetail/002RNcp44aDYVU",
+  "KIRINJI||エイリアンズ": "https://y.qq.com/n/ryqq/songDetail/004ejKsq2D7Fgw",
+  "きのこ帝国||クロノスタシス": "https://y.qq.com/n/ryqq/songDetail/003eQGIt1fBHCZ",
+  "GRAPEVINE||光について": "https://y.qq.com/n/ryqq/songDetail/0011nHgs24zYNM",
+  "toe||孤独の発明": "https://y.qq.com/n/ryqq/songDetail/001rmo9t4esyFD",
+  "tricot||POOL": "https://y.qq.com/n/ryqq/songDetail/001NYsuh3aCtD8",
+  "Suchmos||STAY TUNE": "https://y.qq.com/n/ryqq/songDetail/004Cak4s3jQ5jt",
+  "never young beach||明るい未来": "https://y.qq.com/n/ryqq/songDetail/004DAywn3HNZIh",
+  "Yogee New Waves||Climax Night": "https://y.qq.com/n/ryqq/songDetail/002d00YK2FVFOa",
+  "tofubeats||水星 feat.オノマトペ大臣": "https://y.qq.com/n/ryqq/songDetail/003miDVM0aenPS",
+  "TENDRE||RIDE": "https://y.qq.com/n/ryqq/songDetail/000Bms2K4Vr29p",
+  "SIRUP||LOOP": "https://y.qq.com/n/ryqq/songDetail/0038c2M53H8cjl",
+  "ASIAN KUNG-FU GENERATION||新世紀のラブソング": "https://y.qq.com/n/ryqq/songDetail/004eZMz31sV5Hc",
+  "サカナクション||忘れられないの": "https://y.qq.com/n/ryqq/songDetail/000oc1zf413P1Y",
+  "羊文学||1999": "https://y.qq.com/n/ryqq/songDetail/001FZHQi3iRc6M",
+  "カネコアヤノ||光の方へ": "https://y.qq.com/n/ryqq/songDetail/0013wlF00Lk88D",
+  "Homecomings||Blue Hour": "https://y.qq.com/n/ryqq/songDetail/002scXWq23Z05T",
+  "Nujabes||Reflection Eternal": "https://y.qq.com/n/ryqq/songDetail/000dpx1K39ZkOj",
+  "Nujabes||Sea of Cloud": "https://y.qq.com/n/ryqq/songDetail/000QQaTJ1vQy0g",
+  "水中スピカ||Oshiroi": "https://y.qq.com/n/ryqq/songDetail/001yNHJY4Ra6Bs",
+  "水中スピカ||Alpenglow": "https://y.qq.com/n/ryqq/songDetail/003irPbZ40pkp8",
+  "TOMOO||ソナーレ": "https://y.qq.com/n/ryqq/songDetail/002MrNu726odiU",
+  "Bialystocks||言伝": "https://y.qq.com/n/ryqq/songDetail/003TC9R01A1P9n",
+  "ASIAN KUNG-FU GENERATION||Re:Re:": "https://y.qq.com/n/ryqq/songDetail/002mX8cM3tlv3B",
+  "Nujabes||Flowers": "https://y.qq.com/n/ryqq/songDetail/002HS7Tv3fcoXb",
+  "mouse on the keys||toccatina": "https://y.qq.com/n/ryqq/songDetail/000IgSed1f0dZH",
+  "Nujabes / Shing02||Luv (sic) pt4": "https://y.qq.com/n/ryqq/songDetail/0045K95X2ru5LN",
+  "Yakkle & Shing02||愛密集": "https://y.qq.com/n/ryqq/songDetail/004XnVVu41dElD"
+};
+
+const neteaseMusicLinks = {
+  "フジファブリック||茜色の夕日": "https://music.163.com/#/song?id=22689835",
+  "羊文学||more than words": "https://music.163.com/#/song?id=2073738346",
+  "きのこ帝国||金木犀の夜": "https://music.163.com/#/song?id=1305925712",
+  "東京事変||落日": "https://music.163.com/#/song?id=838112",
+  "Fishmans||LONG SEASON": "https://music.163.com/#/song?id=22733752",
+  "Lamp||夜風": "https://music.163.com/#/song?id=769617",
+  "toe||グッドバイ": "https://music.163.com/#/song?id=22664748",
+  "tricot||庭": "https://music.163.com/#/song?id=30854213",
+  "くるり||琥珀色の街、上海蟹の朝": "https://music.163.com/#/song?id=420154623",
+  "サカナクション||目が明く藍色": "https://music.163.com/#/song?id=548556525",
+  "ヨルシカ||老人と海": "https://music.163.com/#/song?id=1870469768",
+  "Homecomings||Songbirds": "https://music.163.com/#/song?id=1320098050",
+  "betcover!!||回転・天使": "https://music.163.com/#/song?id=1914684000",
+  "青葉市子||いきのこり●ぼくら": "https://music.163.com/#/song?id=27974805",
+  "宇宙コンビニ||8films": "https://music.163.com/#/song?id=28035315",
+  "Mass of the Fermenting Dregs||青い、濃い、橙色の日": "https://music.163.com/#/song?id=22769455",
+  "RADWIMPS||前前前世": "https://music.163.com/#/song?id=441116341",
+  "相対性理論||LOVEずっきゅん": "https://music.163.com/#/song?id=22651166",
+  "スピッツ||チェリー": "https://music.163.com/#/song?id=817851",
+  "坂本慎太郎||幽霊の気分で": "https://music.163.com/#/song?id=22649425",
+  "cero||Summer Soul": "https://music.163.com/#/song?id=32477700",
+  "Lucky Kilimanjaro||Burning Friday Night": "https://music.163.com/#/song?id=33419747",
+  "LITE||Ef": "https://music.163.com/#/song?id=22687364",
+  "MONO||Ashes in the Snow": "https://music.163.com/#/song?id=776668",
+  "NUMBER GIRL||透明少女": "https://music.163.com/#/song?id=22680347",
+  "くるり||ばらの花": "https://music.163.com/#/song?id=22652382",
+  "KIRINJI||エイリアンズ": "https://music.163.com/#/song?id=2603854367",
+  "きのこ帝国||クロノスタシス": "https://music.163.com/#/song?id=29593073",
+  "tricot||POOL": "https://music.163.com/#/song?id=27804799",
+  "tofubeats||水星 feat.オノマトペ大臣": "https://music.163.com/#/song?id=2647768258",
+  "TENDRE||RIDE": "https://music.163.com/#/song?id=2066656725",
+  "SIRUP||LOOP": "https://music.163.com/#/song?id=1294889933",
+  "ASIAN KUNG-FU GENERATION||新世紀のラブソング": "https://music.163.com/#/song?id=678574",
+  "サカナクション||忘れられないの": "https://music.163.com/#/song?id=1372730082",
+  "羊文学||1999": "https://music.163.com/#/song?id=1331582593",
+  "カネコアヤノ||光の方へ": "https://music.163.com/#/song?id=1383233455",
+  "Homecomings||Blue Hour": "https://music.163.com/#/song?id=1320097052",
+  "Nujabes||Reflection Eternal": "https://music.163.com/#/song?id=22821107",
+  "Nujabes||Sea of Cloud": "https://music.163.com/#/song?id=22821106",
+  "宇多田ヒカル||BLUE": "https://music.163.com/#/song?id=1332238886",
+  "宇多田ヒカル||夕凪": "https://music.163.com/#/song?id=1301349918",
+  "水中スピカ||Oshiroi": "https://music.163.com/#/song?id=1996291631",
+  "水中スピカ||Alpenglow": "https://music.163.com/#/song?id=1993532277",
+  "藤井風||帰ろう": "https://music.163.com/#/song?id=1449537108",
+  "TOMOO||ソナーレ": "https://music.163.com/#/song?id=3328819101",
+  "Bialystocks||言伝": "https://music.163.com/#/song?id=3327545535",
+  "ASIAN KUNG-FU GENERATION||Re:Re:": "https://music.163.com/#/song?id=679315",
+  "Nujabes||Flowers": "https://music.163.com/#/song?id=22821110",
+  "Yakkle & Shing02||愛密集": "https://music.163.com/#/song?id=26127308"
+};
+
+const grid = document.getElementById("grid");
+const searchInput = document.getElementById("searchInput");
+const chips = [...document.querySelectorAll(".chip")];
+const drawer = document.getElementById("drawer");
+const drawerMeta = document.getElementById("drawerMeta");
+const drawerTitle = document.getElementById("drawerTitle");
+const drawerTags = document.getElementById("drawerTags");
+const drawerNote = document.getElementById("drawerNote");
+const drawerLinks = document.getElementById("drawerLinks");
+const closeDrawer = document.getElementById("closeDrawer");
+const drawBtn = document.getElementById("drawBtn");
+const copyBtn = document.getElementById("copyBtn");
+const drawCover = document.getElementById("drawCover");
+const drawSong = document.getElementById("drawSong");
+const drawArtist = document.getElementById("drawArtist");
+const drawNote = document.getElementById("drawNote");
+const drawListen = document.getElementById("drawListen");
+const platformBackdrop = document.getElementById("platformBackdrop");
+const platformSheet = document.getElementById("platformSheet");
+const closePlatform = document.getElementById("closePlatform");
+const platformTitle = document.getElementById("platformTitle");
+const platformMeta = document.getElementById("platformMeta");
+const platformTags = document.getElementById("platformTags");
+const platformNote = document.getElementById("platformNote");
+const platformOptions = document.getElementById("platformOptions");
+const toast = document.getElementById("toast");
+let currentFilter = "all";
+let currentTrack = tracks[0];
+
+function trackKey(t){
+  return `${t.artist}||${t.song}`;
+}
+
+function escapeAttr(value){
+  return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+}
+
+function escapeHTML(value){
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function appleMusicUrl(t){
+  const direct = appleMusicLinks[trackKey(t)];
+  if (direct) return direct;
+  const query = encodeURIComponent(`${t.artist} ${t.song}`);
+  return `https://music.apple.com/search?term=${query}`;
+}
+
+function qqMusicUrl(t){
+  const direct = qqMusicLinks[trackKey(t)];
+  if (direct) return direct;
+  const query = encodeURIComponent(`${t.artist} ${t.song}`);
+  return `https://y.qq.com/n/ryqq/search?w=${query}&t=song`;
+}
+
+function neteaseMusicUrl(t){
+  const direct = neteaseMusicLinks[trackKey(t)];
+  if (direct) return direct;
+  const query = encodeURIComponent(`${t.artist} ${t.song}`);
+  return `https://music.163.com/#/search/m/?s=${query}&type=1`;
+}
+
+function platformList(t){
+  const key = trackKey(t);
+  return [
+    { name: "Apple Music", hint: "\u76f4\u8fbe\u6b4c\u66f2\u9875", cls: "apple", url: appleMusicUrl(t) },
+    { name: "QQ\u97f3\u4e50", hint: qqMusicLinks[key] ? "\u76f4\u8fbe\u6b4c\u66f2\u9875" : "\u6253\u5f00\u641c\u7d22\u7ed3\u679c", cls: "qq", url: qqMusicUrl(t) },
+    { name: "\u7f51\u6613\u4e91\u97f3\u4e50", hint: neteaseMusicLinks[key] ? "\u76f4\u8fbe\u6b4c\u66f2\u9875" : "\u6253\u5f00\u641c\u7d22\u7ed3\u679c", cls: "netease", url: neteaseMusicUrl(t) }
+  ];
+}
+
+function playLinksHTML(t){
+  const key = escapeAttr(trackKey(t));
+  return `
+    <button class="play-link platform-trigger" data-track-key="${key}">去听这首</button>
+  `;
+}
+
+function cardHTML(t){
+  return `
+    <div class="cover ${t.cover}"><div class="mini">${t.album}</div></div>
+    <div class="body">
+      <p class="artist">${t.artist}</p>
+      <h2 class="song">${t.song}</h2>
+      <div class="tags">${t.mood.map(x=>`<span class="tag">${x}</span>`).join("")}</div>
+      <div class="play-links">${playLinksHTML(t)}</div>
+    </div>
+  `;
+}
+
+function render(){
+  grid.innerHTML = "";
+  tracks.forEach((t, i) => {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.dataset.tags = t.tags.join(" ");
+    card.dataset.text = `${t.artist} ${t.song} ${t.album} ${t.mood.join(" ")}`.toLowerCase();
+    card.innerHTML = cardHTML(t);
+    card.addEventListener("click", () => openTrack(t));
+    grid.appendChild(card);
+  });
+  filterCards();
+}
+
+function visibleTracks(){
+  const q = searchInput.value.trim().toLowerCase();
+  return tracks.filter(t => {
+    const text = `${t.artist} ${t.song} ${t.album} ${t.mood.join(" ")}`.toLowerCase();
+    const byFilter = currentFilter === "all" || t.tags.includes(currentFilter);
+    const bySearch = !q || text.includes(q);
+    return byFilter && bySearch;
+  });
+}
+
+function filterCards(){
+  const q = searchInput.value.trim().toLowerCase();
+  [...document.querySelectorAll(".card")].forEach(card => {
+    const byFilter = currentFilter === "all" || card.dataset.tags.includes(currentFilter);
+    const bySearch = !q || card.dataset.text.includes(q);
+    card.classList.toggle("hide", !(byFilter && bySearch));
+  });
+}
+
+function getTrackByKey(key){
+  return tracks.find(t => trackKey(t) === key);
+}
+
+function closePlatformSheet(){
+  platformSheet.classList.remove("show");
+  platformBackdrop.classList.remove("show");
+}
+
+function openPlatformChooser(t){
+  currentTrack = t;
+  platformTitle.textContent = t.song;
+  platformMeta.textContent = `${t.artist} · ${t.album}`;
+  platformTags.innerHTML = t.mood.map(x=>`<span class="tag">${x}</span>`).join("");
+  platformNote.textContent = t.note;
+  platformOptions.innerHTML = platformList(t).map(p => `
+    <a class="platform-option ${p.cls}" href="${escapeAttr(p.url)}" target="_blank" rel="noopener">
+      <strong>${escapeHTML(p.name)}</strong>
+      <span>${escapeHTML(p.hint)}</span>
+    </a>
+  `).join("");
+  platformSheet.classList.add("show");
+  platformBackdrop.classList.add("show");
+}
+
+function openTrack(t){
+  currentTrack = t;
+  drawerMeta.textContent = `${t.artist} · ${t.album}`;
+  drawerTitle.textContent = t.song;
+  drawerTags.innerHTML = t.mood.map(x=>`<span class="tag">${x}</span>`).join("");
+  drawerNote.textContent = t.note;
+  drawerLinks.innerHTML = playLinksHTML(t);
+  drawer.classList.add("show");
+  updateDraw(t);
+}
+
+function updateDraw(t){
+  drawCover.className = `draw-cover cover ${t.cover}`;
+  drawCover.innerHTML = `<div class="mini">${t.album}</div>`;
+  drawSong.textContent = t.song;
+  drawArtist.textContent = `${t.artist} · ${t.album}`;
+  drawNote.textContent = t.note;
+}
+
+function drawRandom(){
+  const pool = visibleTracks();
+  const list = pool.length ? pool : tracks;
+  const t = list[Math.floor(Math.random() * list.length)];
+  updateDraw(t);
+  currentTrack = t;
+}
+
+function showToast(text){
+  toast.textContent = text;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 1600);
+}
+
+chips.forEach(chip => {
+  chip.addEventListener("click", () => {
+    chips.forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    currentFilter = chip.dataset.filter;
+    filterCards();
+  });
+});
+
+searchInput.addEventListener("input", filterCards);
+closeDrawer.addEventListener("click", () => drawer.classList.remove("show"));
+closePlatform.addEventListener("click", closePlatformSheet);
+platformBackdrop.addEventListener("click", closePlatformSheet);
+drawBtn.addEventListener("click", drawRandom);
+drawListen.addEventListener("click", () => openPlatformChooser(currentTrack));
+document.addEventListener("click", event => {
+  const trigger = event.target.closest(".platform-trigger");
+  if (!trigger) return;
+  event.stopPropagation();
+  const t = getTrackByKey(trigger.dataset.trackKey) || currentTrack;
+  openPlatformChooser(t);
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    drawer.classList.remove("show");
+    closePlatformSheet();
+  }
+});
+copyBtn.addEventListener("click", async () => {
+  const text = `小O日音抽歌：${currentTrack.artist}《${currentTrack.song}》｜${currentTrack.mood.join(" / ")}`;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("已复制抽歌结果");
+  } catch(e) {
+    showToast(text);
+  }
+});
+
+render();
+updateDraw(currentTrack);
+</script>
+</body>
+</html>
