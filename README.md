@@ -28,3 +28,8 @@ Netlify 会自动使用 `public/index.html` 作为首页。
 当前没有构建步骤，直接编辑 `public/index.html` 即可。改完后重新部署 `public` 文件夹。
 
 封面目前主要是 CSS 抽象封面。人物封面遵循一个约定：不画五官表情，只用发型、衣服、姿态和构图来识别。
+
+## Credits
+
+- 歌单与整理：Okra & GPT-5.5 / Codex
+- 文案协作：GPT-5.5 / Codex
