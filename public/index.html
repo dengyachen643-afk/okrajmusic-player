@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>小O的日音播放器</title>
-<meta name="description" content="一只安静的日音推荐播放器：随机抽歌、按氛围筛选，并选择 Apple Music、QQ 音乐或网易云音乐收听。">
+<meta name="description" content="一只安静的日音推荐播放器：随机抽歌、按氛围筛选，并直接播放本地音乐。">
 <meta name="theme-color" content="#eeeee7">
 <meta property="og:type" content="website">
 <meta property="og:title" content="小O的日音播放器">
@@ -37,20 +37,65 @@ body:before{
 }
 .wrap{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:54px 0 78px}
 header{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;align-items:stretch;margin-bottom:28px}
-.title-card,.draw-card{border:1px solid rgba(37,39,34,.08);border-radius:32px;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
-.title-card{padding:36px 38px 38px;background:rgba(248,247,242,.72)}
+.title-card,.player-card,.draw-card{border:1px solid rgba(37,39,34,.08);border-radius:32px;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.title-card{grid-column:1/-1;padding:36px 38px 38px;background:rgba(248,247,242,.72)}
 .eyebrow{margin:0 0 18px;color:var(--sage-dark);letter-spacing:0;font-size:12px;text-transform:uppercase}
 h1{margin:0;display:grid;gap:2px;font-size:clamp(43px,6.4vw,82px);line-height:1.04;letter-spacing:0;font-weight:820}
 h1 .title-line{display:block}
 h1 .title-line:first-child{font-size:.78em;font-weight:760}
 h1 .title-line:last-child{white-space:nowrap}
 .subtitle{margin:24px 0 0;max-width:720px;color:var(--muted);font-family:var(--serif);font-size:16px;line-height:1.9}
+.player-card{padding:24px;background:rgba(248,247,242,.78);display:grid;grid-template-rows:auto 1fr;gap:16px;min-height:286px}
+.player-head{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+.player-kicker{margin:0 0 9px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
+.player-title{margin:0;font-size:24px;line-height:1.25;font-weight:720}
+.player-meta{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+.player-source{align-self:start;color:var(--muted);background:rgba(248,247,242,.42);text-decoration:none}
+.apple-frame{min-height:160px;border:1px solid rgba(37,39,34,.08);border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#efeee8,#d8d5cb);display:grid;place-items:center}
+.apple-frame iframe{display:block;width:100%;height:220px;border:0;background:#f8f7f2}
+.local-player{
+  width:100%;height:100%;min-height:220px;padding:22px;display:grid;grid-template-columns:118px 1fr;gap:20px;align-items:center;
+  background:
+    radial-gradient(circle at 18% 16%,rgba(169,182,156,.5),transparent 24%),
+    linear-gradient(135deg,#f8f7f2 0%,#ece9df 48%,#d8d5cb 100%);
+}
+.local-player audio{display:none}
+.player-cover{width:118px;aspect-ratio:1/1;border-radius:22px;overflow:hidden;box-shadow:0 18px 38px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.7)}
+.player-panel{min-width:0;display:grid;gap:13px}
+.player-status{color:var(--sage-dark);font-size:12px;text-transform:uppercase}
+.player-now{min-width:0}
+.player-now strong{display:block;color:var(--ink);font-size:20px;line-height:1.22;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-now span{display:block;margin-top:5px;color:var(--muted);font-size:13px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-controls{display:grid;gap:14px;align-items:center}
+.transport{display:grid;grid-template-columns:repeat(5,46px);gap:12px;align-items:center;justify-content:start}
+.icon-btn{
+  width:46px;height:46px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;
+  background:transparent;color:#7a8178;box-shadow:none;backdrop-filter:none;
+}
+.icon-btn:hover{background:rgba(248,247,242,.64);color:var(--ink);transform:translateY(-1px)}
+.icon-btn svg{width:25px;height:25px;stroke:currentColor;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.icon-btn.primary{background:var(--sage);color:#20231f;border:1px solid rgba(37,39,34,.08);box-shadow:0 16px 34px rgba(90,99,80,.24)}
+.icon-btn.primary svg{width:23px;height:23px;fill:currentColor;stroke:none}
+.icon-btn.primary:hover{background:#b7c3ab}
+.icon-btn.active{color:var(--sage-dark);background:rgba(169,182,156,.18)}
+.time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.seek-wrap{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.seek{
+  --progress:0%;width:100%;height:22px;border-radius:999px;appearance:none;outline:none;cursor:pointer;
+  background:linear-gradient(90deg,var(--charcoal) 0 var(--progress),rgba(37,39,34,.16) var(--progress) 100%) center/100% 6px no-repeat;
+}
+.seek::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:#f8f7f2;border:4px solid var(--charcoal);box-shadow:0 4px 12px rgba(38,40,34,.18)}
+.seek::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#f8f7f2;border:4px solid var(--charcoal);box-shadow:0 4px 12px rgba(38,40,34,.18)}
+.player-empty{padding:28px;text-align:center;color:var(--muted);font-family:var(--serif);line-height:1.8}
+.player-empty strong{display:block;margin-bottom:6px;color:var(--ink);font-family:var(--sans);font-size:18px}
 .draw-card{
   padding:24px;background:var(--charcoal);color:#f3f2ec;position:relative;overflow:hidden;
   display:grid;grid-template-columns:170px 1fr;gap:20px;align-items:center;min-height:286px;
 }
 .draw-card:before{content:"";position:absolute;width:260px;height:260px;right:-84px;top:-72px;border-radius:50%;background:radial-gradient(circle,rgba(169,182,156,.78),transparent 66%)}
 .draw-cover{width:170px;aspect-ratio:1/1;border-radius:24px;overflow:hidden;position:relative;z-index:1;box-shadow:0 18px 50px rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.12)}
+.draw-empty{background:radial-gradient(circle at 22% 18%,rgba(248,247,242,.5),transparent 16%),linear-gradient(135deg,#1d201b,#596353 52%,#d8d5cb)}
+.draw-empty:before{content:"";position:absolute;inset:28px;border-radius:50%;background:radial-gradient(circle,#20231f 0 11%,#f2efe6 12% 17%,#2c3029 18% 48%,#a9b69c 49% 51%,#30332d 52% 100%);box-shadow:0 0 0 1px rgba(255,255,255,.18),0 16px 28px rgba(0,0,0,.18)}
 .draw-info{position:relative;z-index:1}
 .draw-label{color:#c8cfc0;letter-spacing:0;font-size:12px;text-transform:uppercase;margin-bottom:18px}
 .draw-song{font-size:30px;line-height:1.2;font-weight:690;letter-spacing:0;margin:0}
@@ -62,6 +107,8 @@ button,.chip{
   border-radius:999px;padding:10px 14px;font-size:14px;cursor:pointer;transition:.22s ease;backdrop-filter:blur(12px);
 }
 button:hover,.chip:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
+button:disabled{opacity:.48;cursor:not-allowed}
+button:disabled:hover{transform:none}
 .draw-card button{color:#f3f2ec;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
 .draw-card button.primary{background:var(--sage);color:#20231f;border-color:var(--sage)}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0 26px;align-items:center}
@@ -111,6 +158,29 @@ button:hover,.chip:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.
 .platform-option.apple span{color:#d6d7cd}
 .platform-option.qq{background:#f8f2dc}
 .platform-option.netease{background:#fff1f1}
+.queue-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.26);opacity:0;pointer-events:none;transition:.24s ease;z-index:36;backdrop-filter:blur(4px)}
+.queue-backdrop.show{opacity:1;pointer-events:auto}
+.queue-sheet{
+  position:fixed;right:28px;top:48px;width:min(520px,calc(100% - 32px));max-height:min(760px,calc(100vh - 80px));
+  background:rgba(248,247,242,.96);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:16px;
+  box-shadow:0 28px 80px rgba(38,40,34,.22);padding:22px 0 12px;z-index:37;opacity:0;pointer-events:none;transform:translateY(14px);
+  transition:.26s ease;backdrop-filter:blur(18px);display:grid;grid-template-rows:auto 1fr;
+}
+.queue-sheet.show{opacity:1;pointer-events:auto;transform:translateY(0)}
+.queue-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 22px 16px;border-bottom:1px solid rgba(37,39,34,.08)}
+.queue-title{font-size:24px;font-weight:760}
+.queue-title span{font-size:14px;color:var(--muted);font-weight:520;margin-left:6px}
+.queue-close{width:36px;height:36px;padding:0;border-radius:50%;background:transparent;color:var(--muted);font-size:22px}
+.queue-list{overflow:auto;padding:8px 0}
+.queue-item{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center;width:100%;padding:10px 22px;border:0;border-radius:0;background:transparent;text-align:left;color:var(--ink);backdrop-filter:none}
+.queue-item:hover{transform:none;background:rgba(37,39,34,.05)}
+.queue-item.active{color:#7b2e33;background:rgba(169,182,156,.18)}
+.queue-thumb{width:54px;aspect-ratio:1/1;border-radius:8px;overflow:hidden;box-shadow:0 8px 18px rgba(38,40,34,.12)}
+.queue-info{min-width:0}
+.queue-song{font-size:17px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue-artist{margin-top:4px;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue-item.active .queue-artist{color:#7b2e33}
+.queue-index{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120%);background:rgba(36,38,33,.94);color:#f8f7f2;padding:10px 14px;border-radius:999px;font-size:13px;transition:.28s ease;z-index:30}
 .toast.show{transform:translateX(-50%) translateY(0)}
 footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;line-height:1.7;text-align:center}
@@ -260,15 +330,22 @@ footer .credit{display:block;margin-top:4px}
 @media(max-width:980px){header{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){
   .wrap{width:min(100% - 22px,1180px);padding-top:24px}
-  .title-card,.draw-card{border-radius:26px;padding:24px}
+  .title-card,.player-card,.draw-card{border-radius:26px;padding:24px}
   h1{font-size:clamp(40px,14vw,64px);line-height:1.08}
   h1 .title-line:last-child{white-space:normal}
+  .player-head{grid-template-columns:1fr}
+  .apple-frame iframe{height:220px}
+  .local-player{grid-template-columns:1fr;min-height:300px}
+  .player-cover{width:min(180px,70%);justify-self:center}
+  .player-controls{gap:12px}
+  .transport{justify-content:center}
   .draw-card{grid-template-columns:1fr}
   .draw-cover{width:100%;max-width:260px}
   .grid{grid-template-columns:1fr}
   .song{min-height:auto}
   .platform-options{grid-template-columns:1fr}
   .platform-option{min-height:56px}
+  .queue-sheet{left:11px;right:11px;top:auto;bottom:14px;width:auto;max-height:72vh;border-radius:22px}
   .toolbar{position:sticky;top:0;z-index:10;padding:10px 0;backdrop-filter:blur(14px)}
 }
 </style>
@@ -283,17 +360,34 @@ footer .credit{display:block;margin-top:4px}
       <p class="subtitle">鼠尾草绿、石灰白、炭黑。现在它不只是歌单，也是一个可以给朋友抽歌的小盒子：按氛围筛选，或者直接抽一首今晚的歌。</p>
     </section>
 
+    <section class="player-card" aria-live="polite">
+      <div class="player-head">
+        <div>
+          <p class="player-kicker">Local Music Player</p>
+          <h2 class="player-title" id="playerTitle">等一首歌开始</h2>
+          <p class="player-meta" id="playerMeta">抽一首，或者点开下面的歌曲卡片</p>
+        </div>
+        <a class="play-link player-source" id="playerSource" href="https://music.apple.com/cn/" target="_blank" rel="noopener">备用打开</a>
+      </div>
+      <div class="apple-frame" id="appleFrame">
+        <div class="player-empty">
+          <strong>还没有载入播放器</strong>
+          <span>选中歌曲后，会在这里出现本地音频播放器。</span>
+        </div>
+      </div>
+    </section>
+
     <aside class="draw-card">
-      <div class="draw-cover cover akane" id="drawCover"><div class="mini">茜色の夕日</div></div>
+      <div class="draw-cover cover draw-empty" id="drawCover"><div class="mini">not drawn yet</div></div>
       <div class="draw-info">
         <div class="draw-label">random pick</div>
-        <h2 class="draw-song" id="drawSong">茜色の夕日</h2>
-        <div class="draw-artist" id="drawArtist">フジファブリック · 茜色の夕日</div>
-        <p class="draw-note" id="drawNote">不是把情绪推到脸上，而是你走过一段路之后，才发现心里有一块地方暗下来了。</p>
+        <h2 class="draw-song" id="drawSong">今晚听什么？</h2>
+        <div class="draw-artist" id="drawArtist">先选一个氛围，或者直接抽一首</div>
+        <p class="draw-note" id="drawNote">它还没有决定要把哪首歌交给你。</p>
         <div class="actions">
           <button class="primary" id="drawBtn">抽一首</button>
-          <button id="copyBtn">复制结果</button>
-          <button class="play-link" id="drawListen">去听这首</button>
+          <button id="copyBtn" disabled>复制结果</button>
+          <button class="play-link" id="drawListen" disabled>去播放器</button>
         </div>
       </div>
     </aside>
@@ -333,6 +427,15 @@ footer .credit{display:block;margin-top:4px}
   <div class="platform-options" id="platformOptions"></div>
 </aside>
 
+<div class="queue-backdrop" id="queueBackdrop"></div>
+<aside class="queue-sheet" id="queueSheet" aria-live="polite">
+  <div class="queue-head">
+    <div class="queue-title">播放列表<span id="queueCount">0</span></div>
+    <button class="queue-close" id="closeQueue" aria-label="关闭播放列表">×</button>
+  </div>
+  <div class="queue-list" id="queueList"></div>
+</aside>
+
 <footer>
   <span>v0.2 · random J-music draw box · made for 小O</span>
   <span class="credit">歌单 by Okra& GPT 5.5&nbsp;&nbsp;&nbsp;&nbsp;文案 by GPT 5.5</span>
@@ -355,7 +458,7 @@ const tracks = [
       "后劲"
     ],
     "cover": "akane",
-    "note": "不是把情绪推到脸上，而是你走过一段路之后，才发现心里有一块地方暗下来了。"
+    "note": "情绪没有冲到脸上。走过一段路之后，才发现心里有一块地方慢慢暗了。"
   },
   {
     "artist": "羊文学",
@@ -406,7 +509,7 @@ const tracks = [
       "成熟"
     ],
     "cover": "rakujitsu",
-    "note": "不是治愈系。它更像成年人给自己留的一点体面：难过可以，但不要散架。"
+    "note": "它不哄人，只给情绪留一个体面的出口。"
   },
   {
     "artist": "Fishmans",
@@ -423,7 +526,7 @@ const tracks = [
       "循环"
     ],
     "cover": "longseason",
-    "note": "点开前可以慢一点。它不会很快给你副歌，也不会急着结束，只是把时间拉长，拉到人开始发呆。"
+    "note": "一段被拉长的时间。夜里坐车听，窗外一直过去，心里迟迟没有抵达。"
   },
   {
     "artist": "Lamp",
@@ -474,7 +577,7 @@ const tracks = [
       "跳跃"
     ],
     "cover": "tricot",
-    "note": "脑子乱的时候可以听。它不负责安慰你，只负责把乱线打成一个更漂亮的结。"
+    "note": "它不抱你。它把脑子里乱掉的线，重新打成一个有趣的结。"
   },
   {
     "artist": "くるり",
@@ -576,7 +679,7 @@ const tracks = [
       "梦"
     ],
     "cover": "ichiko",
-    "note": "它很淡，所以不能硬听。要在房间安静下来以后放，声音小一点，那层轻轻的重量会更明显。"
+    "note": "很淡，也有重量。灯关掉以后，房间里还剩一点呼吸声。"
   },
   {
     "artist": "宇宙コンビニ",
@@ -610,7 +713,7 @@ const tracks = [
       "橙色"
     ],
     "cover": "mass",
-    "note": "不是轻飘飘的青春，是有重量、有汗、有一点疼的青春。"
+    "note": "青春在这里有重量，有汗，也有一点疼。"
   },
   {
     "artist": "ずっと真夜中でいいのに。",
@@ -627,7 +730,7 @@ const tracks = [
       "夜"
     ],
     "cover": "zutomayo",
-    "note": "它把孤独写得不太沉，像夜里突然多走了一段路，身体比心情先轻了一点。"
+    "note": "孤独没有沉下去，被写成一种会在夜里跳起来的东西。"
   },
   {
     "artist": "椎名林檎",
@@ -678,7 +781,7 @@ const tracks = [
       "青春"
     ],
     "cover": "aoshiori",
-    "note": "一听就是夏天。不是热烈的夏天，是回忆里有点发白的夏天。"
+    "note": "一听就是夏天。热度被晒到发白，只剩回忆里的风和光。"
   },
   {
     "artist": "RADWIMPS",
@@ -729,7 +832,7 @@ const tracks = [
       "火"
     ],
     "cover": "ziyoou",
-    "note": "不是漂亮，是锋利、艳、带攻击性。适合歌单里突然亮出一簇火。"
+    "note": "锋利、艳，带攻击性。歌单里突然亮出一簇火。"
   },
   {
     "artist": "相対性理論",
@@ -780,7 +883,7 @@ const tracks = [
       "迷幻"
     ],
     "cover": "sakamoto",
-    "note": "不是大起大落，是一种懒散又清醒的游荡感。"
+    "note": "懒散、清醒，带一点脱离身体的幽默感。适合在城市边缘慢慢游荡。"
   },
   {
     "artist": "cero",
@@ -848,7 +951,7 @@ const tracks = [
       "清醒"
     ],
     "cover": "lite",
-    "note": "更像一组漂亮的结构，不撒娇，不解释，只把线条搭好。"
+    "note": "干净的线条比情绪先出现，听完脑子会亮一点。"
   },
   {
     "artist": "MONO",
@@ -865,7 +968,7 @@ const tracks = [
       "宏大"
     ],
     "cover": "mono",
-    "note": "适合想要一点大空间的时候听。它不会替人处理什么，只是让那些声音在远处慢慢展开。"
+    "note": "情绪需要大空间时听。问题没有消失，只是被放远了一点。"
   },
   {
     "artist": "te'",
@@ -899,7 +1002,7 @@ const tracks = [
       "青春"
     ],
     "cover": "numbergirl",
-    "note": "青春不是干净的，是带噪点、带失真、带突然冲出去的速度。"
+    "note": "青春在这里带噪点、失真和突然冲出去的速度。"
   },
   {
     "artist": "andymori",
@@ -1035,7 +1138,7 @@ const tracks = [
       "梦游"
     ],
     "cover": "chronostasis",
-    "note": "不是失眠那种夜，是走着走着忽然觉得世界被按下暂停键的夜。"
+    "note": "走着走着，世界忽然被按下暂停键。"
   },
   {
     "artist": "フィッシュマンズ",
@@ -1137,7 +1240,7 @@ const tracks = [
       "晴天"
     ],
     "cover": "akarui",
-    "note": "不把未来说得很大，只是让它变得像一件晒过太阳的衬衫。"
+    "note": "未来没有被讲得很伟大，只是轻一点、暖一点，像一件晒干的衬衫。"
   },
   {
     "artist": "Yogee New Waves",
@@ -1341,7 +1444,7 @@ const tracks = [
       "孤独"
     ],
     "cover": "ultrablue",
-    "note": "蓝得很深，但不是冷冰冰的蓝，更像一个人待着时的体温。"
+    "note": "蓝得很深，里面还有一个人独处时的体温。"
   },
   {
     "artist": "宇多田ヒカル",
@@ -1409,7 +1512,7 @@ const tracks = [
       "释然"
     ],
     "cover": "kaerou",
-    "note": "像把很重的东西轻轻放下。不是逃走，而是往回看的时候没有那么急。"
+    "note": "把很重的东西轻轻放下，然后终于可以回去了。"
   },
   {
     "artist": "TOMOO",
@@ -1740,6 +1843,11 @@ const drawSong = document.getElementById("drawSong");
 const drawArtist = document.getElementById("drawArtist");
 const drawNote = document.getElementById("drawNote");
 const drawListen = document.getElementById("drawListen");
+const playerCard = document.querySelector(".player-card");
+const playerTitle = document.getElementById("playerTitle");
+const playerMeta = document.getElementById("playerMeta");
+const playerSource = document.getElementById("playerSource");
+const appleFrame = document.getElementById("appleFrame");
 const platformBackdrop = document.getElementById("platformBackdrop");
 const platformSheet = document.getElementById("platformSheet");
 const closePlatform = document.getElementById("closePlatform");
@@ -1748,9 +1856,18 @@ const platformMeta = document.getElementById("platformMeta");
 const platformTags = document.getElementById("platformTags");
 const platformNote = document.getElementById("platformNote");
 const platformOptions = document.getElementById("platformOptions");
+const queueBackdrop = document.getElementById("queueBackdrop");
+const queueSheet = document.getElementById("queueSheet");
+const closeQueue = document.getElementById("closeQueue");
+const queueList = document.getElementById("queueList");
+const queueCount = document.getElementById("queueCount");
 const toast = document.getElementById("toast");
 let currentFilter = "all";
-let currentTrack = tracks[0];
+let currentTrack = null;
+let playbackMode = "shuffle";
+let playHistory = [];
+const missingLocalAudioTracks = new Set();
+const playbackModes = ["shuffle", "sequence", "repeat-one"];
 
 function trackKey(t){
   return `${t.artist}||${t.song}`;
@@ -1768,11 +1885,28 @@ function escapeHTML(value){
     .replace(/"/g, "&quot;");
 }
 
+const icons = {
+  shuffle: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h3c4 0 5.5 12 10 12h5"/><path d="M18 15l3 3-3 3"/><path d="M3 18h3c1.7 0 3-1.6 4.1-3.6"/><path d="M14 6h7"/><path d="M18 3l3 3-3 3"/></svg>`,
+  sequence: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h14"/><path d="M15 4l3 3-3 3"/><path d="M4 17h14"/><path d="M15 14l3 3-3 3"/></svg>`,
+  repeatOne: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h8a4 4 0 0 1 3.8 2.7"/><path d="M17 4l3 3-3 3"/><path d="M17 17H9a4 4 0 0 1-3.8-2.7"/><path d="M7 20l-3-3 3-3"/><path d="M12 9.5v5"/></svg>`,
+  previous: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14"/><path d="M18 6 9 12l9 6z" fill="currentColor" stroke="none"/></svg>`,
+  next: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14"/><path d="m6 6 9 6-9 6z" fill="currentColor" stroke="none"/></svg>`,
+  play: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg>`,
+  pause: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h3v14H8z"/><path d="M13 5h3v14h-3z"/></svg>`,
+  list: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12"/><path d="M8 12h12"/><path d="M8 18h12"/><path d="M4 6h.01"/><path d="M4 12h.01"/><path d="M4 18h.01"/></svg>`
+};
+
 function appleMusicUrl(t){
   const direct = appleMusicLinks[trackKey(t)];
   if (direct) return direct;
   const query = encodeURIComponent(`${t.artist} ${t.song}`);
   return `https://music.apple.com/search?term=${query}`;
+}
+
+function appleMusicEmbedUrl(t){
+  const direct = appleMusicLinks[trackKey(t)];
+  if (!direct) return "";
+  return direct.replace("https://music.apple.com", "https://embed.music.apple.com");
 }
 
 function qqMusicUrl(t){
@@ -1789,6 +1923,55 @@ function neteaseMusicUrl(t){
   return `https://music.163.com/#/search/m/?s=${query}&type=1`;
 }
 
+function trackNumber(t){
+  const index = tracks.indexOf(t);
+  return index >= 0 ? index + 1 : 0;
+}
+
+function localAudioUrl(t){
+  const number = trackNumber(t);
+  if (!number || missingLocalAudioTracks.has(number)) return "";
+  return `audio/track-${String(number).padStart(2, "0")}.mp3`;
+}
+
+function playableTracks(){
+  const pool = visibleTracks().filter(t => localAudioUrl(t));
+  if (pool.length) return pool;
+  return tracks.filter(t => localAudioUrl(t));
+}
+
+function trackAtOffset(offset){
+  const pool = playableTracks();
+  if (!pool.length) return null;
+  if (!currentTrack) return pool[0];
+  const currentIndex = pool.indexOf(currentTrack);
+  const index = currentIndex >= 0 ? currentIndex : 0;
+  return pool[(index + offset + pool.length) % pool.length];
+}
+
+function pickRandomTrack(){
+  const pool = playableTracks();
+  if (!pool.length) return null;
+  if (pool.length === 1) return pool[0];
+  let next = pool[Math.floor(Math.random() * pool.length)];
+  while (next === currentTrack) {
+    next = pool[Math.floor(Math.random() * pool.length)];
+  }
+  return next;
+}
+
+function pickNextTrack(){
+  if (playbackMode === "repeat-one" && currentTrack) return currentTrack;
+  if (playbackMode === "sequence") return trackAtOffset(1);
+  return pickRandomTrack();
+}
+
+function pickPreviousTrack(){
+  const previous = playHistory.pop();
+  if (previous && localAudioUrl(previous)) return previous;
+  return trackAtOffset(-1);
+}
+
 function platformList(t){
   const key = trackKey(t);
   return [
@@ -1801,7 +1984,7 @@ function platformList(t){
 function playLinksHTML(t){
   const key = escapeAttr(trackKey(t));
   return `
-    <button class="play-link platform-trigger" data-track-key="${key}">去听这首</button>
+    <button class="play-link platform-trigger" data-track-key="${key}">播放这首</button>
   `;
 }
 
@@ -1859,6 +2042,36 @@ function closePlatformSheet(){
   platformBackdrop.classList.remove("show");
 }
 
+function closeQueueSheet(){
+  queueSheet.classList.remove("show");
+  queueBackdrop.classList.remove("show");
+}
+
+function renderQueueList(){
+  const list = tracks.filter(t => localAudioUrl(t));
+  queueCount.textContent = list.length;
+  queueList.innerHTML = list.map((t, index) => {
+    const key = escapeAttr(trackKey(t));
+    const active = t === currentTrack ? " active" : "";
+    return `
+      <button class="queue-item${active}" data-track-key="${key}" type="button">
+        <span class="queue-thumb cover ${escapeAttr(t.cover)}"></span>
+        <span class="queue-info">
+          <span class="queue-song">${escapeHTML(t.song)}</span>
+          <span class="queue-artist">${escapeHTML(t.artist)}</span>
+        </span>
+        <span class="queue-index">${String(index + 1).padStart(2, "0")}</span>
+      </button>
+    `;
+  }).join("");
+}
+
+function openQueueSheet(){
+  renderQueueList();
+  queueSheet.classList.add("show");
+  queueBackdrop.classList.add("show");
+}
+
 function openPlatformChooser(t){
   currentTrack = t;
   platformTitle.textContent = t.song;
@@ -1876,7 +2089,6 @@ function openPlatformChooser(t){
 }
 
 function openTrack(t){
-  currentTrack = t;
   drawerMeta.textContent = `${t.artist} · ${t.album}`;
   drawerTitle.textContent = t.song;
   drawerTags.innerHTML = t.mood.map(x=>`<span class="tag">${x}</span>`).join("");
@@ -1886,20 +2098,200 @@ function openTrack(t){
   updateDraw(t);
 }
 
-function updateDraw(t){
+function setDrawActionsEnabled(enabled){
+  copyBtn.disabled = !enabled;
+  drawListen.disabled = !enabled;
+}
+
+function formatTime(seconds){
+  if (!Number.isFinite(seconds)) return "0:00";
+  const minutes = Math.floor(seconds / 60);
+  const rest = Math.floor(seconds % 60);
+  return `${minutes}:${String(rest).padStart(2, "0")}`;
+}
+
+function setRangeProgress(input, value){
+  input.style.setProperty("--progress", `${value}%`);
+}
+
+function modeLabel(mode){
+  if (mode === "sequence") return "顺序播放";
+  if (mode === "repeat-one") return "单曲循环";
+  return "随机播放";
+}
+
+function updateModeButton(button){
+  if (!button) return;
+  const icon = playbackMode === "sequence" ? icons.sequence : playbackMode === "repeat-one" ? icons.repeatOne : icons.shuffle;
+  button.innerHTML = icon;
+  button.classList.toggle("active", playbackMode !== "sequence");
+  button.setAttribute("aria-label", modeLabel(playbackMode));
+  button.title = modeLabel(playbackMode);
+}
+
+function wireLocalPlayer(t, autoplay){
+  const audio = document.getElementById("localAudio");
+  const playToggle = document.getElementById("playerPlayToggle");
+  const modeButton = document.getElementById("playerMode");
+  const previousButton = document.getElementById("playerPrevious");
+  const nextButton = document.getElementById("playerNext");
+  const queueButton = document.getElementById("playerQueue");
+  const seek = document.getElementById("playerSeek");
+  const elapsed = document.getElementById("playerElapsed");
+  const duration = document.getElementById("playerDuration");
+  const state = document.getElementById("playerState");
+  let isSeeking = false;
+  let pendingSeekRatio = null;
+  if (!audio || !playToggle || !modeButton || !previousButton || !nextButton || !queueButton || !seek || !elapsed || !duration || !state) return;
+
+  const syncPlaying = () => {
+    playToggle.innerHTML = audio.paused ? icons.play : icons.pause;
+    playToggle.setAttribute("aria-label", audio.paused ? "播放" : "暂停");
+    state.textContent = audio.paused ? "Ready" : "Playing";
+  };
+  const syncTime = () => {
+    if (isSeeking || pendingSeekRatio !== null) return;
+    const ratio = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+    seek.value = String(ratio);
+    setRangeProgress(seek, ratio);
+    elapsed.textContent = formatTime(audio.currentTime);
+    duration.textContent = formatTime(audio.duration);
+  };
+  const applyPendingSeek = () => {
+    if (pendingSeekRatio === null || !audio.duration) return false;
+    audio.currentTime = (pendingSeekRatio / 100) * audio.duration;
+    elapsed.textContent = formatTime(audio.currentTime);
+    pendingSeekRatio = null;
+    return true;
+  };
+  const seekToValue = () => {
+    const ratio = Number(seek.value);
+    pendingSeekRatio = ratio;
+    setRangeProgress(seek, ratio);
+    if (audio.duration) {
+      applyPendingSeek();
+      elapsed.textContent = formatTime(audio.currentTime);
+    }
+  };
+  const playNext = () => {
+    const next = pickNextTrack();
+    if (next) updateDraw(next, true, next !== currentTrack);
+  };
+
+  updateModeButton(modeButton);
+  syncPlaying();
+  syncTime();
+
+  modeButton.addEventListener("click", () => {
+    const index = playbackModes.indexOf(playbackMode);
+    playbackMode = playbackModes[(index + 1) % playbackModes.length];
+    updateModeButton(modeButton);
+    showToast(modeLabel(playbackMode));
+  });
+  previousButton.addEventListener("click", () => {
+    const previous = pickPreviousTrack();
+    if (previous) updateDraw(previous, true, false);
+  });
+  playToggle.addEventListener("click", () => {
+    if (audio.paused) {
+      audio.play().catch(() => showToast("浏览器需要你点一下播放"));
+    } else {
+      audio.pause();
+    }
+  });
+  nextButton.addEventListener("click", playNext);
+  queueButton.addEventListener("click", openQueueSheet);
+  seek.addEventListener("pointerdown", () => { isSeeking = true; });
+  seek.addEventListener("pointerup", () => { seekToValue(); isSeeking = false; syncTime(); });
+  seek.addEventListener("keydown", () => { isSeeking = true; });
+  seek.addEventListener("keyup", () => { seekToValue(); isSeeking = false; syncTime(); });
+  seek.addEventListener("input", seekToValue);
+  seek.addEventListener("change", () => { seekToValue(); isSeeking = false; syncTime(); });
+  audio.addEventListener("loadedmetadata", () => {
+    applyPendingSeek();
+    syncTime();
+  });
+  audio.addEventListener("timeupdate", syncTime);
+  audio.addEventListener("play", syncPlaying);
+  audio.addEventListener("pause", syncPlaying);
+  audio.addEventListener("ended", playNext);
+  audio.addEventListener("error", () => {
+    state.textContent = "Error";
+    showToast("这首本地音频加载失败");
+  });
+  if (autoplay) {
+    audio.play().catch(() => {
+      syncPlaying();
+      showToast("浏览器需要你点一下播放");
+    });
+  }
+}
+
+function loadLocalPlayer(t, autoplay = true){
+  const audioUrl = localAudioUrl(t);
+  playerTitle.textContent = t.song;
+  playerMeta.textContent = `${t.artist} · ${t.album}`;
+  playerSource.href = appleMusicUrl(t);
+  playerSource.textContent = "外部打开";
+  if (!audioUrl) {
+    appleFrame.innerHTML = `
+      <div class="player-empty">
+        <strong>${escapeHTML(t.song)}</strong>
+        <span>这首歌还没有放进本地音频库，可以先用外部入口打开。</span>
+      </div>
+    `;
+    return;
+  }
+  appleFrame.innerHTML = `
+    <div class="local-player">
+      <div class="player-cover cover ${escapeAttr(t.cover)}"></div>
+      <div class="player-panel">
+        <div class="player-status" id="playerState">Ready</div>
+        <div class="player-now">
+          <strong>${escapeHTML(t.song)}</strong>
+          <span>${escapeHTML(t.artist)} · ${escapeHTML(t.album)}</span>
+        </div>
+        <div class="player-controls">
+          <div class="transport">
+            <button class="icon-btn" id="playerMode" type="button" aria-label="${modeLabel(playbackMode)}">${icons.shuffle}</button>
+            <button class="icon-btn" id="playerPrevious" type="button" aria-label="上一首">${icons.previous}</button>
+            <button class="icon-btn primary" id="playerPlayToggle" type="button" aria-label="播放">${icons.play}</button>
+            <button class="icon-btn" id="playerNext" type="button" aria-label="下一首">${icons.next}</button>
+            <button class="icon-btn" id="playerQueue" type="button" aria-label="播放列表">${icons.list}</button>
+          </div>
+          <div class="seek-wrap">
+            <input class="seek" id="playerSeek" type="range" min="0" max="100" value="0" aria-label="播放进度">
+            <div class="time"><span id="playerElapsed">0:00</span> / <span id="playerDuration">0:00</span></div>
+          </div>
+        </div>
+        <audio id="localAudio" preload="metadata" ${autoplay ? "autoplay" : ""} src="${escapeAttr(audioUrl)}"></audio>
+      </div>
+    </div>
+  `;
+  wireLocalPlayer(t, autoplay);
+}
+
+function updateDraw(t, autoplay = true, remember = true){
+  if (remember && currentTrack && currentTrack !== t) {
+    playHistory.push(currentTrack);
+    if (playHistory.length > 80) playHistory.shift();
+  }
+  currentTrack = t;
   drawCover.className = `draw-cover cover ${t.cover}`;
   drawCover.innerHTML = `<div class="mini">${t.album}</div>`;
   drawSong.textContent = t.song;
   drawArtist.textContent = `${t.artist} · ${t.album}`;
   drawNote.textContent = t.note;
+  setDrawActionsEnabled(true);
+  renderQueueList();
+  loadLocalPlayer(t, autoplay);
 }
 
 function drawRandom(){
-  const pool = visibleTracks();
+  const pool = playableTracks();
   const list = pool.length ? pool : tracks;
   const t = list[Math.floor(Math.random() * list.length)];
-  updateDraw(t);
-  currentTrack = t;
+  updateDraw(t, true, true);
 }
 
 function showToast(text){
@@ -1921,22 +2313,51 @@ searchInput.addEventListener("input", filterCards);
 closeDrawer.addEventListener("click", () => drawer.classList.remove("show"));
 closePlatform.addEventListener("click", closePlatformSheet);
 platformBackdrop.addEventListener("click", closePlatformSheet);
+closeQueue.addEventListener("click", closeQueueSheet);
+queueBackdrop.addEventListener("click", closeQueueSheet);
 drawBtn.addEventListener("click", drawRandom);
-drawListen.addEventListener("click", () => openPlatformChooser(currentTrack));
+drawListen.addEventListener("click", () => {
+  if (!currentTrack) {
+    showToast("先抽一首");
+    return;
+  }
+  loadLocalPlayer(currentTrack);
+  playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
+});
 document.addEventListener("click", event => {
   const trigger = event.target.closest(".platform-trigger");
   if (!trigger) return;
   event.stopPropagation();
   const t = getTrackByKey(trigger.dataset.trackKey) || currentTrack;
-  openPlatformChooser(t);
+  if (!t) return;
+  if (localAudioUrl(t)) {
+    updateDraw(t, true, true);
+    playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    openPlatformChooser(t);
+  }
+});
+queueList.addEventListener("click", event => {
+  const item = event.target.closest(".queue-item");
+  if (!item) return;
+  const t = getTrackByKey(item.dataset.trackKey);
+  if (!t) return;
+  updateDraw(t, true, true);
+  closeQueueSheet();
+  playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     drawer.classList.remove("show");
     closePlatformSheet();
+    closeQueueSheet();
   }
 });
 copyBtn.addEventListener("click", async () => {
+  if (!currentTrack) {
+    showToast("先抽一首");
+    return;
+  }
   const text = `小O日音抽歌：${currentTrack.artist}《${currentTrack.song}》｜${currentTrack.mood.join(" / ")}`;
   try {
     await navigator.clipboard.writeText(text);
@@ -1947,7 +2368,8 @@ copyBtn.addEventListener("click", async () => {
 });
 
 render();
-updateDraw(currentTrack);
+renderQueueList();
+setDrawActionsEnabled(false);
 </script>
 </body>
 </html>
