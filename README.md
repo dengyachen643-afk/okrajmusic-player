@@ -1,10 +1,11 @@
 # 小O的日音播放器
 
-一个静态的日音推荐播放器：可以随机抽歌、按氛围筛选，并跳转到 Apple Music、QQ 音乐或网易云音乐收听。
+一个静态的日音推荐播放器：可以随机抽歌、按氛围筛选，并直接播放项目内的本地 MP3。
 
 ## 项目结构
 
 - `public/index.html`：网站入口，也是 Netlify 部署文件。
+- `public/audio/`：70 首本地 MP3，文件名按歌单顺序为 `track-01.mp3` 到 `track-70.mp3`。
 - `data/apple-link-candidates.json`：Apple Music 链接校对记录。
 - `data/apple-links-block.txt`：Apple Music 链接表备份。
 - `data/platform-link-candidates.json`：QQ 音乐 / 网易云音乐批量查询候选。
@@ -18,6 +19,8 @@
 `public`
 
 Netlify 会自动使用 `public/index.html` 作为首页。
+
+注意：当前 `public` 约 830MB。Netlify Drop 对大文件夹不稳定，官方建议 50MB 以下、单文件 10MB 以下体验最好；这个版本更推荐使用 GitHub 连接 Netlify 或 Netlify CLI 部署。
 
 如果用 Netlify 连接 GitHub 仓库，发布目录设置为：
 
