@@ -1959,6 +1959,7 @@ let playHistory = [];
 let preparedNextTrack = null;
 let preparedNextUrl = "";
 let nextAudioPreloader = null;
+let prepareNextTimer = null;
 const missingLocalAudioTracks = new Set();
 const playbackModes = ["shuffle", "sequence", "repeat-one"];
 
@@ -2121,6 +2122,10 @@ function pickNextTrackCandidate(){
 function clearPreparedNext(){
   preparedNextTrack = null;
   preparedNextUrl = "";
+  if (prepareNextTimer) {
+    clearTimeout(prepareNextTimer);
+    prepareNextTimer = null;
+  }
   if (nextAudioPreloader) {
     nextAudioPreloader.removeAttribute("src");
     nextAudioPreloader.load();
@@ -2140,6 +2145,14 @@ function prepareUpcomingTrack(){
   nextAudioPreloader.preload = "auto";
   nextAudioPreloader.src = url;
   nextAudioPreloader.load();
+}
+
+function scheduleUpcomingTrack(delay = 3500){
+  if (prepareNextTimer) clearTimeout(prepareNextTimer);
+  prepareNextTimer = setTimeout(() => {
+    prepareNextTimer = null;
+    prepareUpcomingTrack();
+  }, delay);
 }
 
 function pickNextTrack(){
@@ -2493,7 +2506,7 @@ function wireLocalPlayer(t, autoplay){
     const index = playbackModes.indexOf(playbackMode);
     playbackMode = playbackModes[(index + 1) % playbackModes.length];
     updateModeButton(modeButton);
-    prepareUpcomingTrack();
+    scheduleUpcomingTrack(1200);
     showToast(modeLabel(playbackMode));
   });
   previousButton.addEventListener("click", () => {
@@ -2521,9 +2534,16 @@ function wireLocalPlayer(t, autoplay){
   });
   audio.addEventListener("timeupdate", syncTime);
   audio.addEventListener("play", syncPlaying);
+  audio.addEventListener("playing", () => {
+    syncPlaying();
+    scheduleUpcomingTrack(2500);
+  });
   audio.addEventListener("pause", syncPlaying);
   audio.addEventListener("waiting", () => { state.textContent = "Loading"; });
-  audio.addEventListener("canplay", syncPlaying);
+  audio.addEventListener("canplay", () => {
+    syncPlaying();
+    if (!autoplay) scheduleUpcomingTrack(3000);
+  });
   audio.addEventListener("ended", playNext);
   audio.addEventListener("error", () => {
     state.textContent = "Error";
@@ -2595,8 +2615,8 @@ function updateDraw(t, autoplay = true, remember = true){
   setDrawActionsEnabled(true);
   renderQueueList();
   if (currentAlbum && albumSheet.classList.contains("show")) renderAlbumDetail(currentAlbum);
+  clearPreparedNext();
   loadLocalPlayer(t, autoplay);
-  prepareUpcomingTrack();
 }
 
 function drawRandom(){
@@ -2620,13 +2640,13 @@ chips.forEach(chip => {
     chip.classList.add("active");
     currentFilter = chip.dataset.filter;
     filterCards();
-    prepareUpcomingTrack();
+    scheduleUpcomingTrack(1500);
   });
 });
 
 searchInput.addEventListener("input", () => {
   filterCards();
-  prepareUpcomingTrack();
+  scheduleUpcomingTrack(1500);
 });
 closeDrawer.addEventListener("click", () => drawer.classList.remove("show"));
 closeAlbum.addEventListener("click", closeAlbumSheet);
