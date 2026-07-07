@@ -10,3 +10,4 @@ artwork_refs/
 *.before-*.html
 .DS_Store
 Thumbs.db
+public/audio/

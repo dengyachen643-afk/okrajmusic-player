@@ -1960,6 +1960,7 @@ let preparedNextTrack = null;
 let preparedNextUrl = "";
 let nextAudioPreloader = null;
 let prepareNextTimer = null;
+const audioCdnBase = "https://pub-d122a10e688a46009a5b289155ba5cab.r2.dev";
 const missingLocalAudioTracks = new Set();
 const playbackModes = ["shuffle", "sequence", "repeat-one"];
 
@@ -2059,7 +2060,7 @@ function trackNumber(t){
 function localAudioUrl(t){
   const number = trackNumber(t);
   if (!number || missingLocalAudioTracks.has(number)) return "";
-  return `audio/track-${String(number).padStart(2, "0")}.mp3`;
+  return `${audioCdnBase}/track-${String(number).padStart(2, "0")}.mp3`;
 }
 
 function globalPlayableTracks(){
