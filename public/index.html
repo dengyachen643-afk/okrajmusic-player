@@ -38,13 +38,19 @@ body:before{
 .wrap{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:54px 0 78px}
 header{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;align-items:stretch;margin-bottom:28px}
 .title-card,.player-card,.draw-card{border:1px solid rgba(37,39,34,.08);border-radius:32px;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
-.title-card{grid-column:1/-1;padding:36px 38px 38px;background:rgba(248,247,242,.72)}
-.eyebrow{margin:0 0 18px;color:var(--sage-dark);letter-spacing:0;font-size:12px;text-transform:uppercase}
-h1{margin:0;display:grid;gap:2px;font-size:clamp(43px,6.4vw,82px);line-height:1.04;letter-spacing:0;font-weight:820}
+.title-card{
+  grid-column:1/-1;padding:32px 38px;background:rgba(248,247,242,.72);
+  display:grid;grid-template-columns:minmax(0,.9fr) minmax(320px,.72fr);gap:34px;align-items:center;
+}
+.eyebrow{grid-column:1;grid-row:1;margin:0 0 18px;color:var(--sage-dark);letter-spacing:0;font-size:12px;text-transform:uppercase}
+h1{grid-column:1;grid-row:2;margin:0;display:grid;gap:2px;font-size:clamp(40px,4.8vw,64px);line-height:1.04;letter-spacing:0;font-weight:820}
 h1 .title-line{display:block}
 h1 .title-line:first-child{font-size:.78em;font-weight:760}
 h1 .title-line:last-child{white-space:nowrap}
-.subtitle{margin:24px 0 0;max-width:720px;color:var(--muted);font-family:var(--serif);font-size:16px;line-height:1.9}
+.subtitle{
+  margin:28px 0 0;max-width:520px;color:var(--muted);font-family:var(--serif);font-size:16px;line-height:1.9;
+  grid-column:2;grid-row:1 / span 2;align-self:center;justify-self:end;
+}
 .player-card{padding:24px;background:rgba(248,247,242,.78);display:grid;grid-template-rows:auto 1fr;gap:16px;min-height:286px}
 .player-head{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
 .player-kicker{margin:0 0 9px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
@@ -121,16 +127,24 @@ button:disabled:hover{transform:none}
 .shelf-copy{margin:9px 0 0;color:var(--muted);font-family:var(--serif);line-height:1.75;font-size:14px}
 .shelf-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .shelf-search{margin:0 0 18px}
-.album-shelf{display:grid;gap:30px}
-.shelf-row{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:20px 18px;padding:4px 2px 28px}
-.shelf-row:after{content:"";position:absolute;left:0;right:0;bottom:6px;height:15px;border-radius:999px;background:linear-gradient(180deg,rgba(248,247,242,.85),rgba(151,147,131,.34));box-shadow:0 14px 26px rgba(38,40,34,.16)}
-.album-card{position:relative;z-index:1;display:grid;gap:10px;align-content:start;padding:0;border:0;background:transparent;color:var(--ink);text-align:left;cursor:pointer;backdrop-filter:none}
-.album-card:hover{transform:translateY(-8px)}
+.album-shelf{display:grid;gap:36px;overflow:hidden;padding:4px 0 12px}
+.shelf-row{
+  --album-size:174px;--album-overlap:42px;
+  position:relative;display:flex;align-items:flex-start;min-height:246px;padding:4px 0 42px;
+}
+.shelf-row:after{content:"";position:absolute;left:0;right:0;bottom:20px;height:15px;border-radius:999px;background:linear-gradient(180deg,rgba(248,247,242,.88),rgba(151,147,131,.34));box-shadow:0 14px 26px rgba(38,40,34,.16)}
+.album-card{
+  position:relative;display:grid;grid-template-rows:var(--album-size) auto;gap:10px;align-content:start;width:var(--album-size);min-width:var(--album-size);
+  margin-left:calc(var(--album-overlap) * -1);padding:0;border:0;background:transparent;color:var(--ink);text-align:left;cursor:pointer;backdrop-filter:none;
+  transform:translateY(0);transition:transform .24s ease,filter .24s ease;
+}
+.album-card:first-child{margin-left:0}
+.album-card:hover{z-index:80!important;transform:translateY(-18px);filter:saturate(1.04)}
 .album-card.hide{display:none}
-.album-cover{width:100%;aspect-ratio:1/1;border-radius:12px;box-shadow:0 18px 34px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.76);transition:.24s ease}
+.album-cover{width:var(--album-size);height:var(--album-size);border-radius:12px;box-shadow:0 18px 34px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.76);transition:.24s ease}
 .album-card:hover .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
-.album-card-title{display:block;font-size:13px;line-height:1.35;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.album-card-meta{display:block;color:var(--muted);font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.album-card-title{display:block;max-width:calc(var(--album-size) - var(--album-overlap) - 10px);font-size:13px;line-height:1.35;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.album-card-meta{display:block;max-width:calc(var(--album-size) - var(--album-overlap) - 10px);color:var(--muted);font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .album-empty{padding:34px;border:1px dashed rgba(37,39,34,.18);border-radius:22px;color:var(--muted);text-align:center;background:rgba(248,247,242,.48)}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
 .card{position:relative;border:1px solid rgba(37,39,34,.08);border-radius:var(--radius);overflow:hidden;background:rgba(248,247,242,.72);backdrop-filter:blur(18px);box-shadow:0 14px 38px rgba(38,40,34,.08);transition:.25s ease;cursor:pointer}
@@ -374,8 +388,10 @@ footer .credit{display:block;margin-top:4px}
 @media(max-width:680px){
   .wrap{width:min(100% - 22px,1180px);padding-top:24px}
   .title-card,.player-card,.draw-card{border-radius:26px;padding:24px}
+  .title-card{grid-template-columns:1fr;gap:18px}
   h1{font-size:clamp(40px,14vw,64px);line-height:1.08}
   h1 .title-line:last-child{white-space:normal}
+  .subtitle{grid-column:1;grid-row:auto;justify-self:start;margin:0;font-size:15px}
   .player-head{grid-template-columns:1fr}
   .apple-frame iframe{height:220px}
   .local-player{grid-template-columns:1fr;min-height:300px}
@@ -387,7 +403,7 @@ footer .credit{display:block;margin-top:4px}
   .shelf-head{grid-template-columns:1fr}
   .shelf-filters{justify-content:flex-start}
   .shelf-title{font-size:26px}
-  .shelf-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}
+  .shelf-row{--album-size:min(46vw,164px);--album-overlap:34px;min-height:236px}
   .album-detail{grid-template-columns:1fr}
   .album-detail-cover{max-width:240px}
   .album-detail-title{font-size:28px}
@@ -2040,12 +2056,16 @@ function localAudioUrl(t){
   return `audio/track-${String(number).padStart(2, "0")}.mp3`;
 }
 
-function playableTracks(){
-  const scopedQueue = playbackQueue ? playbackQueue.filter(t => localAudioUrl(t)) : [];
-  if (scopedQueue.length) return scopedQueue;
+function globalPlayableTracks(){
   const pool = visibleTracks().filter(t => localAudioUrl(t));
   if (pool.length) return pool;
   return tracks.filter(t => localAudioUrl(t));
+}
+
+function playableTracks(){
+  const scopedQueue = playbackQueue ? playbackQueue.filter(t => localAudioUrl(t)) : [];
+  if (scopedQueue.length) return scopedQueue;
+  return globalPlayableTracks();
 }
 
 function trackAtOffset(offset){
@@ -2057,8 +2077,7 @@ function trackAtOffset(offset){
   return pool[(index + offset + pool.length) % pool.length];
 }
 
-function pickRandomTrack(){
-  const pool = playableTracks();
+function pickRandomTrack(pool = playableTracks()){
   if (!pool.length) return null;
   if (pool.length === 1) return pool[0];
   let next = pool[Math.floor(Math.random() * pool.length)];
@@ -2068,8 +2087,24 @@ function pickRandomTrack(){
   return next;
 }
 
+function pickGlobalRandomTrack(){
+  playbackQueue = null;
+  currentAlbum = null;
+  return pickRandomTrack(globalPlayableTracks());
+}
+
 function pickNextTrack(){
   if (playbackMode === "repeat-one" && currentTrack) return currentTrack;
+  const scopedQueue = playbackQueue ? playbackQueue.filter(t => localAudioUrl(t)) : [];
+  if (scopedQueue.length) {
+    if (scopedQueue.length === 1) return pickGlobalRandomTrack();
+    if (playbackMode === "sequence") {
+      const index = scopedQueue.indexOf(currentTrack);
+      if (index >= 0 && index < scopedQueue.length - 1) return scopedQueue[index + 1];
+      return pickGlobalRandomTrack();
+    }
+    return pickRandomTrack(scopedQueue);
+  }
   if (playbackMode === "sequence") return trackAtOffset(1);
   return pickRandomTrack();
 }
@@ -2106,36 +2141,67 @@ function albumSearchText(album){
 }
 
 function albumCardHTML(album){
-  const songs = album.tracks.length > 1 ? `${album.tracks.length} 首` : album.tracks[0].song;
+  const title = album.tracks.length > 1 ? `${album.tracks[0].song} 等 ${album.tracks.length} 首` : album.tracks[0].song;
+  const meta = album.tracks.length > 1 ? `${album.artist} · ${album.tracks.length} 首` : album.artist;
   return `
     <span class="album-cover cover ${escapeAttr(album.cover)}"></span>
     <span>
-      <span class="album-card-title">${escapeHTML(album.title)}</span>
-      <span class="album-card-meta">${escapeHTML(album.artist)} · ${escapeHTML(songs)}</span>
+      <span class="album-card-title">${escapeHTML(title)}</span>
+      <span class="album-card-meta">${escapeHTML(meta)}</span>
     </span>
   `;
 }
 
-function render(){
-  albumShelf.innerHTML = "";
+function albumRows(list, maxPerRow = 8){
+  if (!list.length) return [];
+  const rowCount = Math.ceil(list.length / maxPerRow);
+  const baseSize = Math.floor(list.length / rowCount);
+  let extra = list.length % rowCount;
   const rows = [];
-  for (let i = 0; i < albums.length; i += 8) rows.push(albums.slice(i, i + 8));
+  let cursor = 0;
+  for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
+    const size = baseSize + (extra > 0 ? 1 : 0);
+    extra -= 1;
+    rows.push(list.slice(cursor, cursor + size));
+    cursor += size;
+  }
+  return rows;
+}
+
+function renderAlbumShelf(list){
+  albumShelf.innerHTML = "";
+  const rows = albumRows(list);
+  if (!rows.length) {
+    const empty = document.createElement("div");
+    empty.className = "album-empty";
+    empty.textContent = "这个筛选下暂时没有专辑。";
+    albumShelf.appendChild(empty);
+    return;
+  }
   rows.forEach(rowAlbums => {
     const row = document.createElement("div");
     row.className = "shelf-row";
-    rowAlbums.forEach(album => {
+    rowAlbums.forEach((album, rowIndex) => {
       const card = document.createElement("button");
       card.className = "album-card";
       card.type = "button";
+      card.style.zIndex = String(rowAlbums.length - rowIndex);
       card.dataset.albumKey = album.key;
       card.dataset.tags = album.tags.join(" ");
       card.dataset.text = albumSearchText(album);
       card.innerHTML = albumCardHTML(album);
-      card.addEventListener("click", () => openAlbum(album));
+      card.addEventListener("click", () => {
+        openAlbum(album);
+        playAlbum(album, album.tracks[0], false);
+      });
       row.appendChild(card);
     });
     albumShelf.appendChild(row);
   });
+}
+
+function render(){
+  renderAlbumShelf(albums);
   filterCards();
 }
 
@@ -2151,22 +2217,12 @@ function visibleTracks(){
 
 function filterCards(){
   const q = searchInput.value.trim().toLowerCase();
-  let visibleCount = 0;
-  [...document.querySelectorAll(".album-card")].forEach(card => {
-    const byFilter = currentFilter === "all" || card.dataset.tags.includes(currentFilter);
-    const bySearch = !q || card.dataset.text.includes(q);
-    const isVisible = byFilter && bySearch;
-    card.classList.toggle("hide", !isVisible);
-    if (isVisible) visibleCount += 1;
+  const filteredAlbums = albums.filter(album => {
+    const byFilter = currentFilter === "all" || album.tags.includes(currentFilter);
+    const bySearch = !q || albumSearchText(album).includes(q);
+    return byFilter && bySearch;
   });
-  const oldEmpty = albumShelf.querySelector(".album-empty");
-  if (oldEmpty) oldEmpty.remove();
-  if (!visibleCount) {
-    const empty = document.createElement("div");
-    empty.className = "album-empty";
-    empty.textContent = "这个筛选下暂时没有专辑。";
-    albumShelf.appendChild(empty);
-  }
+  renderAlbumShelf(filteredAlbums);
 }
 
 function getTrackByKey(key){
@@ -2237,7 +2293,7 @@ function openAlbum(album){
   albumBackdrop.classList.add("show");
 }
 
-function playAlbum(album, startTrack = album.tracks[0]){
+function playAlbum(album, startTrack = album.tracks[0], shouldScroll = true){
   const playable = album.tracks.filter(t => localAudioUrl(t));
   if (!playable.length) {
     showToast("这张专辑还没有本地音频");
@@ -2248,7 +2304,7 @@ function playAlbum(album, startTrack = album.tracks[0]){
   const track = playable.includes(startTrack) ? startTrack : playable[0];
   updateDraw(track, true, true);
   renderAlbumDetail(album);
-  playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (shouldScroll) playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderQueueList(){
