@@ -405,9 +405,17 @@ footer .credit{display:block;margin-top:4px}
   .draw-cover{width:100%;max-width:260px}
   #drawListen{display:inline-flex;align-items:center}
   .shelf-head{grid-template-columns:1fr}
-  .shelf-filters{justify-content:flex-start}
+  .shelf-filters{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;margin:0 -11px;padding:0 11px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .shelf-filters::-webkit-scrollbar{display:none}
+  .shelf-filters .chip{flex:0 0 auto}
   .shelf-title{font-size:26px}
-  .shelf-row{--album-size:min(46vw,164px);--album-overlap:34px;min-height:236px}
+  .shelf-search .search{width:100%;min-width:0}
+  .album-shelf{overflow-x:auto;overflow-y:visible;margin:-18px -11px 0;padding:22px 11px 18px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .shelf-row{--album-size:min(46vw,164px);--album-overlap:34px;width:max-content;min-width:max-content;min-height:236px;padding-right:44px}
+  .album-card{scroll-snap-align:start}
+  .album-card:active,.album-card:focus-visible{z-index:18!important;transform:translateY(-16px);filter:saturate(1.04)}
+  .album-card:active .album-cover,.album-card:focus-visible .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
+  .album-sheet{width:calc(100% - 22px);max-height:calc(100svh - 24px);padding:18px;border-radius:22px}
   .album-detail{grid-template-columns:1fr}
   .album-detail-cover{max-width:240px}
   .album-detail-title{font-size:28px}
@@ -468,7 +476,7 @@ footer .credit{display:block;margin-top:4px}
       <div>
         <p class="shelf-kicker">Album Shelf</p>
         <h2 class="shelf-title" id="albumShelfTitle">专辑墙</h2>
-        <p class="shelf-copy">像在唱片店架子前慢慢翻。默认展示全部，点右边标签只留下对应氛围的专辑。</p>
+        <p class="shelf-copy">像在唱片店架子前慢慢翻。默认展示全部，点标签只留下对应氛围的专辑。</p>
       </div>
       <div class="shelf-filters" aria-label="专辑标签筛选">
         <button class="chip active" data-filter="all">全部</button>
