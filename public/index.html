@@ -1960,6 +1960,10 @@ let preparedNextTrack = null;
 let preparedNextUrl = "";
 let nextAudioPreloader = null;
 let prepareNextTimer = null;
+let warmStartTrack = null;
+let warmStartUrl = "";
+let warmStartAudio = null;
+let pendingDrawTrack = null;
 const missingLocalAudioTracks = new Set();
 const playbackModes = ["shuffle", "sequence", "repeat-one"];
 
@@ -2147,6 +2151,32 @@ function prepareUpcomingTrack(){
   nextAudioPreloader.load();
 }
 
+function warmStartAudioFor(track){
+  const url = track ? localAudioUrl(track) : "";
+  if (!track || !url || warmStartUrl === url) return;
+  if (warmStartAudio) {
+    warmStartAudio.removeAttribute("src");
+    warmStartAudio.load();
+  }
+  warmStartTrack = track;
+  warmStartUrl = url;
+  warmStartAudio = new Audio();
+  warmStartAudio.preload = "auto";
+  warmStartAudio.src = url;
+  warmStartAudio.load();
+}
+
+function pickDrawTrack(){
+  const pool = playableTracks();
+  const list = pool.length ? pool : tracks;
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function prepareDrawTrack(){
+  pendingDrawTrack = pickDrawTrack();
+  warmStartAudioFor(pendingDrawTrack);
+}
+
 function scheduleUpcomingTrack(delay = 3500){
   if (prepareNextTimer) clearTimeout(prepareNextTimer);
   prepareNextTimer = setTimeout(() => {
@@ -2252,6 +2282,9 @@ function renderAlbumShelf(list){
       card.dataset.tags = album.tags.join(" ");
       card.dataset.text = albumSearchText(album);
       card.innerHTML = albumCardHTML(album);
+      card.addEventListener("pointerenter", () => warmStartAudioFor(album.tracks.find(t => localAudioUrl(t))));
+      card.addEventListener("pointerdown", () => warmStartAudioFor(album.tracks.find(t => localAudioUrl(t))));
+      card.addEventListener("focus", () => warmStartAudioFor(album.tracks.find(t => localAudioUrl(t))));
       card.addEventListener("click", () => {
         openAlbum(album);
         playAlbum(album, album.tracks[0], false);
@@ -2647,9 +2680,8 @@ function updateDraw(t, autoplay = true, remember = true){
 function drawRandom(){
   playbackQueue = null;
   currentAlbum = null;
-  const pool = playableTracks();
-  const list = pool.length ? pool : tracks;
-  const t = list[Math.floor(Math.random() * list.length)];
+  const t = pendingDrawTrack || pickDrawTrack();
+  pendingDrawTrack = null;
   updateDraw(t, true, true);
 }
 
@@ -2680,6 +2712,9 @@ closePlatform.addEventListener("click", closePlatformSheet);
 platformBackdrop.addEventListener("click", closePlatformSheet);
 closeQueue.addEventListener("click", closeQueueSheet);
 queueBackdrop.addEventListener("click", closeQueueSheet);
+drawBtn.addEventListener("pointerenter", prepareDrawTrack);
+drawBtn.addEventListener("pointerdown", prepareDrawTrack);
+drawBtn.addEventListener("focus", prepareDrawTrack);
 drawBtn.addEventListener("click", drawRandom);
 drawListen.addEventListener("click", () => {
   if (!currentTrack) {
