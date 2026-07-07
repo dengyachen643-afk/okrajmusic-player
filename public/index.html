@@ -128,10 +128,10 @@ button:disabled:hover{transform:none}
 .shelf-copy{margin:9px 0 0;color:var(--muted);font-family:var(--serif);line-height:1.75;font-size:14px}
 .shelf-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .shelf-search{margin:0 0 18px}
-.album-shelf{display:grid;gap:36px;overflow:hidden;padding:4px 0 12px}
+.album-shelf{display:grid;gap:28px;overflow:visible;padding:22px 0 12px}
 .shelf-row{
   --album-size:174px;--album-overlap:42px;
-  position:relative;display:flex;align-items:flex-start;min-height:246px;padding:4px 0 42px;
+  position:relative;display:flex;align-items:flex-start;min-height:264px;padding:22px 0 42px;
 }
 .shelf-row:after{content:"";position:absolute;left:0;right:0;bottom:20px;height:15px;border-radius:999px;background:linear-gradient(180deg,rgba(248,247,242,.88),rgba(151,147,131,.34));box-shadow:0 14px 26px rgba(38,40,34,.16)}
 .album-card{
@@ -140,10 +140,10 @@ button:disabled:hover{transform:none}
   transform:translateY(0);transition:transform .24s ease,filter .24s ease;
 }
 .album-card:first-child{margin-left:0}
-.album-card:hover{z-index:18!important;transform:translateY(-18px);filter:saturate(1.04)}
+.album-card:hover,.album-card.touch-lift{z-index:18!important;transform:translateY(-18px);filter:saturate(1.04)}
 .album-card.hide{display:none}
 .album-cover{width:var(--album-size);height:var(--album-size);border-radius:12px;box-shadow:0 18px 34px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.76);transition:.24s ease}
-.album-card:hover .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
+.album-card:hover .album-cover,.album-card.touch-lift .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
 .album-label{
   display:block;width:calc(var(--album-size) - var(--album-overlap) - 22px);margin-top:0;margin-left:8px;padding:6px 7px;border:1px solid rgba(255,255,255,.72);border-radius:0 0 7px 7px;
   background:rgba(248,247,242,.38);box-shadow:0 8px 18px rgba(38,40,34,.09);backdrop-filter:blur(6px);
@@ -410,11 +410,12 @@ footer .credit{display:block;margin-top:4px}
   .shelf-filters .chip{flex:0 0 auto}
   .shelf-title{font-size:26px}
   .shelf-search .search{width:100%;min-width:0}
-  .album-shelf{overflow-x:auto;overflow-y:visible;margin:-18px -11px 0;padding:22px 11px 18px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
-  .shelf-row{--album-size:min(46vw,164px);--album-overlap:34px;width:max-content;min-width:max-content;min-height:236px;padding-right:44px}
+  .album-shelf{overflow:visible;margin:0;padding:12px 0 18px;gap:22px}
+  .shelf-row{--album-size:min(46vw,164px);--album-overlap:34px;min-height:254px;margin:0 -11px;padding:24px 11px 46px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .shelf-row::-webkit-scrollbar{display:none}
   .album-card{scroll-snap-align:start}
-  .album-card:active,.album-card:focus-visible{z-index:18!important;transform:translateY(-16px);filter:saturate(1.04)}
-  .album-card:active .album-cover,.album-card:focus-visible .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
+  .album-card:active,.album-card:focus-visible,.album-card.touch-lift{z-index:18!important;transform:translateY(-16px);filter:saturate(1.04)}
+  .album-card:active .album-cover,.album-card:focus-visible .album-cover,.album-card.touch-lift .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
   .album-sheet{width:calc(100% - 22px);max-height:calc(100svh - 24px);padding:18px;border-radius:22px}
   .album-detail{grid-template-columns:1fr}
   .album-detail-cover{max-width:240px}
@@ -2275,9 +2276,26 @@ function renderAlbumShelf(list){
       card.dataset.tags = album.tags.join(" ");
       card.dataset.text = albumSearchText(album);
       card.innerHTML = albumCardHTML(album);
+      card.addEventListener("pointerdown", () => {
+        card.classList.add("touch-lift");
+      });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(eventName => {
+        card.addEventListener(eventName, () => {
+          setTimeout(() => card.classList.remove("touch-lift"), 180);
+        });
+      });
       card.addEventListener("click", () => {
-        openAlbum(album);
-        playAlbum(album, album.tracks[0], false);
+        const open = () => {
+          openAlbum(album);
+          playAlbum(album, album.tracks[0], false);
+          card.classList.remove("touch-lift");
+        };
+        if (window.matchMedia("(hover: none)").matches) {
+          card.classList.add("touch-lift");
+          setTimeout(open, 120);
+        } else {
+          open();
+        }
       });
       row.appendChild(card);
     });
