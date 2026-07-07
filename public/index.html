@@ -2263,18 +2263,25 @@ function clearShelfLift(row){
   row.querySelectorAll(".touch-lift").forEach(card => card.classList.remove("touch-lift"));
 }
 
-function cardFromShelfPointer(row, event){
-  const direct = event.target.closest?.(".album-card");
+function cardFromShelfPoint(row, target, clientX, clientY){
+  const direct = target?.closest?.(".album-card");
   if (direct && row.contains(direct)) return direct;
   const cards = Array.from(row.querySelectorAll(".album-card"));
   if (!cards.length) return null;
   return cards.reduce((nearest, card) => {
     const rect = card.getBoundingClientRect();
-    const clampedX = Math.max(rect.left, Math.min(event.clientX, rect.right));
-    const clampedY = Math.max(rect.top, Math.min(event.clientY, rect.bottom));
-    const distance = Math.hypot(event.clientX - clampedX, event.clientY - clampedY);
+    const clampedX = Math.max(rect.left, Math.min(clientX, rect.right));
+    const clampedY = Math.max(rect.top, Math.min(clientY, rect.bottom));
+    const distance = Math.hypot(clientX - clampedX, clientY - clampedY);
     return !nearest || distance < nearest.distance ? { card, distance } : nearest;
   }, null).card;
+}
+
+function liftShelfCardAt(row, target, clientX, clientY){
+  const card = cardFromShelfPoint(row, target, clientX, clientY);
+  if (!card) return;
+  clearShelfLift(row);
+  card.classList.add("touch-lift");
 }
 
 function renderAlbumShelf(list){
@@ -2294,17 +2301,26 @@ function renderAlbumShelf(list){
     rail.className = "shelf-rail";
     row.appendChild(rail);
     row.addEventListener("pointerdown", event => {
-      const card = cardFromShelfPointer(row, event);
-      if (!card) return;
-      clearShelfLift(row);
-      card.classList.add("touch-lift");
+      liftShelfCardAt(row, event.target, event.clientX, event.clientY);
     });
     row.addEventListener("pointermove", event => {
       if (event.pointerType === "mouse") return;
-      const card = cardFromShelfPointer(row, event);
-      if (!card) return;
-      clearShelfLift(row);
-      card.classList.add("touch-lift");
+      liftShelfCardAt(row, event.target, event.clientX, event.clientY);
+    });
+    row.addEventListener("touchstart", event => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      liftShelfCardAt(row, touch.target, touch.clientX, touch.clientY);
+    }, { passive: true });
+    row.addEventListener("touchmove", event => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      liftShelfCardAt(row, touch.target, touch.clientX, touch.clientY);
+    }, { passive: true });
+    ["touchend", "touchcancel"].forEach(eventName => {
+      row.addEventListener(eventName, () => {
+        setTimeout(() => clearShelfLift(row), 220);
+      }, { passive: true });
     });
     ["pointerup", "pointercancel", "pointerleave"].forEach(eventName => {
       row.addEventListener(eventName, () => {
