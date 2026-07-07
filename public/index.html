@@ -1956,6 +1956,9 @@ let currentAlbum = null;
 let playbackQueue = null;
 let playbackMode = "shuffle";
 let playHistory = [];
+let preparedNextTrack = null;
+let preparedNextUrl = "";
+let nextAudioPreloader = null;
 const missingLocalAudioTracks = new Set();
 const playbackModes = ["shuffle", "sequence", "repeat-one"];
 
@@ -2070,6 +2073,10 @@ function playableTracks(){
   return globalPlayableTracks();
 }
 
+function scopedPlayableQueue(){
+  return playbackQueue ? playbackQueue.filter(t => localAudioUrl(t)) : [];
+}
+
 function trackAtOffset(offset){
   const pool = playableTracks();
   if (!pool.length) return null;
@@ -2095,20 +2102,63 @@ function pickGlobalRandomTrack(){
   return pickRandomTrack(globalPlayableTracks());
 }
 
-function pickNextTrack(){
+function pickNextTrackCandidate(){
   if (playbackMode === "repeat-one" && currentTrack) return currentTrack;
-  const scopedQueue = playbackQueue ? playbackQueue.filter(t => localAudioUrl(t)) : [];
+  const scopedQueue = scopedPlayableQueue();
   if (scopedQueue.length) {
-    if (scopedQueue.length === 1) return pickGlobalRandomTrack();
+    if (scopedQueue.length === 1) return pickRandomTrack(globalPlayableTracks());
     if (playbackMode === "sequence") {
       const index = scopedQueue.indexOf(currentTrack);
       if (index >= 0 && index < scopedQueue.length - 1) return scopedQueue[index + 1];
-      return pickGlobalRandomTrack();
+      return pickRandomTrack(globalPlayableTracks());
     }
     return pickRandomTrack(scopedQueue);
   }
   if (playbackMode === "sequence") return trackAtOffset(1);
   return pickRandomTrack();
+}
+
+function clearPreparedNext(){
+  preparedNextTrack = null;
+  preparedNextUrl = "";
+  if (nextAudioPreloader) {
+    nextAudioPreloader.removeAttribute("src");
+    nextAudioPreloader.load();
+    nextAudioPreloader = null;
+  }
+}
+
+function prepareUpcomingTrack(){
+  clearPreparedNext();
+  if (!currentTrack || playbackMode === "repeat-one") return;
+  const next = pickNextTrackCandidate();
+  const url = next ? localAudioUrl(next) : "";
+  if (!next || !url || next === currentTrack) return;
+  preparedNextTrack = next;
+  preparedNextUrl = url;
+  nextAudioPreloader = new Audio();
+  nextAudioPreloader.preload = "auto";
+  nextAudioPreloader.src = url;
+  nextAudioPreloader.load();
+}
+
+function pickNextTrack(){
+  const scopedQueue = scopedPlayableQueue();
+  if (playbackMode !== "repeat-one" && preparedNextTrack && preparedNextUrl === localAudioUrl(preparedNextTrack)) {
+    const next = preparedNextTrack;
+    clearPreparedNext();
+    if (scopedQueue.length && !scopedQueue.includes(next)) {
+      playbackQueue = null;
+      currentAlbum = null;
+    }
+    return next;
+  }
+  const next = pickNextTrackCandidate();
+  if (scopedQueue.length && next && !scopedQueue.includes(next)) {
+    playbackQueue = null;
+    currentAlbum = null;
+  }
+  return next;
 }
 
 function pickPreviousTrack(){
@@ -2443,6 +2493,7 @@ function wireLocalPlayer(t, autoplay){
     const index = playbackModes.indexOf(playbackMode);
     playbackMode = playbackModes[(index + 1) % playbackModes.length];
     updateModeButton(modeButton);
+    prepareUpcomingTrack();
     showToast(modeLabel(playbackMode));
   });
   previousButton.addEventListener("click", () => {
@@ -2471,6 +2522,8 @@ function wireLocalPlayer(t, autoplay){
   audio.addEventListener("timeupdate", syncTime);
   audio.addEventListener("play", syncPlaying);
   audio.addEventListener("pause", syncPlaying);
+  audio.addEventListener("waiting", () => { state.textContent = "Loading"; });
+  audio.addEventListener("canplay", syncPlaying);
   audio.addEventListener("ended", playNext);
   audio.addEventListener("error", () => {
     state.textContent = "Error";
@@ -2521,7 +2574,7 @@ function loadLocalPlayer(t, autoplay = true){
             <div class="time"><span id="playerElapsed">0:00</span> / <span id="playerDuration">0:00</span></div>
           </div>
         </div>
-        <audio id="localAudio" preload="metadata" ${autoplay ? "autoplay" : ""} src="${escapeAttr(audioUrl)}"></audio>
+        <audio id="localAudio" preload="auto" ${autoplay ? "autoplay" : ""} src="${escapeAttr(audioUrl)}"></audio>
       </div>
     </div>
   `;
@@ -2543,6 +2596,7 @@ function updateDraw(t, autoplay = true, remember = true){
   renderQueueList();
   if (currentAlbum && albumSheet.classList.contains("show")) renderAlbumDetail(currentAlbum);
   loadLocalPlayer(t, autoplay);
+  prepareUpcomingTrack();
 }
 
 function drawRandom(){
@@ -2566,10 +2620,14 @@ chips.forEach(chip => {
     chip.classList.add("active");
     currentFilter = chip.dataset.filter;
     filterCards();
+    prepareUpcomingTrack();
   });
 });
 
-searchInput.addEventListener("input", filterCards);
+searchInput.addEventListener("input", () => {
+  filterCards();
+  prepareUpcomingTrack();
+});
 closeDrawer.addEventListener("click", () => drawer.classList.remove("show"));
 closeAlbum.addEventListener("click", closeAlbumSheet);
 albumBackdrop.addEventListener("click", closeAlbumSheet);
