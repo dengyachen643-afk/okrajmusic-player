@@ -2023,28 +2023,61 @@ function roundRect(ctx, x, y, width, height, radius){
 }
 
 function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
-  const chars = [...String(text || "")];
+  const source = String(text || "");
+  const tokens = [];
+  let word = "";
+  for (const char of [...source]) {
+    if (/[A-Za-z0-9'._-]/.test(char)) {
+      word += char;
+      continue;
+    }
+    if (word) {
+      tokens.push(word);
+      word = "";
+    }
+    tokens.push(char);
+  }
+  if (word) tokens.push(word);
   const closingPunctuation = new Set([..."\u3002\uff0c\u3001\uff1b\uff1a\uff01\uff1f\uff09\uff3d\uff5d\u300b\u300d\u300f\u201d\u2019\u2026.,;:!?)]}"]);
   const lines = [];
   let line = "";
   let truncated = false;
-  for (const char of chars) {
-    const next = line + char;
+  for (const token of tokens) {
+    if (!line && /^\s+$/.test(token)) continue;
+    const next = line + token;
     if (line && ctx.measureText(next).width > maxWidth) {
-      if (closingPunctuation.has(char)) {
+      if ([...token].length === 1 && closingPunctuation.has(token)) {
         lines.push(next.trimEnd());
         line = "";
         continue;
       }
       lines.push(line.trimEnd());
-      line = char.trimStart();
+      line = token.trimStart();
       if (lines.length === maxLines) {
         truncated = true;
         break;
       }
+      if (line && ctx.measureText(line).width > maxWidth) {
+        const chars = [...line];
+        line = "";
+        for (const char of chars) {
+          const charNext = line + char;
+          if (line && ctx.measureText(charNext).width > maxWidth) {
+            lines.push(line.trimEnd());
+            line = char;
+            if (lines.length === maxLines) {
+              truncated = true;
+              break;
+            }
+          } else {
+            line = charNext;
+          }
+        }
+      }
     } else {
       line = next;
     }
+    if (truncated) break;
   }
   if (lines.length < maxLines && line) lines.push(line.trimEnd());
   if (truncated && lines.length === maxLines) {
@@ -2075,8 +2108,147 @@ function safeFilename(value){
     .slice(0, 60) || "okrajmusic-share";
 }
 
-function drawShareCover(ctx, track, x, y, size){
-  const seed = hashString(`${track.cover}-${trackKey(track)}`);
+let coverCssText = "";
+
+function getCoverCssText(){
+  if (coverCssText) return coverCssText;
+  coverCssText = [...document.styleSheets]
+    .map(sheet => {
+      try {
+        return [...sheet.cssRules].map(rule => rule.cssText).join("\n");
+      } catch (error) {
+        return "";
+      }
+    })
+    .join("\n");
+  return coverCssText;
+}
+
+function loadSvgImage(svg){
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  });
+}
+
+async function drawCssShareCover(ctx, track, x, y, size){
+  const coverClass = String(track.cover || "").replace(/[^\w-]/g, "");
+  if (!coverClass) throw new Error("Missing cover class");
+  const css = getCoverCssText().replace(/<\/style/gi, "<\\/style");
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
+      <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+          <style>${css}</style>
+          <div class="cover ${coverClass}" style="width:${size}px;height:${size}px;border-radius:44px;overflow:hidden;box-sizing:border-box;"></div>
+        </div>
+      </foreignObject>
+    </svg>
+  `;
+  const image = await loadSvgImage(svg);
+  ctx.save();
+  ctx.shadowColor = "rgba(38,40,34,.2)";
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 18;
+  ctx.drawImage(image, x, y, size, size);
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle = "rgba(248,247,242,.75)";
+  ctx.lineWidth = 3;
+  roundRect(ctx, x, y, size, size, 44);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawModalShareCover(ctx, x, y, size){
+  roundRect(ctx, x, y, size, size, 44);
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = "#d85a49";
+  ctx.fillRect(x, y, size, size);
+  ctx.fillStyle = "#b84a4d";
+  ctx.fillRect(x, y, size, size * .08);
+  ctx.fillStyle = "#203c78";
+  ctx.fillRect(x, y + size * .08, size, size * .11);
+  ctx.fillStyle = "#1aa8c2";
+  ctx.fillRect(x, y + size * .19, size, size * .05);
+  ctx.fillStyle = "#b94b4a";
+  ctx.fillRect(x, y + size * .86, size, size * .14);
+
+  ctx.fillStyle = "rgba(255,242,211,.86)";
+  [
+    [0.17, 0.31, 0.025],
+    [0.34, 0.20, 0.022],
+    [0.66, 0.26, 0.02],
+    [0.24, 0.18, 0.018],
+    [0.78, 0.39, 0.016]
+  ].forEach(([cx, cy, r]) => {
+    ctx.beginPath();
+    ctx.arc(x + size * cx, y + size * cy, size * r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.save();
+  ctx.translate(x + size * .47, y + size * .53);
+  ctx.rotate(-0.07);
+  const w = size * .51;
+  const h = size * .56;
+  const left = -w / 2;
+  const top = -h / 2;
+  ctx.strokeStyle = "rgba(72,73,79,.34)";
+  ctx.lineWidth = size * .014;
+  ctx.beginPath();
+  ctx.ellipse(0, top + h * .34, w * .31, h * .24, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(-w * .06, top + h * .58, w * .27, h * .2, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(82,84,88,.34)";
+  ctx.lineWidth = size * .01;
+  ctx.beginPath();
+  ctx.moveTo(left + w * .18, top + h * .96);
+  ctx.lineTo(left + w * .8, top + h * .05);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(left + w * .1, top + h * .2);
+  ctx.lineTo(left + w * .9, top + h * .78);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255,236,204,.72)";
+  ctx.beginPath();
+  ctx.arc(left + w * .12, top + h * .17, size * .04, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,238,205,.7)";
+  ctx.beginPath();
+  ctx.arc(left + w * .86, top + h * .08, size * .034, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = "rgba(255,244,232,.9)";
+  ctx.font = `italic ${Math.round(size * .065)}px "Noto Serif SC","Songti SC",serif`;
+  ctx.fillText("modal soul", x + size * .57, y + size * .82);
+  ctx.restore();
+
+  ctx.save();
+  ctx.shadowColor = "rgba(38,40,34,.2)";
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 18;
+  ctx.strokeStyle = "rgba(248,247,242,.75)";
+  ctx.lineWidth = 3;
+  roundRect(ctx, x, y, size, size, 44);
+  ctx.stroke();
+  ctx.restore();
+}
+
+async function drawShareCover(ctx, track, x, y, size){
+  try {
+    await drawCssShareCover(ctx, track, x, y, size);
+    return;
+  } catch (error) {
+    console.warn("CSS cover render failed, using fallback cover", error);
+  }
+  const seed = hashString(`${track.cover}-${track.album}`);
   const palettes = [
     ["#d8d2bf", "#26322b", "#c86f4a", "#f3efe3"],
     ["#83a9c5", "#253d59", "#0faabd", "#d8e1df"],
@@ -2241,11 +2413,11 @@ async function createShareImageBlob(track){
   roundRect(ctx, 58, 58, 964, 1324, 58);
   ctx.stroke();
 
-  drawShareCover(ctx, track, 104, 118, 420);
+  await drawShareCover(ctx, track, 104, 118, 420);
 
   ctx.fillStyle = "#6a775f";
   ctx.font = `700 27px ${sans}`;
-  ctx.fillText("OKRAJ MUSIC PICK", 568, 145);
+  ctx.fillText("OKRA JMUSIC PICK", 568, 145);
   ctx.fillStyle = "#252821";
   ctx.font = `850 62px ${sans}`;
   wrapCanvasText(ctx, track.song, 568, 228, 376, 74, 3);
