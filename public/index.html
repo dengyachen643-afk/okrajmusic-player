@@ -138,7 +138,7 @@ button:disabled:hover{transform:none}
 .album-card{
   position:relative;display:grid;grid-template-rows:var(--album-size) auto;gap:0;align-content:start;width:var(--album-size);min-width:var(--album-size);
   margin-left:calc(var(--album-overlap) * -1);padding:0;border:0;background:transparent;color:var(--ink);text-align:left;cursor:pointer;backdrop-filter:none;
-  transform:translateY(0);transition:transform .24s ease,filter .24s ease;
+  transform:translateY(0);transition:transform .2s ease,filter .2s ease;
 }
 .album-card:first-child{margin-left:0}
 .album-card:hover,.album-card.touch-lift{z-index:18!important;transform:translateY(-18px);filter:saturate(1.04)}
@@ -417,9 +417,9 @@ footer .credit{display:block;margin-top:4px}
   .shelf-row{--album-size:min(46vw,164px);--album-overlap:34px;min-height:254px;margin:0 -11px;padding:24px 11px 46px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .shelf-rail{left:11px}
   .shelf-row::-webkit-scrollbar{display:none}
-  .album-card{scroll-snap-align:start}
-  .album-card:active,.album-card:focus-visible,.album-card.touch-lift{z-index:18!important;transform:translateY(-16px);filter:saturate(1.04)}
-  .album-card:active .album-cover,.album-card:focus-visible .album-cover,.album-card.touch-lift .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
+  .album-card{scroll-snap-align:start;will-change:transform;transition:transform .14s ease}
+  .album-card:active,.album-card:focus-visible,.album-card.touch-lift{z-index:18!important;transform:translateY(-14px);filter:none}
+  .album-card:active .album-cover,.album-card:focus-visible .album-cover,.album-card.touch-lift .album-cover{box-shadow:0 22px 38px rgba(38,40,34,.18)}
   .album-sheet{width:calc(100% - 22px);max-height:calc(100svh - 24px);padding:18px;border-radius:22px}
   .album-detail{grid-template-columns:1fr}
   .album-detail-cover{max-width:240px}
@@ -2260,13 +2260,18 @@ function albumRows(list, maxPerRow = 8){
 }
 
 function clearShelfLift(row){
-  row.querySelectorAll(".touch-lift").forEach(card => card.classList.remove("touch-lift"));
+  if (row._liftedCard) {
+    row._liftedCard.classList.remove("touch-lift");
+    row._liftedCard = null;
+  }
 }
 
 function cardFromShelfPoint(row, target, clientX, clientY){
   const direct = target?.closest?.(".album-card");
   if (direct && row.contains(direct)) return direct;
-  const cards = Array.from(row.querySelectorAll(".album-card"));
+  const hit = document.elementFromPoint(clientX, clientY)?.closest?.(".album-card");
+  if (hit && row.contains(hit)) return hit;
+  const cards = row._shelfCards || Array.from(row.querySelectorAll(".album-card"));
   if (!cards.length) return null;
   return cards.reduce((nearest, card) => {
     const rect = card.getBoundingClientRect();
@@ -2279,9 +2284,22 @@ function cardFromShelfPoint(row, target, clientX, clientY){
 
 function liftShelfCardAt(row, target, clientX, clientY){
   const card = cardFromShelfPoint(row, target, clientX, clientY);
-  if (!card) return;
-  clearShelfLift(row);
+  if (!card || card === row._liftedCard) return;
+  if (row._liftedCard) row._liftedCard.classList.remove("touch-lift");
   card.classList.add("touch-lift");
+  row._liftedCard = card;
+}
+
+function scheduleShelfLift(row, target, clientX, clientY){
+  row._pendingLift = { target, clientX, clientY };
+  if (row._liftFrame) return;
+  row._liftFrame = requestAnimationFrame(() => {
+    row._liftFrame = 0;
+    const point = row._pendingLift;
+    row._pendingLift = null;
+    if (!point) return;
+    liftShelfCardAt(row, point.target, point.clientX, point.clientY);
+  });
 }
 
 function renderAlbumShelf(list){
@@ -2301,21 +2319,21 @@ function renderAlbumShelf(list){
     rail.className = "shelf-rail";
     row.appendChild(rail);
     row.addEventListener("pointerdown", event => {
-      liftShelfCardAt(row, event.target, event.clientX, event.clientY);
+      scheduleShelfLift(row, event.target, event.clientX, event.clientY);
     });
     row.addEventListener("pointermove", event => {
       if (event.pointerType === "mouse") return;
-      liftShelfCardAt(row, event.target, event.clientX, event.clientY);
+      scheduleShelfLift(row, event.target, event.clientX, event.clientY);
     });
     row.addEventListener("touchstart", event => {
       const touch = event.touches[0];
       if (!touch) return;
-      liftShelfCardAt(row, touch.target, touch.clientX, touch.clientY);
+      scheduleShelfLift(row, touch.target, touch.clientX, touch.clientY);
     }, { passive: true });
     row.addEventListener("touchmove", event => {
       const touch = event.touches[0];
       if (!touch) return;
-      liftShelfCardAt(row, touch.target, touch.clientX, touch.clientY);
+      scheduleShelfLift(row, touch.target, touch.clientX, touch.clientY);
     }, { passive: true });
     ["touchend", "touchcancel"].forEach(eventName => {
       row.addEventListener(eventName, () => {
@@ -2351,9 +2369,9 @@ function renderAlbumShelf(list){
       });
       row.appendChild(card);
     });
+    row._shelfCards = Array.from(row.querySelectorAll(".album-card"));
     albumShelf.appendChild(row);
-    const cards = row.querySelectorAll(".album-card");
-    const lastCard = cards[cards.length - 1];
+    const lastCard = row._shelfCards[row._shelfCards.length - 1];
     if (lastCard) {
       const railRight = lastCard.offsetLeft + lastCard.offsetWidth - rail.offsetLeft;
       const rowPadding = parseFloat(getComputedStyle(row).paddingRight) || 0;
