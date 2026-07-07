@@ -114,6 +114,24 @@ button:disabled:hover{transform:none}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0 26px;align-items:center}
 .search{flex:1;min-width:220px;border:1px solid rgba(37,39,34,.1);border-radius:999px;padding:10px 16px;background:rgba(248,247,242,.78);color:var(--ink);outline:none;font-size:14px}
 .chip.active{background:var(--charcoal);color:#f4f3ed;border-color:var(--charcoal)}
+.shelf-section{margin-top:30px}
+.shelf-head{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;margin-bottom:18px}
+.shelf-kicker{margin:0 0 8px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
+.shelf-title{margin:0;font-size:30px;line-height:1.15;font-weight:760}
+.shelf-copy{margin:9px 0 0;color:var(--muted);font-family:var(--serif);line-height:1.75;font-size:14px}
+.shelf-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.shelf-search{margin:0 0 18px}
+.album-shelf{display:grid;gap:30px}
+.shelf-row{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:20px 18px;padding:4px 2px 28px}
+.shelf-row:after{content:"";position:absolute;left:0;right:0;bottom:6px;height:15px;border-radius:999px;background:linear-gradient(180deg,rgba(248,247,242,.85),rgba(151,147,131,.34));box-shadow:0 14px 26px rgba(38,40,34,.16)}
+.album-card{position:relative;z-index:1;display:grid;gap:10px;align-content:start;padding:0;border:0;background:transparent;color:var(--ink);text-align:left;cursor:pointer;backdrop-filter:none}
+.album-card:hover{transform:translateY(-8px)}
+.album-card.hide{display:none}
+.album-cover{width:100%;aspect-ratio:1/1;border-radius:12px;box-shadow:0 18px 34px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.76);transition:.24s ease}
+.album-card:hover .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
+.album-card-title{display:block;font-size:13px;line-height:1.35;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.album-card-meta{display:block;color:var(--muted);font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.album-empty{padding:34px;border:1px dashed rgba(37,39,34,.18);border-radius:22px;color:var(--muted);text-align:center;background:rgba(248,247,242,.48)}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
 .card{position:relative;border:1px solid rgba(37,39,34,.08);border-radius:var(--radius);overflow:hidden;background:rgba(248,247,242,.72);backdrop-filter:blur(18px);box-shadow:0 14px 38px rgba(38,40,34,.08);transition:.25s ease;cursor:pointer}
 .card:hover{transform:translateY(-5px);box-shadow:0 26px 54px rgba(38,40,34,.14)}
@@ -140,6 +158,31 @@ button:disabled:hover{transform:none}
 .drawer .d-title{font-size:22px;line-height:1.28;margin-bottom:10px;font-weight:700}
 .drawer .d-note{color:#d8d8cf;font-family:var(--serif);line-height:1.8;font-size:14px;padding-right:24px}
 .drawer button.close{position:absolute;top:14px;right:14px;background:transparent;border:0;color:#edece4;font-size:20px;cursor:pointer;padding:4px 8px}
+.album-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.34);opacity:0;pointer-events:none;transition:.24s ease;z-index:32;backdrop-filter:blur(5px)}
+.album-backdrop.show{opacity:1;pointer-events:auto}
+.album-sheet{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);width:min(920px,calc(100% - 28px));max-height:min(760px,calc(100vh - 40px));
+  background:rgba(248,247,242,.97);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:24px;box-shadow:0 32px 90px rgba(38,40,34,.26);
+  padding:24px;opacity:0;pointer-events:none;transition:.26s ease;backdrop-filter:blur(18px);z-index:33;overflow:auto;
+}
+.album-sheet.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.album-close{position:absolute;top:14px;right:14px;width:36px;height:36px;padding:0;border-radius:50%;background:transparent;color:var(--muted);font-size:22px}
+.album-detail{display:grid;grid-template-columns:minmax(190px,260px) 1fr;gap:24px;align-items:start}
+.album-detail-cover{width:100%;border-radius:18px;box-shadow:0 24px 54px rgba(38,40,34,.2);border:1px solid rgba(248,247,242,.75);cursor:pointer}
+.album-detail-kicker{margin:2px 0 10px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
+.album-detail-title{margin:0;font-size:34px;line-height:1.12;font-weight:790}
+.album-detail-meta{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.6}
+.album-detail-note{margin:16px 0 18px;color:#626456;font-family:var(--serif);line-height:1.8;font-size:14px}
+.album-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.album-track-list{display:grid;gap:6px;margin-top:8px}
+.album-track{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;width:100%;border:0;border-radius:12px;padding:10px 12px;background:rgba(37,39,34,.04);text-align:left;color:var(--ink);backdrop-filter:none}
+.album-track:hover{transform:none;background:rgba(169,182,156,.2)}
+.album-track.active{background:rgba(48,51,45,.9);color:#f8f7f2}
+.album-track-index{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.album-track.active .album-track-index,.album-track.active .album-track-artist{color:#d6d9cd}
+.album-track-song{display:block;font-size:15px;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.album-track-artist{display:block;margin-top:3px;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.album-track-play{color:inherit;font-size:12px}
 .platform-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.26);opacity:0;pointer-events:none;transition:.24s ease;z-index:34;backdrop-filter:blur(4px)}
 .platform-backdrop.show{opacity:1;pointer-events:auto}
 .platform-sheet{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140%);width:min(520px,calc(100% - 28px));background:rgba(248,247,242,.96);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:26px;box-shadow:0 26px 80px rgba(38,40,34,.22);padding:22px;transition:.3s ease;backdrop-filter:blur(18px);z-index:35}
@@ -341,6 +384,13 @@ footer .credit{display:block;margin-top:4px}
   .transport{justify-content:center}
   .draw-card{grid-template-columns:1fr}
   .draw-cover{width:100%;max-width:260px}
+  .shelf-head{grid-template-columns:1fr}
+  .shelf-filters{justify-content:flex-start}
+  .shelf-title{font-size:26px}
+  .shelf-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}
+  .album-detail{grid-template-columns:1fr}
+  .album-detail-cover{max-width:240px}
+  .album-detail-title{font-size:28px}
   .grid{grid-template-columns:1fr}
   .song{min-height:auto}
   .platform-options{grid-template-columns:1fr}
@@ -393,18 +443,28 @@ footer .credit{display:block;margin-top:4px}
     </aside>
   </header>
 
-  <section class="toolbar">
-    <input class="search" id="searchInput" placeholder="搜乐队 / 歌名 / 氛围，比如：夜、东京、后劲">
-    <button class="chip active" data-filter="all">全部</button>
-    <button class="chip" data-filter="city">城市</button>
-    <button class="chip" data-filter="night">夜色</button>
-    <button class="chip" data-filter="afterglow">后劲</button>
-    <button class="chip" data-filter="math">器乐 / 数摇</button>
-    <button class="chip" data-filter="anime">动画记忆</button>
-    <button class="chip" data-filter="groove">律动</button>
+  <section class="shelf-section" aria-labelledby="albumShelfTitle">
+    <div class="shelf-head">
+      <div>
+        <p class="shelf-kicker">Album Shelf</p>
+        <h2 class="shelf-title" id="albumShelfTitle">专辑墙</h2>
+        <p class="shelf-copy">像在唱片店架子前慢慢翻。默认展示全部，点右边标签只留下对应氛围的专辑。</p>
+      </div>
+      <div class="shelf-filters" aria-label="专辑标签筛选">
+        <button class="chip active" data-filter="all">全部</button>
+        <button class="chip" data-filter="city">城市</button>
+        <button class="chip" data-filter="night">夜色</button>
+        <button class="chip" data-filter="afterglow">后劲</button>
+        <button class="chip" data-filter="math">器乐 / 数摇</button>
+        <button class="chip" data-filter="anime">动画记忆</button>
+        <button class="chip" data-filter="groove">律动</button>
+      </div>
+    </div>
+    <div class="shelf-search">
+      <input class="search" id="searchInput" placeholder="搜乐队 / 专辑 / 歌名 / 氛围，比如：夜、东京、后劲">
+    </div>
+    <div class="album-shelf" id="albumShelf"></div>
   </section>
-
-  <section class="grid" id="grid"></section>
 </main>
 
 <aside class="drawer" id="drawer" aria-live="polite">
@@ -414,6 +474,12 @@ footer .credit{display:block;margin-top:4px}
   <div class="tags" id="drawerTags"></div>
   <div class="d-note" id="drawerNote"></div>
   <div class="play-links" id="drawerLinks"></div>
+</aside>
+
+<div class="album-backdrop" id="albumBackdrop"></div>
+<aside class="album-sheet" id="albumSheet" aria-live="polite">
+  <button class="album-close" id="closeAlbum" aria-label="关闭专辑详情">×</button>
+  <div id="albumDetail"></div>
 </aside>
 
 <div class="platform-backdrop" id="platformBackdrop"></div>
@@ -1826,7 +1892,7 @@ const neteaseMusicLinks = {
   "Yakkle & Shing02||愛密集": "https://music.163.com/#/song?id=26127308"
 };
 
-const grid = document.getElementById("grid");
+const albumShelf = document.getElementById("albumShelf");
 const searchInput = document.getElementById("searchInput");
 const chips = [...document.querySelectorAll(".chip")];
 const drawer = document.getElementById("drawer");
@@ -1856,6 +1922,10 @@ const platformMeta = document.getElementById("platformMeta");
 const platformTags = document.getElementById("platformTags");
 const platformNote = document.getElementById("platformNote");
 const platformOptions = document.getElementById("platformOptions");
+const albumBackdrop = document.getElementById("albumBackdrop");
+const albumSheet = document.getElementById("albumSheet");
+const albumDetail = document.getElementById("albumDetail");
+const closeAlbum = document.getElementById("closeAlbum");
 const queueBackdrop = document.getElementById("queueBackdrop");
 const queueSheet = document.getElementById("queueSheet");
 const closeQueue = document.getElementById("closeQueue");
@@ -1864,6 +1934,8 @@ const queueCount = document.getElementById("queueCount");
 const toast = document.getElementById("toast");
 let currentFilter = "all";
 let currentTrack = null;
+let currentAlbum = null;
+let playbackQueue = null;
 let playbackMode = "shuffle";
 let playHistory = [];
 const missingLocalAudioTracks = new Set();
@@ -1871,6 +1943,10 @@ const playbackModes = ["shuffle", "sequence", "repeat-one"];
 
 function trackKey(t){
   return `${t.artist}||${t.song}`;
+}
+
+function albumKeyFromTrack(t){
+  return `${t.artist}||${t.album}`;
 }
 
 function escapeAttr(value){
@@ -1884,6 +1960,36 @@ function escapeHTML(value){
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+
+function buildAlbums(){
+  const map = new Map();
+  tracks.forEach((track, index) => {
+    const key = albumKeyFromTrack(track);
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        artist: track.artist,
+        title: track.album,
+        cover: track.cover,
+        tracks: [],
+        firstIndex: index,
+        tags: [],
+        mood: []
+      });
+    }
+    const album = map.get(key);
+    album.tracks.push(track);
+    track.tags.forEach(tag => {
+      if (!album.tags.includes(tag)) album.tags.push(tag);
+    });
+    track.mood.forEach(item => {
+      if (!album.mood.includes(item)) album.mood.push(item);
+    });
+  });
+  return [...map.values()].sort((a, b) => a.firstIndex - b.firstIndex);
+}
+
+const albums = buildAlbums();
 
 const icons = {
   shuffle: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h3c4 0 5.5 12 10 12h5"/><path d="M18 15l3 3-3 3"/><path d="M3 18h3c1.7 0 3-1.6 4.1-3.6"/><path d="M14 6h7"/><path d="M18 3l3 3-3 3"/></svg>`,
@@ -1935,6 +2041,8 @@ function localAudioUrl(t){
 }
 
 function playableTracks(){
+  const scopedQueue = playbackQueue ? playbackQueue.filter(t => localAudioUrl(t)) : [];
+  if (scopedQueue.length) return scopedQueue;
   const pool = visibleTracks().filter(t => localAudioUrl(t));
   if (pool.length) return pool;
   return tracks.filter(t => localAudioUrl(t));
@@ -1988,28 +2096,45 @@ function playLinksHTML(t){
   `;
 }
 
-function cardHTML(t){
+function albumSearchText(album){
+  return [
+    album.artist,
+    album.title,
+    album.mood.join(" "),
+    ...album.tracks.map(t => `${t.song} ${t.note}`)
+  ].join(" ").toLowerCase();
+}
+
+function albumCardHTML(album){
+  const songs = album.tracks.length > 1 ? `${album.tracks.length} 首` : album.tracks[0].song;
   return `
-    <div class="cover ${t.cover}"><div class="mini">${t.album}</div></div>
-    <div class="body">
-      <p class="artist">${t.artist}</p>
-      <h2 class="song">${t.song}</h2>
-      <div class="tags">${t.mood.map(x=>`<span class="tag">${x}</span>`).join("")}</div>
-      <div class="play-links">${playLinksHTML(t)}</div>
-    </div>
+    <span class="album-cover cover ${escapeAttr(album.cover)}"></span>
+    <span>
+      <span class="album-card-title">${escapeHTML(album.title)}</span>
+      <span class="album-card-meta">${escapeHTML(album.artist)} · ${escapeHTML(songs)}</span>
+    </span>
   `;
 }
 
 function render(){
-  grid.innerHTML = "";
-  tracks.forEach((t, i) => {
-    const card = document.createElement("article");
-    card.className = "card";
-    card.dataset.tags = t.tags.join(" ");
-    card.dataset.text = `${t.artist} ${t.song} ${t.album} ${t.mood.join(" ")}`.toLowerCase();
-    card.innerHTML = cardHTML(t);
-    card.addEventListener("click", () => openTrack(t));
-    grid.appendChild(card);
+  albumShelf.innerHTML = "";
+  const rows = [];
+  for (let i = 0; i < albums.length; i += 8) rows.push(albums.slice(i, i + 8));
+  rows.forEach(rowAlbums => {
+    const row = document.createElement("div");
+    row.className = "shelf-row";
+    rowAlbums.forEach(album => {
+      const card = document.createElement("button");
+      card.className = "album-card";
+      card.type = "button";
+      card.dataset.albumKey = album.key;
+      card.dataset.tags = album.tags.join(" ");
+      card.dataset.text = albumSearchText(album);
+      card.innerHTML = albumCardHTML(album);
+      card.addEventListener("click", () => openAlbum(album));
+      row.appendChild(card);
+    });
+    albumShelf.appendChild(row);
   });
   filterCards();
 }
@@ -2026,15 +2151,30 @@ function visibleTracks(){
 
 function filterCards(){
   const q = searchInput.value.trim().toLowerCase();
-  [...document.querySelectorAll(".card")].forEach(card => {
+  let visibleCount = 0;
+  [...document.querySelectorAll(".album-card")].forEach(card => {
     const byFilter = currentFilter === "all" || card.dataset.tags.includes(currentFilter);
     const bySearch = !q || card.dataset.text.includes(q);
-    card.classList.toggle("hide", !(byFilter && bySearch));
+    const isVisible = byFilter && bySearch;
+    card.classList.toggle("hide", !isVisible);
+    if (isVisible) visibleCount += 1;
   });
+  const oldEmpty = albumShelf.querySelector(".album-empty");
+  if (oldEmpty) oldEmpty.remove();
+  if (!visibleCount) {
+    const empty = document.createElement("div");
+    empty.className = "album-empty";
+    empty.textContent = "这个筛选下暂时没有专辑。";
+    albumShelf.appendChild(empty);
+  }
 }
 
 function getTrackByKey(key){
   return tracks.find(t => trackKey(t) === key);
+}
+
+function getAlbumByKey(key){
+  return albums.find(album => album.key === key);
 }
 
 function closePlatformSheet(){
@@ -2047,8 +2187,72 @@ function closeQueueSheet(){
   queueBackdrop.classList.remove("show");
 }
 
+function closeAlbumSheet(){
+  albumSheet.classList.remove("show");
+  albumBackdrop.classList.remove("show");
+}
+
+function renderAlbumTrackList(album){
+  return album.tracks.map((track, index) => {
+    const active = track === currentTrack ? " active" : "";
+    return `
+      <button class="album-track${active}" data-album-key="${escapeAttr(album.key)}" data-track-key="${escapeAttr(trackKey(track))}" type="button">
+        <span class="album-track-index">${String(index + 1).padStart(2, "0")}</span>
+        <span>
+          <span class="album-track-song">${escapeHTML(track.song)}</span>
+          <span class="album-track-artist">${escapeHTML(track.artist)}</span>
+        </span>
+        <span class="album-track-play">播放</span>
+      </button>
+    `;
+  }).join("");
+}
+
+function renderAlbumDetail(album){
+  const notes = album.tracks.map(t => t.note).filter(Boolean);
+  const note = notes.length > 1 ? notes.slice(0, 2).join(" / ") : (notes[0] || "这张专辑还没写下介绍，但已经可以直接播放。");
+  albumDetail.innerHTML = `
+    <div class="album-detail">
+      <button class="album-detail-cover cover ${escapeAttr(album.cover)}" data-album-play="${escapeAttr(album.key)}" type="button" aria-label="播放专辑"></button>
+      <div>
+        <div class="album-detail-kicker">Album Detail</div>
+        <h3 class="album-detail-title">${escapeHTML(album.title)}</h3>
+        <div class="album-detail-meta">${escapeHTML(album.artist)} · ${album.tracks.length} 首</div>
+        <div class="tags">${album.mood.slice(0, 6).map(x=>`<span class="tag">${escapeHTML(x)}</span>`).join("")}</div>
+        <p class="album-detail-note">${escapeHTML(note)}</p>
+        <div class="album-actions">
+          <button class="primary" data-album-play="${escapeAttr(album.key)}">播放专辑</button>
+          <button data-album-queue="${escapeAttr(album.key)}">查看队列</button>
+        </div>
+        <div class="album-track-list">${renderAlbumTrackList(album)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function openAlbum(album){
+  currentAlbum = album;
+  renderAlbumDetail(album);
+  albumSheet.classList.add("show");
+  albumBackdrop.classList.add("show");
+}
+
+function playAlbum(album, startTrack = album.tracks[0]){
+  const playable = album.tracks.filter(t => localAudioUrl(t));
+  if (!playable.length) {
+    showToast("这张专辑还没有本地音频");
+    return;
+  }
+  playbackQueue = playable;
+  currentAlbum = album;
+  const track = playable.includes(startTrack) ? startTrack : playable[0];
+  updateDraw(track, true, true);
+  renderAlbumDetail(album);
+  playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function renderQueueList(){
-  const list = tracks.filter(t => localAudioUrl(t));
+  const list = playableTracks();
   queueCount.textContent = list.length;
   queueList.innerHTML = list.map((t, index) => {
     const key = escapeAttr(trackKey(t));
@@ -2284,10 +2488,13 @@ function updateDraw(t, autoplay = true, remember = true){
   drawNote.textContent = t.note;
   setDrawActionsEnabled(true);
   renderQueueList();
+  if (currentAlbum && albumSheet.classList.contains("show")) renderAlbumDetail(currentAlbum);
   loadLocalPlayer(t, autoplay);
 }
 
 function drawRandom(){
+  playbackQueue = null;
+  currentAlbum = null;
   const pool = playableTracks();
   const list = pool.length ? pool : tracks;
   const t = list[Math.floor(Math.random() * list.length)];
@@ -2311,6 +2518,8 @@ chips.forEach(chip => {
 
 searchInput.addEventListener("input", filterCards);
 closeDrawer.addEventListener("click", () => drawer.classList.remove("show"));
+closeAlbum.addEventListener("click", closeAlbumSheet);
+albumBackdrop.addEventListener("click", closeAlbumSheet);
 closePlatform.addEventListener("click", closePlatformSheet);
 platformBackdrop.addEventListener("click", closePlatformSheet);
 closeQueue.addEventListener("click", closeQueueSheet);
@@ -2331,6 +2540,8 @@ document.addEventListener("click", event => {
   const t = getTrackByKey(trigger.dataset.trackKey) || currentTrack;
   if (!t) return;
   if (localAudioUrl(t)) {
+    playbackQueue = null;
+    currentAlbum = null;
     updateDraw(t, true, true);
     playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
   } else {
@@ -2346,9 +2557,34 @@ queueList.addEventListener("click", event => {
   closeQueueSheet();
   playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
 });
+albumDetail.addEventListener("click", event => {
+  const playTarget = event.target.closest("[data-album-play]");
+  const queueTarget = event.target.closest("[data-album-queue]");
+  const trackTarget = event.target.closest(".album-track");
+  if (trackTarget) {
+    const album = getAlbumByKey(trackTarget.dataset.albumKey);
+    const track = getTrackByKey(trackTarget.dataset.trackKey);
+    if (album && track) playAlbum(album, track);
+    return;
+  }
+  if (playTarget) {
+    const album = getAlbumByKey(playTarget.dataset.albumPlay);
+    if (album) playAlbum(album);
+    return;
+  }
+  if (queueTarget) {
+    const album = getAlbumByKey(queueTarget.dataset.albumQueue);
+    if (!album) return;
+    playbackQueue = album.tracks.filter(t => localAudioUrl(t));
+    currentAlbum = album;
+    renderQueueList();
+    openQueueSheet();
+  }
+});
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     drawer.classList.remove("show");
+    closeAlbumSheet();
     closePlatformSheet();
     closeQueueSheet();
   }
