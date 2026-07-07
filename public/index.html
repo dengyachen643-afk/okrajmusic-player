@@ -143,8 +143,12 @@ button:disabled:hover{transform:none}
 .album-card.hide{display:none}
 .album-cover{width:var(--album-size);height:var(--album-size);border-radius:12px;box-shadow:0 18px 34px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.76);transition:.24s ease}
 .album-card:hover .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
-.album-card-title{display:block;max-width:calc(var(--album-size) - var(--album-overlap) - 10px);font-size:13px;line-height:1.35;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.album-card-meta{display:block;max-width:calc(var(--album-size) - var(--album-overlap) - 10px);color:var(--muted);font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.album-label{
+  display:block;width:calc(var(--album-size) - var(--album-overlap) - 10px);padding:7px 9px;border:1px solid rgba(255,255,255,.94);border-radius:8px;
+  background:rgba(248,247,242,.76);box-shadow:0 10px 24px rgba(38,40,34,.1);backdrop-filter:blur(9px);
+}
+.album-card-title{display:block;font-size:13px;line-height:1.35;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.album-card-meta{display:block;color:var(--muted);font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .album-empty{padding:34px;border:1px dashed rgba(37,39,34,.18);border-radius:22px;color:var(--muted);text-align:center;background:rgba(248,247,242,.48)}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
 .card{position:relative;border:1px solid rgba(37,39,34,.08);border-radius:var(--radius);overflow:hidden;background:rgba(248,247,242,.72);backdrop-filter:blur(18px);box-shadow:0 14px 38px rgba(38,40,34,.08);transition:.25s ease;cursor:pointer}
@@ -182,21 +186,20 @@ button:disabled:hover{transform:none}
 .album-sheet.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
 .album-close{position:absolute;top:14px;right:14px;width:36px;height:36px;padding:0;border-radius:50%;background:transparent;color:var(--muted);font-size:22px}
 .album-detail{display:grid;grid-template-columns:minmax(190px,260px) 1fr;gap:24px;align-items:start}
-.album-detail-cover{width:100%;border-radius:18px;box-shadow:0 24px 54px rgba(38,40,34,.2);border:1px solid rgba(248,247,242,.75);cursor:pointer}
+.album-detail-cover{width:100%;border-radius:18px;box-shadow:0 24px 54px rgba(38,40,34,.2);border:1px solid rgba(248,247,242,.75)}
 .album-detail-kicker{margin:2px 0 10px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
 .album-detail-title{margin:0;font-size:34px;line-height:1.12;font-weight:790}
 .album-detail-meta{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.6}
 .album-detail-note{margin:16px 0 18px;color:#626456;font-family:var(--serif);line-height:1.8;font-size:14px}
 .album-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
 .album-track-list{display:grid;gap:6px;margin-top:8px}
-.album-track{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;width:100%;border:0;border-radius:12px;padding:10px 12px;background:rgba(37,39,34,.04);text-align:left;color:var(--ink);backdrop-filter:none}
+.album-track{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;width:100%;border:0;border-radius:12px;padding:10px 12px;background:rgba(37,39,34,.04);text-align:left;color:var(--ink);backdrop-filter:none}
 .album-track:hover{transform:none;background:rgba(169,182,156,.2)}
 .album-track.active{background:rgba(48,51,45,.9);color:#f8f7f2}
 .album-track-index{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 .album-track.active .album-track-index,.album-track.active .album-track-artist{color:#d6d9cd}
 .album-track-song{display:block;font-size:15px;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .album-track-artist{display:block;margin-top:3px;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.album-track-play{color:inherit;font-size:12px}
 .platform-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.26);opacity:0;pointer-events:none;transition:.24s ease;z-index:34;backdrop-filter:blur(4px)}
 .platform-backdrop.show{opacity:1;pointer-events:auto}
 .platform-sheet{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140%);width:min(520px,calc(100% - 28px));background:rgba(248,247,242,.96);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:26px;box-shadow:0 26px 80px rgba(38,40,34,.22);padding:22px;transition:.3s ease;backdrop-filter:blur(18px);z-index:35}
@@ -2145,7 +2148,7 @@ function albumCardHTML(album){
   const meta = album.tracks.length > 1 ? `${album.artist} · ${album.tracks.length} 首` : album.artist;
   return `
     <span class="album-cover cover ${escapeAttr(album.cover)}"></span>
-    <span>
+    <span class="album-label">
       <span class="album-card-title">${escapeHTML(title)}</span>
       <span class="album-card-meta">${escapeHTML(meta)}</span>
     </span>
@@ -2258,7 +2261,6 @@ function renderAlbumTrackList(album){
           <span class="album-track-song">${escapeHTML(track.song)}</span>
           <span class="album-track-artist">${escapeHTML(track.artist)}</span>
         </span>
-        <span class="album-track-play">播放</span>
       </button>
     `;
   }).join("");
@@ -2269,7 +2271,7 @@ function renderAlbumDetail(album){
   const note = notes.length > 1 ? notes.slice(0, 2).join(" / ") : (notes[0] || "这张专辑还没写下介绍，但已经可以直接播放。");
   albumDetail.innerHTML = `
     <div class="album-detail">
-      <button class="album-detail-cover cover ${escapeAttr(album.cover)}" data-album-play="${escapeAttr(album.key)}" type="button" aria-label="播放专辑"></button>
+      <div class="album-detail-cover cover ${escapeAttr(album.cover)}"></div>
       <div>
         <div class="album-detail-kicker">Album Detail</div>
         <h3 class="album-detail-title">${escapeHTML(album.title)}</h3>
@@ -2277,7 +2279,6 @@ function renderAlbumDetail(album){
         <div class="tags">${album.mood.slice(0, 6).map(x=>`<span class="tag">${escapeHTML(x)}</span>`).join("")}</div>
         <p class="album-detail-note">${escapeHTML(note)}</p>
         <div class="album-actions">
-          <button class="primary" data-album-play="${escapeAttr(album.key)}">播放专辑</button>
           <button data-album-queue="${escapeAttr(album.key)}">查看队列</button>
         </div>
         <div class="album-track-list">${renderAlbumTrackList(album)}</div>
@@ -2614,18 +2615,12 @@ queueList.addEventListener("click", event => {
   playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 albumDetail.addEventListener("click", event => {
-  const playTarget = event.target.closest("[data-album-play]");
   const queueTarget = event.target.closest("[data-album-queue]");
   const trackTarget = event.target.closest(".album-track");
   if (trackTarget) {
     const album = getAlbumByKey(trackTarget.dataset.albumKey);
     const track = getTrackByKey(trackTarget.dataset.trackKey);
     if (album && track) playAlbum(album, track);
-    return;
-  }
-  if (playTarget) {
-    const album = getAlbumByKey(playTarget.dataset.albumPlay);
-    if (album) playAlbum(album);
     return;
   }
   if (queueTarget) {
