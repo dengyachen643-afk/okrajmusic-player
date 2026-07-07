@@ -434,7 +434,7 @@ footer .credit{display:block;margin-top:4px}
 </style>
 </head>
 <body>
-<div class="toast" id="toast">已复制抽歌结果</div>
+<div class="toast" id="toast">已生成分享图</div>
 <main class="wrap">
   <header>
     <section class="title-card">
@@ -469,7 +469,7 @@ footer .credit{display:block;margin-top:4px}
         <p class="draw-note" id="drawNote">它还没有决定要把哪首歌交给你。</p>
         <div class="actions">
           <button class="primary" id="drawBtn">抽一首</button>
-          <button id="copyBtn" disabled>复制结果</button>
+          <button id="copyBtn" disabled>分享</button>
           <button id="drawListen" disabled>去播放器</button>
         </div>
       </div>
@@ -2000,6 +2000,334 @@ function escapeHTML(value){
     .replace(/"/g, "&quot;");
 }
 
+function hashString(value){
+  let hash = 2166136261;
+  for (const char of String(value)) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function roundRect(ctx, x, y, width, height, radius){
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
+
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
+  const chars = [...String(text || "")];
+  const lines = [];
+  let line = "";
+  let truncated = false;
+  for (const char of chars) {
+    const next = line + char;
+    if (line && ctx.measureText(next).width > maxWidth) {
+      lines.push(line.trimEnd());
+      line = char.trimStart();
+      if (lines.length === maxLines) {
+        truncated = true;
+        break;
+      }
+    } else {
+      line = next;
+    }
+  }
+  if (lines.length < maxLines && line) lines.push(line.trimEnd());
+  if (truncated && lines.length === maxLines) {
+    let last = lines[lines.length - 1];
+    while (last.length && ctx.measureText(`${last}...`).width > maxWidth) {
+      last = last.slice(0, -1);
+    }
+    lines[lines.length - 1] = `${last}...`;
+  }
+  lines.forEach((lineText, index) => ctx.fillText(lineText, x, y + index * lineHeight));
+  return y + lines.length * lineHeight;
+}
+
+function shareSiteUrl(){
+  const url = new URL(window.location.href);
+  if (["127.0.0.1", "localhost"].includes(url.hostname)) {
+    return "https://dengyachen643-afk.github.io/okrajmusic-player/";
+  }
+  url.search = "";
+  url.hash = "";
+  return url.toString();
+}
+
+function safeFilename(value){
+  return String(value || "okrajmusic-share")
+    .replace(/[\\/:*?"<>|]/g, "")
+    .replace(/\s+/g, "-")
+    .slice(0, 60) || "okrajmusic-share";
+}
+
+function drawShareCover(ctx, track, x, y, size){
+  const seed = hashString(`${track.cover}-${trackKey(track)}`);
+  const palettes = [
+    ["#d8d2bf", "#26322b", "#c86f4a", "#f3efe3"],
+    ["#83a9c5", "#253d59", "#0faabd", "#d8e1df"],
+    ["#c9d8bf", "#18221d", "#7f9a72", "#efe8d8"],
+    ["#efe8d8", "#25231d", "#c4a98a", "#6d785f"],
+    ["#c4e3df", "#1c6374", "#f0dc9b", "#d66b59"],
+    ["#e7d2d0", "#2e4158", "#f8f0e5", "#9fb48f"]
+  ];
+  const palette = palettes[seed % palettes.length];
+  roundRect(ctx, x, y, size, size, 44);
+  ctx.save();
+  ctx.clip();
+  const gradient = ctx.createLinearGradient(x, y, x + size, y + size);
+  gradient.addColorStop(0, palette[0]);
+  gradient.addColorStop(.55, palette[2]);
+  gradient.addColorStop(1, palette[1]);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(x, y, size, size);
+
+  ctx.globalAlpha = .9;
+  ctx.fillStyle = palette[3];
+  ctx.fillRect(x, y + size * .58, size, size * .44);
+  ctx.globalAlpha = .78;
+  ctx.fillStyle = palette[1];
+  ctx.beginPath();
+  ctx.ellipse(x + size * (.25 + (seed % 18) / 100), y + size * .36, size * .18, size * .24, (seed % 30) / 20, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = .52;
+  ctx.fillStyle = palette[0];
+  ctx.beginPath();
+  ctx.arc(x + size * .72, y + size * .28, size * .16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = .82;
+  ctx.strokeStyle = palette[1];
+  ctx.lineWidth = 9;
+  ctx.beginPath();
+  ctx.moveTo(x + size * .14, y + size * .73);
+  ctx.lineTo(x + size * .88, y + size * (.28 + (seed % 10) / 100));
+  ctx.stroke();
+  ctx.globalAlpha = .34;
+  ctx.strokeStyle = palette[3];
+  ctx.lineWidth = 14;
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x + size * (.12 + i * .18), y + size * .12);
+    ctx.lineTo(x + size * (.02 + i * .18), y + size * .92);
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.save();
+  ctx.shadowColor = "rgba(38,40,34,.2)";
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 18;
+  ctx.strokeStyle = "rgba(248,247,242,.75)";
+  ctx.lineWidth = 3;
+  roundRect(ctx, x, y, size, size, 44);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawQrFallback(ctx, x, y, size, value){
+  const cells = 29;
+  const cell = size / cells;
+  const seed = hashString(value);
+  ctx.fillStyle = "#f8f7f2";
+  roundRect(ctx, x, y, size, size, 18);
+  ctx.fill();
+  const finder = (cx, cy) => {
+    ctx.fillStyle = "#2d3029";
+    ctx.fillRect(x + cx * cell, y + cy * cell, cell * 7, cell * 7);
+    ctx.fillStyle = "#f8f7f2";
+    ctx.fillRect(x + (cx + 1) * cell, y + (cy + 1) * cell, cell * 5, cell * 5);
+    ctx.fillStyle = "#2d3029";
+    ctx.fillRect(x + (cx + 2) * cell, y + (cy + 2) * cell, cell * 3, cell * 3);
+  };
+  finder(2, 2);
+  finder(20, 2);
+  finder(2, 20);
+  ctx.fillStyle = "#2d3029";
+  for (let row = 0; row < cells; row++) {
+    for (let col = 0; col < cells; col++) {
+      const inFinder = (col < 10 && row < 10) || (col > 18 && row < 10) || (col < 10 && row > 18);
+      if (inFinder) continue;
+      const bit = hashString(`${seed}-${row}-${col}`) % 5;
+      if (bit < 2) ctx.fillRect(x + col * cell, y + row * cell, Math.ceil(cell), Math.ceil(cell));
+    }
+  }
+}
+
+async function drawShareQr(ctx, value, x, y, size){
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=12&data=${encodeURIComponent(value)}`;
+  try {
+    const response = await fetch(qrUrl, { mode: "cors" });
+    if (!response.ok) throw new Error("QR request failed");
+    const blob = await response.blob();
+    const image = await new Promise((resolve, reject) => {
+      if ("createImageBitmap" in window) {
+        createImageBitmap(blob).then(resolve).catch(reject);
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("QR image failed"));
+      };
+      img.src = url;
+    });
+    roundRect(ctx, x, y, size, size, 18);
+    ctx.save();
+    ctx.clip();
+    ctx.drawImage(image, x, y, size, size);
+    ctx.restore();
+  } catch (error) {
+    drawQrFallback(ctx, x, y, size, value);
+  }
+}
+
+function canvasToBlob(canvas){
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Canvas export failed")), "image/png", .94);
+  });
+}
+
+async function createShareImageBlob(track){
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1440;
+  const ctx = canvas.getContext("2d");
+  const sans = '"Inter","Microsoft YaHei","Noto Sans SC","Hiragino Sans GB",Arial,sans-serif';
+  const serif = '"Noto Serif SC","Source Han Serif SC","Songti SC",serif';
+
+  const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
+  bg.addColorStop(0, "#f2f1eb");
+  bg.addColorStop(.58, "#e5e6dc");
+  bg.addColorStop(1, "#f8f5ec");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 1080, 1440);
+  ctx.fillStyle = "rgba(169,182,156,.38)";
+  ctx.beginPath();
+  ctx.arc(942, 170, 260, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(45,48,41,.06)";
+  ctx.beginPath();
+  ctx.arc(155, 1202, 320, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.shadowColor = "rgba(38,40,34,.16)";
+  ctx.shadowBlur = 70;
+  ctx.shadowOffsetY = 30;
+  ctx.fillStyle = "rgba(248,247,242,.86)";
+  roundRect(ctx, 58, 58, 964, 1324, 58);
+  ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = "rgba(38,40,34,.1)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, 58, 58, 964, 1324, 58);
+  ctx.stroke();
+
+  drawShareCover(ctx, track, 104, 118, 420);
+
+  ctx.fillStyle = "#6a775f";
+  ctx.font = `700 27px ${sans}`;
+  ctx.fillText("OKRAJ MUSIC PICK", 568, 145);
+  ctx.fillStyle = "#252821";
+  ctx.font = `850 62px ${sans}`;
+  wrapCanvasText(ctx, track.song, 568, 228, 376, 74, 3);
+  ctx.fillStyle = "#6c7064";
+  ctx.font = `500 31px ${sans}`;
+  wrapCanvasText(ctx, track.artist, 568, 486, 376, 42, 2);
+  ctx.fillStyle = "#8b8d82";
+  ctx.font = `500 25px ${sans}`;
+  wrapCanvasText(ctx, `专辑：${track.album}`, 568, 588, 376, 36, 2);
+
+  ctx.fillStyle = "rgba(169,182,156,.26)";
+  roundRect(ctx, 104, 620, 872, 402, 34);
+  ctx.fill();
+  ctx.fillStyle = "#6a775f";
+  ctx.font = `700 28px ${sans}`;
+  ctx.fillText("推荐语", 150, 686);
+  ctx.fillStyle = "#4f554a";
+  ctx.font = `700 39px ${serif}`;
+  wrapCanvasText(ctx, track.note || "今晚把这首歌交给你。", 150, 765, 780, 68, 4);
+
+  const moods = (track.mood || []).slice(0, 4);
+  let tagX = 150;
+  ctx.font = `600 24px ${sans}`;
+  moods.forEach(mood => {
+    const width = Math.min(ctx.measureText(mood).width + 42, 250);
+    ctx.fillStyle = "rgba(248,247,242,.66)";
+    roundRect(ctx, tagX, 944, width, 50, 25);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(38,40,34,.08)";
+    ctx.stroke();
+    ctx.fillStyle = "#68725f";
+    ctx.fillText(mood, tagX + 21, 978);
+    tagX += width + 12;
+  });
+
+  await drawShareQr(ctx, shareSiteUrl(), 746, 1110, 180);
+  ctx.fillStyle = "#6c7064";
+  ctx.font = `600 23px ${sans}`;
+  ctx.fillText("扫码打开网站", 754, 1330);
+
+  ctx.fillStyle = "#252821";
+  ctx.font = `800 36px ${sans}`;
+  ctx.fillText("小O的日音播放器", 104, 1174);
+  ctx.fillStyle = "#6c7064";
+  ctx.font = `500 25px ${sans}`;
+  ctx.fillText("okrajmusic-player", 104, 1218);
+  ctx.fillText("给今晚留一首歌。", 104, 1278);
+
+  return canvasToBlob(canvas);
+}
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function shareTrackImage(track){
+  if (!track) {
+    showToast("先抽一首");
+    return;
+  }
+  showToast("正在生成分享图");
+  try {
+    const blob = await createShareImageBlob(track);
+    const filename = `${safeFilename(`${track.artist}-${track.song}`)}.png`;
+    const file = new File([blob], filename, { type: "image/png" });
+    const isMobileShareDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (isMobileShareDevice && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+      await navigator.share({
+        files: [file],
+        title: `${track.song} - ${track.artist}`,
+        text: track.note || "小O的日音播放器"
+      });
+      showToast("分享图已准备好");
+      return;
+    }
+    downloadBlob(blob, filename);
+    showToast("已下载分享图");
+  } catch (error) {
+    console.error(error);
+    showToast("生成分享图失败");
+  }
+}
+
 function buildAlbums(){
   const map = new Map();
   tracks.forEach((track, index) => {
@@ -2461,6 +2789,7 @@ function renderAlbumTrackList(album){
 function renderAlbumDetail(album){
   const notes = album.tracks.map(t => t.note).filter(Boolean);
   const note = notes.length > 1 ? notes.slice(0, 2).join(" / ") : (notes[0] || "这张专辑还没写下介绍，但已经可以直接播放。");
+  const shareTrack = album.tracks.includes(currentTrack) ? currentTrack : album.tracks[0];
   albumDetail.innerHTML = `
     <div class="album-detail">
       <div class="album-detail-cover cover ${escapeAttr(album.cover)}"></div>
@@ -2471,6 +2800,7 @@ function renderAlbumDetail(album){
         <div class="tags">${album.mood.slice(0, 6).map(x=>`<span class="tag">${escapeHTML(x)}</span>`).join("")}</div>
         <p class="album-detail-note">${escapeHTML(note)}</p>
         <div class="album-actions">
+          <button data-share-track="${escapeAttr(trackKey(shareTrack))}">分享这首</button>
           <button data-album-queue="${escapeAttr(album.key)}">查看队列</button>
         </div>
         <div class="album-track-list">${renderAlbumTrackList(album)}</div>
@@ -2869,8 +3199,14 @@ queueList.addEventListener("click", event => {
   playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 albumDetail.addEventListener("click", event => {
+  const shareTarget = event.target.closest("[data-share-track]");
   const queueTarget = event.target.closest("[data-album-queue]");
   const trackTarget = event.target.closest(".album-track");
+  if (shareTarget) {
+    const track = getTrackByKey(shareTarget.dataset.shareTrack);
+    if (track) shareTrackImage(track);
+    return;
+  }
   if (trackTarget) {
     const album = getAlbumByKey(trackTarget.dataset.albumKey);
     const track = getTrackByKey(trackTarget.dataset.trackKey);
@@ -2894,18 +3230,12 @@ document.addEventListener("keydown", event => {
     closeQueueSheet();
   }
 });
-copyBtn.addEventListener("click", async () => {
+copyBtn.addEventListener("click", () => {
   if (!currentTrack) {
     showToast("先抽一首");
     return;
   }
-  const text = `小O日音抽歌：${currentTrack.artist}《${currentTrack.song}》｜${currentTrack.mood.join(" / ")}`;
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast("已复制抽歌结果");
-  } catch(e) {
-    showToast(text);
-  }
+  shareTrackImage(currentTrack);
 });
 
 render();
