@@ -144,11 +144,10 @@ button:disabled:hover{transform:none}
 .album-cover{width:var(--album-size);height:var(--album-size);border-radius:12px;box-shadow:0 18px 34px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.76);transition:.24s ease}
 .album-card:hover .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
 .album-label{
-  display:block;width:calc(var(--album-size) - var(--album-overlap) - 22px);margin-top:0;margin-left:8px;padding:5px 7px;border:1px solid rgba(255,255,255,.72);border-radius:0 0 7px 7px;
+  display:block;width:calc(var(--album-size) - var(--album-overlap) - 22px);margin-top:0;margin-left:8px;padding:6px 7px;border:1px solid rgba(255,255,255,.72);border-radius:0 0 7px 7px;
   background:rgba(248,247,242,.38);box-shadow:0 8px 18px rgba(38,40,34,.09);backdrop-filter:blur(6px);
 }
-.album-card-title{display:block;font-size:12px;line-height:1.28;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.album-card-meta{display:block;color:var(--muted);font-size:11px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.album-card-title{display:block;font-size:12px;line-height:1.25;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .album-empty{padding:34px;border:1px dashed rgba(37,39,34,.18);border-radius:22px;color:var(--muted);text-align:center;background:rgba(248,247,242,.48)}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
 .card{position:relative;border:1px solid rgba(37,39,34,.08);border-radius:var(--radius);overflow:hidden;background:rgba(248,247,242,.72);backdrop-filter:blur(18px);box-shadow:0 14px 38px rgba(38,40,34,.08);transition:.25s ease;cursor:pointer}
@@ -2144,13 +2143,10 @@ function albumSearchText(album){
 }
 
 function albumCardHTML(album){
-  const title = album.tracks.length > 1 ? `${album.tracks[0].song} 等 ${album.tracks.length} 首` : album.tracks[0].song;
-  const meta = album.tracks.length > 1 ? `${album.artist} · ${album.tracks.length} 首` : album.artist;
   return `
     <span class="album-cover cover ${escapeAttr(album.cover)}"></span>
     <span class="album-label">
-      <span class="album-card-title">${escapeHTML(title)}</span>
-      <span class="album-card-meta">${escapeHTML(meta)}</span>
+      <span class="album-card-title">${escapeHTML(album.title)}</span>
     </span>
   `;
 }
