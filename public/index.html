@@ -2319,24 +2319,39 @@ function renderAlbumShelf(list){
     rail.className = "shelf-rail";
     row.appendChild(rail);
     row.addEventListener("pointerdown", event => {
+      if (event.pointerType === "touch") return;
       scheduleShelfLift(row, event.target, event.clientX, event.clientY);
     });
     row.addEventListener("pointermove", event => {
-      if (event.pointerType === "mouse") return;
+      if (event.pointerType === "mouse" || event.pointerType === "touch") return;
       scheduleShelfLift(row, event.target, event.clientX, event.clientY);
     });
     row.addEventListener("touchstart", event => {
       const touch = event.touches[0];
       if (!touch) return;
-      scheduleShelfLift(row, touch.target, touch.clientX, touch.clientY);
+      row._touchStart = { x: touch.clientX, y: touch.clientY };
+      row._touchMode = "";
     }, { passive: true });
     row.addEventListener("touchmove", event => {
       const touch = event.touches[0];
       if (!touch) return;
+      const start = row._touchStart || { x: touch.clientX, y: touch.clientY };
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      if (!row._touchMode && Math.hypot(dx, dy) > 8) {
+        row._touchMode = Math.abs(dx) > Math.abs(dy) * 1.15 ? "horizontal" : "vertical";
+      }
+      if (row._touchMode === "vertical") {
+        clearShelfLift(row);
+        return;
+      }
+      if (row._touchMode !== "horizontal") return;
       scheduleShelfLift(row, touch.target, touch.clientX, touch.clientY);
     }, { passive: true });
     ["touchend", "touchcancel"].forEach(eventName => {
       row.addEventListener(eventName, () => {
+        row._touchStart = null;
+        row._touchMode = "";
         setTimeout(() => clearShelfLift(row), 220);
       }, { passive: true });
     });
