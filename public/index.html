@@ -139,7 +139,7 @@ button:disabled:hover{transform:none}
   transform:translateY(0);transition:transform .24s ease,filter .24s ease;
 }
 .album-card:first-child{margin-left:0}
-.album-card:hover{z-index:80!important;transform:translateY(-18px);filter:saturate(1.04)}
+.album-card:hover{z-index:18!important;transform:translateY(-18px);filter:saturate(1.04)}
 .album-card.hide{display:none}
 .album-cover{width:var(--album-size);height:var(--album-size);border-radius:12px;box-shadow:0 18px 34px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.76);transition:.24s ease}
 .album-card:hover .album-cover{box-shadow:0 28px 48px rgba(38,40,34,.22)}
@@ -175,12 +175,12 @@ button:disabled:hover{transform:none}
 .drawer .d-title{font-size:22px;line-height:1.28;margin-bottom:10px;font-weight:700}
 .drawer .d-note{color:#d8d8cf;font-family:var(--serif);line-height:1.8;font-size:14px;padding-right:24px}
 .drawer button.close{position:absolute;top:14px;right:14px;background:transparent;border:0;color:#edece4;font-size:20px;cursor:pointer;padding:4px 8px}
-.album-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.34);opacity:0;pointer-events:none;transition:.24s ease;z-index:32;backdrop-filter:blur(5px)}
+.album-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.34);opacity:0;pointer-events:none;transition:.24s ease;z-index:88;backdrop-filter:blur(5px)}
 .album-backdrop.show{opacity:1;pointer-events:auto}
 .album-sheet{
   position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);width:min(920px,calc(100% - 28px));max-height:min(760px,calc(100vh - 40px));
   background:rgba(248,247,242,.97);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:24px;box-shadow:0 32px 90px rgba(38,40,34,.26);
-  padding:24px;opacity:0;pointer-events:none;transition:.26s ease;backdrop-filter:blur(18px);z-index:33;overflow:auto;
+  padding:24px;opacity:0;pointer-events:none;transition:.26s ease;backdrop-filter:blur(18px);z-index:89;overflow:auto;
 }
 .album-sheet.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
 .album-close{position:absolute;top:14px;right:14px;width:36px;height:36px;padding:0;border-radius:50%;background:transparent;color:var(--muted);font-size:22px}
