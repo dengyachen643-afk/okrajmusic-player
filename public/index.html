@@ -134,7 +134,7 @@ button:disabled:hover{transform:none}
   --album-size:174px;--album-overlap:42px;
   position:relative;display:flex;align-items:flex-start;min-height:264px;padding:22px 0 42px;
 }
-.shelf-row:after{content:"";position:absolute;left:0;right:0;bottom:20px;height:15px;border-radius:999px;background:linear-gradient(180deg,rgba(248,247,242,.88),rgba(151,147,131,.34));box-shadow:0 14px 26px rgba(38,40,34,.16)}
+.shelf-rail{position:absolute;left:0;bottom:20px;width:100%;height:15px;border-radius:999px;background:linear-gradient(180deg,rgba(248,247,242,.88),rgba(151,147,131,.34));box-shadow:0 14px 26px rgba(38,40,34,.16);pointer-events:none}
 .album-card{
   position:relative;display:grid;grid-template-rows:var(--album-size) auto;gap:0;align-content:start;width:var(--album-size);min-width:var(--album-size);
   margin-left:calc(var(--album-overlap) * -1);padding:0;border:0;background:transparent;color:var(--ink);text-align:left;cursor:pointer;backdrop-filter:none;
@@ -415,6 +415,7 @@ footer .credit{display:block;margin-top:4px}
   .shelf-search .search{width:100%;min-width:0}
   .album-shelf{overflow:visible;margin:0;padding:12px 0 18px;gap:22px}
   .shelf-row{--album-size:min(46vw,164px);--album-overlap:34px;min-height:254px;margin:0 -11px;padding:24px 11px 46px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .shelf-rail{left:11px}
   .shelf-row::-webkit-scrollbar{display:none}
   .album-card{scroll-snap-align:start}
   .album-card:active,.album-card:focus-visible,.album-card.touch-lift{z-index:18!important;transform:translateY(-16px);filter:saturate(1.04)}
@@ -2289,6 +2290,9 @@ function renderAlbumShelf(list){
   rows.forEach(rowAlbums => {
     const row = document.createElement("div");
     row.className = "shelf-row";
+    const rail = document.createElement("span");
+    rail.className = "shelf-rail";
+    row.appendChild(rail);
     row.addEventListener("pointerdown", event => {
       const card = cardFromShelfPointer(row, event);
       if (!card) return;
@@ -2332,6 +2336,13 @@ function renderAlbumShelf(list){
       row.appendChild(card);
     });
     albumShelf.appendChild(row);
+    const cards = row.querySelectorAll(".album-card");
+    const lastCard = cards[cards.length - 1];
+    if (lastCard) {
+      const railRight = lastCard.offsetLeft + lastCard.offsetWidth - rail.offsetLeft;
+      const rowPadding = parseFloat(getComputedStyle(row).paddingRight) || 0;
+      rail.style.width = `${Math.max(row.clientWidth, railRight + rowPadding)}px`;
+    }
   });
 }
 
