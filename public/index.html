@@ -2133,6 +2133,19 @@ function clearPreparedNext(){
   }
 }
 
+function takePreparedAudioFor(track, url){
+  if (!track || !url || preparedNextTrack !== track || preparedNextUrl !== url || !nextAudioPreloader) return null;
+  const audio = nextAudioPreloader;
+  preparedNextTrack = null;
+  preparedNextUrl = "";
+  nextAudioPreloader = null;
+  if (prepareNextTimer) {
+    clearTimeout(prepareNextTimer);
+    prepareNextTimer = null;
+  }
+  return audio;
+}
+
 function prepareUpcomingTrack(){
   clearPreparedNext();
   if (!currentTrack || playbackMode === "repeat-one") return;
@@ -2159,7 +2172,6 @@ function pickNextTrack(){
   const scopedQueue = scopedPlayableQueue();
   if (playbackMode !== "repeat-one" && preparedNextTrack && preparedNextUrl === localAudioUrl(preparedNextTrack)) {
     const next = preparedNextTrack;
-    clearPreparedNext();
     if (scopedQueue.length && !scopedQueue.includes(next)) {
       playbackQueue = null;
       currentAlbum = null;
@@ -2362,7 +2374,7 @@ function playAlbum(album, startTrack = album.tracks[0], shouldScroll = true){
   playbackQueue = playable;
   currentAlbum = album;
   const track = playable.includes(startTrack) ? startTrack : playable[0];
-  updateDraw(track, true, true);
+  playTrack(track, true, true);
   renderAlbumDetail(album);
   if (shouldScroll) playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -2498,11 +2510,11 @@ function wireLocalPlayer(t, autoplay){
     applyPendingSeek();
     isSeeking = false;
     syncTime();
-    if (!audio.paused) scheduleUpcomingTrack(2500);
+    if (!audio.paused) scheduleUpcomingTrack(1200);
   };
   const playNext = () => {
     const next = pickNextTrack();
-    if (next) updateDraw(next, true, next !== currentTrack);
+    if (next) playTrack(next, true, next !== currentTrack);
   };
 
   updateModeButton(modeButton);
@@ -2518,7 +2530,7 @@ function wireLocalPlayer(t, autoplay){
   });
   previousButton.addEventListener("click", () => {
     const previous = pickPreviousTrack();
-    if (previous) updateDraw(previous, true, false);
+    if (previous) playTrack(previous, true, false);
   });
   playToggle.addEventListener("click", () => {
     if (audio.paused) {
@@ -2555,7 +2567,7 @@ function wireLocalPlayer(t, autoplay){
   audio.addEventListener("play", syncPlaying);
   audio.addEventListener("playing", () => {
     syncPlaying();
-    scheduleUpcomingTrack(2500);
+    scheduleUpcomingTrack(1200);
   });
   audio.addEventListener("pause", syncPlaying);
   audio.addEventListener("seeking", () => { state.textContent = "Loading"; });
@@ -2577,7 +2589,7 @@ function wireLocalPlayer(t, autoplay){
   if (autoplay) {
     audio.play().catch(() => {
       syncPlaying();
-      showToast("浏览器需要你点一下播放");
+      state.textContent = "Loading";
     });
   }
 }
@@ -2596,6 +2608,12 @@ function loadLocalPlayer(t, autoplay = true){
       </div>
     `;
     return;
+  }
+  const oldAudio = document.getElementById("localAudio");
+  if (oldAudio) {
+    oldAudio.pause();
+    oldAudio.removeAttribute("src");
+    oldAudio.load();
   }
   appleFrame.innerHTML = `
     <div class="local-player">
@@ -2619,29 +2637,46 @@ function loadLocalPlayer(t, autoplay = true){
             <div class="time"><span id="playerElapsed">0:00</span> / <span id="playerDuration">0:00</span></div>
           </div>
         </div>
-        <audio id="localAudio" preload="auto" ${autoplay ? "autoplay" : ""} src="${escapeAttr(audioUrl)}"></audio>
+        <span id="audioMount"></span>
       </div>
     </div>
   `;
+  const audioMount = document.getElementById("audioMount");
+  const preparedAudio = takePreparedAudioFor(t, audioUrl);
+  if (!preparedAudio) clearPreparedNext();
+  const audio = preparedAudio || new Audio();
+  audio.id = "localAudio";
+  audio.preload = "auto";
+  if (!preparedAudio) audio.src = audioUrl;
+  if (autoplay) audio.setAttribute("autoplay", "");
+  else audio.removeAttribute("autoplay");
+  audioMount.replaceWith(audio);
   wireLocalPlayer(t, autoplay);
 }
 
-function updateDraw(t, autoplay = true, remember = true){
-  if (remember && currentTrack && currentTrack !== t) {
-    playHistory.push(currentTrack);
-    if (playHistory.length > 80) playHistory.shift();
-  }
-  currentTrack = t;
+function updateDrawCard(t){
   drawCover.className = `draw-cover cover ${t.cover}`;
   drawCover.innerHTML = `<div class="mini">${t.album}</div>`;
   drawSong.textContent = t.song;
   drawArtist.textContent = `${t.artist} · ${t.album}`;
   drawNote.textContent = t.note;
   setDrawActionsEnabled(true);
+}
+
+function playTrack(t, autoplay = true, remember = true){
+  if (remember && currentTrack && currentTrack !== t) {
+    playHistory.push(currentTrack);
+    if (playHistory.length > 80) playHistory.shift();
+  }
+  currentTrack = t;
   renderQueueList();
   if (currentAlbum && albumSheet.classList.contains("show")) renderAlbumDetail(currentAlbum);
-  clearPreparedNext();
   loadLocalPlayer(t, autoplay);
+}
+
+function updateDraw(t, autoplay = true, remember = true){
+  updateDrawCard(t);
+  playTrack(t, autoplay, remember);
 }
 
 function drawRandom(){
@@ -2698,7 +2733,7 @@ document.addEventListener("click", event => {
   if (localAudioUrl(t)) {
     playbackQueue = null;
     currentAlbum = null;
-    updateDraw(t, true, true);
+    playTrack(t, true, true);
     playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
   } else {
     openPlatformChooser(t);
@@ -2709,7 +2744,7 @@ queueList.addEventListener("click", event => {
   if (!item) return;
   const t = getTrackByKey(item.dataset.trackKey);
   if (!t) return;
-  updateDraw(t, true, true);
+  playTrack(t, true, true);
   closeQueueSheet();
   playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
 });
