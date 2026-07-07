@@ -2484,14 +2484,21 @@ function wireLocalPlayer(t, autoplay){
     pendingSeekRatio = null;
     return true;
   };
-  const seekToValue = () => {
+  const previewSeekValue = () => {
     const ratio = Number(seek.value);
     pendingSeekRatio = ratio;
     setRangeProgress(seek, ratio);
     if (audio.duration) {
-      applyPendingSeek();
-      elapsed.textContent = formatTime(audio.currentTime);
+      elapsed.textContent = formatTime((ratio / 100) * audio.duration);
     }
+  };
+  const commitSeekValue = () => {
+    previewSeekValue();
+    clearPreparedNext();
+    applyPendingSeek();
+    isSeeking = false;
+    syncTime();
+    if (!audio.paused) scheduleUpcomingTrack(2500);
   };
   const playNext = () => {
     const next = pickNextTrack();
@@ -2522,12 +2529,15 @@ function wireLocalPlayer(t, autoplay){
   });
   nextButton.addEventListener("click", playNext);
   queueButton.addEventListener("click", openQueueSheet);
-  seek.addEventListener("pointerdown", () => { isSeeking = true; });
-  seek.addEventListener("pointerup", () => { seekToValue(); isSeeking = false; syncTime(); });
+  seek.addEventListener("pointerdown", () => {
+    isSeeking = true;
+    clearPreparedNext();
+  });
+  seek.addEventListener("pointerup", commitSeekValue);
   seek.addEventListener("keydown", () => { isSeeking = true; });
-  seek.addEventListener("keyup", () => { seekToValue(); isSeeking = false; syncTime(); });
-  seek.addEventListener("input", seekToValue);
-  seek.addEventListener("change", () => { seekToValue(); isSeeking = false; syncTime(); });
+  seek.addEventListener("keyup", commitSeekValue);
+  seek.addEventListener("input", previewSeekValue);
+  seek.addEventListener("change", commitSeekValue);
   audio.addEventListener("loadedmetadata", () => {
     applyPendingSeek();
     syncTime();
@@ -2539,6 +2549,12 @@ function wireLocalPlayer(t, autoplay){
     scheduleUpcomingTrack(2500);
   });
   audio.addEventListener("pause", syncPlaying);
+  audio.addEventListener("seeking", () => { state.textContent = "Loading"; });
+  audio.addEventListener("seeked", () => {
+    syncPlaying();
+    syncTime();
+    if (!audio.paused) scheduleUpcomingTrack(2500);
+  });
   audio.addEventListener("waiting", () => { state.textContent = "Loading"; });
   audio.addEventListener("canplay", () => {
     syncPlaying();
