@@ -470,7 +470,7 @@ footer .credit{display:block;margin-top:4px}
         <div class="actions">
           <button class="primary" id="drawBtn">抽一首</button>
           <button id="copyBtn" disabled>复制结果</button>
-          <button class="play-link" id="drawListen" disabled>去播放器</button>
+          <button id="drawListen" disabled>去播放器</button>
         </div>
       </div>
     </aside>
@@ -2842,7 +2842,6 @@ drawListen.addEventListener("click", () => {
     showToast("先抽一首");
     return;
   }
-  loadLocalPlayer(currentTrack);
   playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 document.addEventListener("click", event => {
