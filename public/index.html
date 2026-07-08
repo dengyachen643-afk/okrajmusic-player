@@ -304,25 +304,8 @@ button:disabled:hover{transform:none}
 footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;line-height:1.7;text-align:center}
 footer .credit{display:block;margin-top:4px}
 footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
-.footer-note{display:inline-flex;margin-top:12px;background:rgba(248,247,242,.68);color:#3f443a;border-color:rgba(37,39,34,.1)}
-.feedback-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.28);opacity:0;pointer-events:none;transition:.24s ease;z-index:94;backdrop-filter:blur(5px)}
-.feedback-backdrop.show{opacity:1;pointer-events:auto}
-.feedback-sheet{
-  position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);width:min(520px,calc(100% - 28px));background:rgba(248,247,242,.98);
-  color:var(--ink);border:1px solid rgba(37,39,34,.12);border-radius:26px;box-shadow:0 32px 90px rgba(38,40,34,.28);padding:26px;z-index:95;opacity:0;pointer-events:none;transition:.26s ease;backdrop-filter:blur(18px);
-}
-.feedback-sheet.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
-.feedback-close{position:absolute;top:14px;right:14px;width:36px;height:36px;padding:0;border-radius:50%;background:transparent;color:var(--muted);font-size:22px}
-.feedback-kicker{margin:0 0 8px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
-.feedback-title{margin:0;font-size:30px;line-height:1.15;font-weight:780}
-.feedback-copy{margin:10px 36px 18px 0;color:#626456;font-family:var(--serif);line-height:1.8;font-size:14px}
-.feedback-form{display:grid;gap:12px}
-.feedback-label{display:grid;gap:7px;color:#596051;font-size:12px;text-align:left}
-.feedback-label input,.feedback-label textarea{width:100%;border:1px solid rgba(37,39,34,.1);border-radius:16px;background:rgba(255,255,255,.54);color:var(--ink);outline:none;padding:11px 12px;font:inherit;font-size:14px;resize:none}
-.feedback-label textarea{min-height:130px;line-height:1.7}
-.feedback-submit{justify-self:start;background:var(--charcoal);color:#f8f7f2;border-color:var(--charcoal)}
-.feedback-status{min-height:20px;margin:0;color:var(--sage-dark);font-size:12px}
-.feedback-honeypot{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.footer-note{display:inline-flex;margin-top:12px;align-items:center;justify-content:center;border:1px solid rgba(37,39,34,.1);border-radius:999px;padding:10px 14px;background:rgba(248,247,242,.68);color:#3f443a;text-decoration:none;transition:.22s ease;backdrop-filter:blur(12px)}
+.footer-note:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
 
 /* stronger cover associations, still handmade CSS covers */
 .akane{background:linear-gradient(0deg,rgba(161,69,55,.92),rgba(161,69,55,.92)) 0 56%/100% 20% no-repeat,linear-gradient(90deg,#e8e1d3 0 48%,#abb09f 48% 50%,#f6f2e8 50% 100%),repeating-linear-gradient(90deg,rgba(45,45,38,.25) 0 1px,transparent 1px 34px)} .akane:before{content:"";position:absolute;inset:auto 0 0;height:39%;background:repeating-linear-gradient(90deg,#2e312e 0 40px,#f3efe5 40px 72px,#51564c 72px 108px);opacity:.58}
@@ -643,38 +626,11 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
   </div>
 </aside>
 
-<div class="feedback-backdrop" id="feedbackBackdrop"></div>
-<aside class="feedback-sheet" id="feedbackSheet" aria-live="polite">
-  <button class="feedback-close" id="closeFeedback" aria-label="关闭留言">×</button>
-  <p class="feedback-kicker">Note to Okra</p>
-  <h2 class="feedback-title">留一张纸条</h2>
-  <p class="feedback-copy">如果这里有哪首歌、哪句话、哪个小地方让你想说点什么，可以把它折起来投进来。</p>
-  <form class="feedback-form" id="feedbackForm" name="okraj-note" method="POST" action="https://okrajmusic-player.netlify.app/" target="feedbackFrame" data-netlify="true" netlify-honeypot="bot-field">
-    <input type="hidden" name="form-name" value="okraj-note">
-    <input type="hidden" name="page" id="feedbackPage">
-    <input type="hidden" name="track" id="feedbackTrack">
-    <p class="feedback-honeypot">
-      <label>不要填写 <input name="bot-field"></label>
-    </p>
-    <label class="feedback-label">
-      怎么称呼
-      <input name="name" maxlength="40" placeholder="可以不填">
-    </label>
-    <label class="feedback-label">
-      纸条内容
-      <textarea name="message" id="feedbackMessage" maxlength="800" required placeholder="写给小O，或者写给这首歌。"></textarea>
-    </label>
-    <button class="feedback-submit" type="submit">把纸条投出去</button>
-    <p class="feedback-status" id="feedbackStatus" aria-live="polite"></p>
-  </form>
-  <iframe id="feedbackFrame" name="feedbackFrame" hidden title="留言提交结果"></iframe>
-</aside>
-
 <footer>
   <span>v0.4 · J-music shelf, draw box & share cards · made for 小O</span>
   <span class="credit"><strong>Credits</strong> · 歌单 by Okra & GPT 5.5 · 文案 by GPT 5.5 · 前后端 by Codex (GPT 5.5) & Okra</span>
   <span class="credit">由人类耳朵选歌，由机器手指拧紧螺丝。</span>
-  <button class="footer-note" id="feedbackOpen" type="button">留一张纸条</button>
+  <a class="footer-note" id="wallLink" href="wall.html">墙边的纸条</a>
 </footer>
 
 <script>
@@ -2114,16 +2070,7 @@ const achievementUnlockOpen = document.getElementById("achievementUnlockOpen");
 const achievementUnlockName = document.getElementById("achievementUnlockName");
 const achievementUnlockDesc = document.getElementById("achievementUnlockDesc");
 const achievementUnlockArt = document.getElementById("achievementUnlockArt");
-const feedbackOpen = document.getElementById("feedbackOpen");
-const feedbackBackdrop = document.getElementById("feedbackBackdrop");
-const feedbackSheet = document.getElementById("feedbackSheet");
-const closeFeedback = document.getElementById("closeFeedback");
-const feedbackForm = document.getElementById("feedbackForm");
-const feedbackPage = document.getElementById("feedbackPage");
-const feedbackTrack = document.getElementById("feedbackTrack");
-const feedbackMessage = document.getElementById("feedbackMessage");
-const feedbackStatus = document.getElementById("feedbackStatus");
-const feedbackFrame = document.getElementById("feedbackFrame");
+const wallLink = document.getElementById("wallLink");
 const toast = document.getElementById("toast");
 let currentFilter = "all";
 let currentTrack = null;
@@ -2137,7 +2084,6 @@ let preparedNextTrack = null;
 let preparedNextUrl = "";
 let nextAudioPreloader = null;
 let prepareNextTimer = null;
-let feedbackSubmitting = false;
 const audioCdnBase = "https://pub-d122a10e688a46009a5b289155ba5cab.r2.dev";
 const missingLocalAudioTracks = new Set();
 const playbackModes = ["shuffle", "sequence", "repeat-one"];
@@ -2219,20 +2165,6 @@ function closeAchievements(){
 function closeAchievementUnlockModal(){
   achievementUnlock.classList.remove("show");
   achievementUnlockBackdrop.classList.remove("show");
-}
-
-function openFeedback(){
-  feedbackPage.value = location.href;
-  feedbackTrack.value = currentTrack ? `${currentTrack.song} · ${currentTrack.artist} · ${currentTrack.album}` : "未选择歌曲";
-  feedbackStatus.textContent = "";
-  feedbackSheet.classList.add("show");
-  feedbackBackdrop.classList.add("show");
-  setTimeout(() => feedbackMessage.focus(), 80);
-}
-
-function closeFeedbackSheet(){
-  feedbackSheet.classList.remove("show");
-  feedbackBackdrop.classList.remove("show");
 }
 
 function showAchievementUnlock(item){
@@ -3831,28 +3763,16 @@ achievementUnlockOpen.addEventListener("click", () => {
   closeAchievementUnlockModal();
   openAchievements();
 });
-feedbackOpen.addEventListener("click", openFeedback);
-closeFeedback.addEventListener("click", closeFeedbackSheet);
-feedbackBackdrop.addEventListener("click", closeFeedbackSheet);
-feedbackForm.addEventListener("submit", event => {
-  if (!feedbackMessage.value.trim()) {
-    event.preventDefault();
-    feedbackStatus.textContent = "纸条还没有写内容。";
+wallLink.addEventListener("click", () => {
+  if (!currentTrack) {
+    sessionStorage.removeItem("okrajWallTrack");
     return;
   }
-  feedbackPage.value = location.href;
-  feedbackTrack.value = currentTrack ? `${currentTrack.song} · ${currentTrack.artist} · ${currentTrack.album}` : "未选择歌曲";
-  feedbackSubmitting = true;
-  feedbackStatus.textContent = "纸条正在路上。";
-  setTimeout(() => {
-    if (feedbackSubmitting) feedbackStatus.textContent = "已经投出。如果网络慢一点，它可能还在路上。";
-  }, 1600);
-});
-feedbackFrame.addEventListener("load", () => {
-  if (!feedbackSubmitting) return;
-  feedbackSubmitting = false;
-  feedbackForm.reset();
-  feedbackStatus.textContent = "收到了。谢谢你把这一小片声音留下来。";
+  sessionStorage.setItem("okrajWallTrack", JSON.stringify({
+    song: currentTrack.song,
+    artist: currentTrack.artist,
+    album: currentTrack.album
+  }));
 });
 drawBtn.addEventListener("click", drawRandom);
 drawListen.addEventListener("click", () => {

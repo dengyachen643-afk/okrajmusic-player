@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>墙边的纸条 · 小O的日音播放器</title>
+<style>
+:root{
+  --paper:#f5f3ec;--ink:#252722;--muted:#74776d;--sage:#a9b69c;--sage-dark:#66735f;--charcoal:#252a24;
+  --bluegray:#2e3946;--line:rgba(37,39,34,.1);--radius:30px;--serif:"Noto Serif SC","Songti SC","STSong",serif;--sans:Inter,"Noto Sans SC","PingFang SC",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;color:var(--ink);font-family:var(--sans);
+  background:
+    radial-gradient(circle at 12% 8%,rgba(169,182,156,.22),transparent 28%),
+    radial-gradient(circle at 84% 18%,rgba(46,57,70,.14),transparent 26%),
+    linear-gradient(135deg,#eeeee8,#dfe2da 52%,#f7f4eb);
+  min-height:100vh;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.28;mix-blend-mode:multiply;
+  background:repeating-linear-gradient(90deg,rgba(37,39,34,.03) 0 1px,transparent 1px 36px);
+}
+.wrap{position:relative;width:min(1120px,calc(100% - 32px));margin:0 auto;padding:38px 0 42px}
+.topbar{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:22px}
+.back{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:999px;padding:10px 14px;background:rgba(248,247,242,.66);color:var(--ink);text-decoration:none;backdrop-filter:blur(14px);transition:.22s ease}
+.back:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
+.version{color:var(--sage-dark);font-size:12px;text-transform:uppercase}
+.hero{border:1px solid rgba(37,39,34,.08);border-radius:34px;background:rgba(248,247,242,.76);box-shadow:0 24px 70px rgba(38,40,34,.12);padding:34px;backdrop-filter:blur(18px);display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,380px);gap:28px;align-items:end}
+.kicker{margin:0 0 10px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
+h1{margin:0;font-size:clamp(44px,8vw,86px);line-height:1.03;font-weight:860;letter-spacing:0}
+.intro{margin:20px 0 0;color:#686c61;font-family:var(--serif);font-size:17px;line-height:1.9}
+.compose{display:grid;gap:12px;border:1px solid rgba(37,39,34,.08);border-radius:24px;background:rgba(232,231,222,.52);padding:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.field{display:grid;gap:7px;color:#596051;font-size:12px}
+input,textarea{width:100%;border:1px solid rgba(37,39,34,.1);border-radius:16px;background:rgba(255,255,255,.58);color:var(--ink);outline:none;padding:12px 13px;font:inherit;font-size:14px}
+textarea{min-height:132px;line-height:1.7;resize:vertical}
+.track-pill{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid rgba(37,39,34,.08);border-radius:16px;background:rgba(248,247,242,.58);color:#5f655a;font-size:13px}
+.track-pill.show{display:flex}
+.track-pill button{border:0;background:transparent;color:var(--muted);padding:4px;cursor:pointer}
+.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+button{border:1px solid rgba(37,39,34,.1);border-radius:999px;padding:10px 14px;background:rgba(248,247,242,.72);color:var(--ink);font:inherit;cursor:pointer;transition:.22s ease}
+button:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
+.primary{background:var(--charcoal);color:#f8f7f2;border-color:var(--charcoal)}
+.status{min-height:20px;margin:0;color:var(--sage-dark);font-size:12px}
+.wall-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:34px 0 14px}
+.wall-title{margin:0;font-size:28px;font-weight:780}
+.wall-sub{margin:5px 0 0;color:var(--muted);font-family:var(--serif);font-size:14px}
+.mode{color:var(--muted);font-size:12px}
+.notes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;align-items:start}
+.note{
+  --tilt:0deg;position:relative;min-height:184px;padding:18px 18px 16px;border-radius:10px 10px 18px 18px;border:1px solid rgba(37,39,34,.08);
+  background:var(--note,#f3ead0);box-shadow:0 18px 38px rgba(38,40,34,.13),inset 0 1px 0 rgba(255,255,255,.42);
+  transform:rotate(var(--tilt));overflow:hidden;
+}
+.note:before{content:"";position:absolute;left:18%;right:18%;top:0;height:16px;background:rgba(37,39,34,.12);box-shadow:0 8px 16px rgba(38,40,34,.08)}
+.note-name{margin:18px 0 8px;font-size:13px;color:#596051;font-weight:700}
+.note-message{margin:0;font-family:var(--serif);font-size:16px;line-height:1.85;white-space:pre-wrap;word-break:break-word}
+.note-track{margin:14px 0 0;color:rgba(37,39,34,.58);font-size:12px;line-height:1.45}
+.note-time{margin:12px 0 0;color:rgba(37,39,34,.48);font-size:11px;font-variant-numeric:tabular-nums}
+.empty{grid-column:1/-1;border:1px dashed rgba(37,39,34,.16);border-radius:24px;padding:34px;text-align:center;color:var(--muted);background:rgba(248,247,242,.42);font-family:var(--serif)}
+footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;text-align:center}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.notes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){
+  .wrap{width:min(100% - 22px,1120px);padding-top:24px}.hero{padding:24px;border-radius:28px}.topbar{align-items:flex-start}.notes{grid-template-columns:1fr;gap:12px}.note{transform:none}.wall-head{align-items:flex-start;flex-direction:column}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <nav class="topbar">
+    <a class="back" href="index.html">回到播放器</a>
+    <span class="version">Okra note wall</span>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <p class="kicker">Wall Notes</p>
+      <h1>墙边的纸条</h1>
+      <p class="intro">不是评论区，也不是客服箱。这里更像唱片店门口的一面墙：有人路过，听见一首歌，就把当时的那一点声音贴下来。</p>
+    </div>
+    <form class="compose" id="noteForm">
+      <label class="field">
+        怎么称呼
+        <input id="noteName" maxlength="24" placeholder="可以不填">
+      </label>
+      <div class="track-pill" id="trackPill">
+        <span id="trackText"></span>
+        <button id="clearTrack" type="button" aria-label="移除关联歌曲">×</button>
+      </div>
+      <label class="field">
+        纸条内容
+        <textarea id="noteMessage" maxlength="300" required placeholder="写给小O，写给一首歌，或者写给刚刚经过的自己。"></textarea>
+      </label>
+      <div class="actions">
+        <button class="primary" type="submit">贴到墙上</button>
+        <p class="status" id="statusText"></p>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <div class="wall-head">
+      <div>
+        <h2 class="wall-title">留下来的声音</h2>
+        <p class="wall-sub">新的纸条会贴在前面。低声一点，也会被墙记住。</p>
+      </div>
+      <span class="mode" id="modeText"></span>
+    </div>
+    <div class="notes" id="notes"></div>
+  </section>
+</main>
+
+<footer>小O的日音播放器 · 墙边的纸条</footer>
+
+<script>
+const WALL_API_BASE = "";
+const localStorageKey = "okrajWallNotes";
+const colors = ["#efe2c1","#dce3d5","#d8dfdf","#eee0df","#e7e1c8","#d5ddc8","#d9d4c6"];
+const tilts = ["-1.2deg",".8deg","1.4deg","-.7deg",".4deg","-1.5deg"];
+const noteForm = document.getElementById("noteForm");
+const noteName = document.getElementById("noteName");
+const noteMessage = document.getElementById("noteMessage");
+const notesEl = document.getElementById("notes");
+const statusText = document.getElementById("statusText");
+const modeText = document.getElementById("modeText");
+const trackPill = document.getElementById("trackPill");
+const trackText = document.getElementById("trackText");
+const clearTrack = document.getElementById("clearTrack");
+let carriedTrack = readCarriedTrack();
+
+function escapeHTML(value){
+  return String(value ?? "").replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]));
+}
+
+function readCarriedTrack(){
+  try {
+    const raw = sessionStorage.getItem("okrajWallTrack");
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function trackLabel(track){
+  return track ? `${track.song} · ${track.artist}` : "";
+}
+
+function renderTrack(){
+  if (!carriedTrack) {
+    trackPill.classList.remove("show");
+    return;
+  }
+  trackText.textContent = `从播放器带来：${trackLabel(carriedTrack)}`;
+  trackPill.classList.add("show");
+}
+
+function nowText(value){
+  const date = value ? new Date(value) : new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())} / ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function noteColor(note, index){
+  return note.color || colors[index % colors.length];
+}
+
+function renderNotes(notes){
+  if (!notes.length) {
+    notesEl.innerHTML = `<div class="empty">墙还空着。第一张纸条会有一点响声。</div>`;
+    return;
+  }
+  notesEl.innerHTML = notes.map((note, index) => `
+    <article class="note" style="--note:${escapeHTML(noteColor(note, index))};--tilt:${tilts[index % tilts.length]}">
+      <div class="note-name">${escapeHTML(note.name || "路过的人")}</div>
+      <p class="note-message">${escapeHTML(note.message)}</p>
+      ${note.track ? `<p class="note-track">关于：${escapeHTML(note.track)}</p>` : ""}
+      <p class="note-time">${escapeHTML(nowText(note.createdAt || note.created_at))}</p>
+    </article>
+  `).join("");
+}
+
+function readLocalNotes(){
+  try {
+    const notes = JSON.parse(localStorage.getItem(localStorageKey) || "[]");
+    return Array.isArray(notes) ? notes : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveLocalNotes(notes){
+  localStorage.setItem(localStorageKey, JSON.stringify(notes));
+}
+
+async function loadNotes(){
+  if (!WALL_API_BASE) {
+    modeText.textContent = "本机预览";
+    renderNotes(readLocalNotes());
+    return;
+  }
+  modeText.textContent = "公开纸条墙";
+  const response = await fetch(`${WALL_API_BASE}/notes`);
+  if (!response.ok) throw new Error("load failed");
+  const data = await response.json();
+  renderNotes(data.notes || []);
+}
+
+async function createNote(note){
+  if (!WALL_API_BASE) {
+    const notes = readLocalNotes();
+    notes.unshift({ ...note, id: crypto.randomUUID(), color: colors[Math.floor(Math.random() * colors.length)], createdAt: new Date().toISOString() });
+    saveLocalNotes(notes.slice(0, 80));
+    renderNotes(notes);
+    return;
+  }
+  const response = await fetch(`${WALL_API_BASE}/notes`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(note)
+  });
+  if (!response.ok) throw new Error("post failed");
+  await loadNotes();
+}
+
+function validateNote(message){
+  if (!message.trim()) return "纸条还没有写内容。";
+  if (message.length > 300) return "纸条最多写 300 个字。";
+  if (/https?:\/\//i.test(message)) return "纸条暂时不收链接。";
+  return "";
+}
+
+noteForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const message = noteMessage.value.trim();
+  const problem = validateNote(message);
+  if (problem) {
+    statusText.textContent = problem;
+    return;
+  }
+  statusText.textContent = "纸条正在找位置。";
+  try {
+    await createNote({
+      name: noteName.value.trim().slice(0, 24),
+      message,
+      track: carriedTrack ? trackLabel(carriedTrack) : "",
+      page: location.href
+    });
+    noteForm.reset();
+    carriedTrack = null;
+    sessionStorage.removeItem("okrajWallTrack");
+    renderTrack();
+    statusText.textContent = WALL_API_BASE ? "贴好了。" : "贴好了。本机预览模式下，只有这台设备能看到。";
+  } catch (error) {
+    statusText.textContent = "纸条没有贴上，稍后再试一次。";
+  }
+});
+
+clearTrack.addEventListener("click", () => {
+  carriedTrack = null;
+  sessionStorage.removeItem("okrajWallTrack");
+  renderTrack();
+});
+
+renderTrack();
+loadNotes().catch(() => {
+  modeText.textContent = "读取失败";
+  renderNotes([]);
+});
+</script>
+</body>
+</html>

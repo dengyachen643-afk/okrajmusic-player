@@ -18,10 +18,13 @@ https://dengyachen643-afk.github.io/okrajmusic-player/
 - 抽歌结果、播放器当前歌曲和专辑详情都可以生成分享图，包含推荐语、歌名、歌手、专辑、封面、站点署名和二维码。
 - 外部打开支持 Apple Music、QQ 音乐、网易云音乐；移动端会优先尝试唤起 App，失败时保留网页兜底。
 - 移动端做了专门适配：专辑墙滑动、播放列表纵向滚动、按钮尺寸、分享入口和播放器跳转都做了整理。
+- 新增「墙边的纸条」页面，用户可以在站内留下便利贴式纸条；未接入 Worker 时为本机预览，接入 Cloudflare Worker + D1 后会变成公开留言墙。
 
 ## 项目结构
 
 - `public/index.html`：网站入口，主要 UI、数据、播放器逻辑、专辑墙和分享图生成都在这里。
+- `public/wall.html`：墙边的纸条页面，负责留言墙 UI 与前端提交逻辑。
+- `worker/`：Cloudflare Worker + D1 留言墙后端示例，包含 Worker 代码和建表 SQL。
 - `music-download-list.md`：下载与校对用的歌曲清单。
 - `range_server.py`：本地预览用的 Range 请求服务器，方便音频进度条拖动。
 - `data/`：Apple Music、QQ 音乐、网易云音乐的链接候选和备份数据。
@@ -50,6 +53,21 @@ http://127.0.0.1:8765/
 当前部署方式是 GitHub Pages。把改动 push 到 GitHub `main` 分支后，GitHub Actions 会自动发布 `public` 目录。
 
 音频文件独立放在 Cloudflare R2。以后新增歌曲时，需要同时更新页面里的歌曲数据、R2 音频文件和下载清单。
+
+## 墙边的纸条
+
+GitHub Pages 只能托管静态页面，不能直接保存公共留言。当前 `public/wall.html` 已经做好前端；如果 `WALL_API_BASE` 为空，会使用浏览器本机存储作为预览。
+
+要让所有人看到同一面留言墙，需要部署 `worker/notes-worker.js`，并给它绑定 Cloudflare D1 数据库：
+
+1. 创建一个 D1 数据库，例如 `okraj-notes`。
+2. 执行 `worker/schema.sql` 建表。
+3. 创建 Worker，把 `worker/notes-worker.js` 作为代码。
+4. 给 Worker 绑定 D1，绑定名必须是 `DB`。
+5. 部署后得到 Worker URL，例如 `https://okraj-notes.xxx.workers.dev`。
+6. 把 `public/wall.html` 里的 `WALL_API_BASE` 改成这个 URL，再 push。
+
+第一版留言墙只做轻量限制：留言 300 字以内、昵称 24 字以内、暂时不收链接。后续可以再加管理员删除入口或更严格的审核。
 
 ## v0.4 更新说明
 
