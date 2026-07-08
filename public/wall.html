@@ -49,12 +49,12 @@ button:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
 .mode{color:var(--muted);font-size:12px}
 .notes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;align-items:start}
 .note{
-  --tilt:0deg;position:relative;min-height:184px;padding:18px 18px 16px;border-radius:10px 10px 18px 18px;border:1px solid rgba(37,39,34,.08);
+  --tilt:0deg;position:relative;min-height:142px;padding:16px 16px 14px;border-radius:10px 10px 16px 16px;border:1px solid rgba(37,39,34,.08);
   background:var(--note,#f3ead0);box-shadow:0 18px 38px rgba(38,40,34,.13),inset 0 1px 0 rgba(255,255,255,.42);
   transform:rotate(var(--tilt));overflow:hidden;
 }
 .note:before{content:"";position:absolute;left:18%;right:18%;top:0;height:16px;background:rgba(37,39,34,.12);box-shadow:0 8px 16px rgba(38,40,34,.08)}
-.note-name{margin:18px 0 8px;font-size:13px;color:#596051;font-weight:700}
+.note-name{margin:14px 0 8px;font-size:13px;color:#596051;font-weight:700}
 .note-message{margin:0;font-family:var(--serif);font-size:16px;line-height:1.85;white-space:pre-wrap;word-break:break-word}
 .note-track{margin:14px 0 0;color:rgba(37,39,34,.58);font-size:12px;line-height:1.45}
 .note-time{margin:12px 0 0;color:rgba(37,39,34,.48);font-size:11px;font-variant-numeric:tabular-nums}
@@ -62,7 +62,7 @@ button:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
 footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;text-align:center}
 @media(max-width:900px){.hero{grid-template-columns:1fr}.notes{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){
-  .wrap{width:min(100% - 22px,1120px);padding-top:24px}.hero{padding:24px;border-radius:28px}.topbar{align-items:flex-start}.notes{grid-template-columns:1fr;gap:12px}.note{transform:none}.wall-head{align-items:flex-start;flex-direction:column}
+  .wrap{width:min(100% - 22px,1120px);padding-top:24px}.hero{padding:24px;border-radius:28px}.topbar{align-items:flex-start}.notes{grid-template-columns:1fr;gap:12px}.note{min-height:122px;padding:14px 16px 13px;transform:none}.note:before{height:12px;left:24%;right:24%}.note-name{margin-top:12px}.note-message{font-size:15px;line-height:1.75}.wall-head{align-items:flex-start;flex-direction:column}
 }
 </style>
 </head>
