@@ -263,7 +263,7 @@ button:disabled:hover{transform:none}
 .achievement-card{position:relative;min-height:214px;border:1px solid rgba(37,39,34,.08);border-radius:18px;padding:16px;background:rgba(232,231,222,.5);color:rgba(37,39,34,.52);box-shadow:none;overflow:hidden}
 .achievement-card.unlocked{background:linear-gradient(135deg,rgba(248,247,242,.94),rgba(169,182,156,.2));color:var(--ink);border-color:rgba(103,115,95,.28);box-shadow:0 14px 34px rgba(38,40,34,.09)}
 .achievement-card.unlocked:after{content:"";position:absolute;right:16px;top:16px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle,#a9b69c 0 38%,transparent 40%),conic-gradient(from 25deg,rgba(169,182,156,.85),rgba(48,51,45,.2),rgba(169,182,156,.85));opacity:.7}
-.achievement-afterword{position:absolute;right:16px;bottom:14px;color:#3f443a;font-size:12px;text-decoration:none;border-bottom:1px solid rgba(63,68,58,.28);z-index:1}
+.achievement-afterword{position:absolute;right:16px;bottom:14px;color:#3f443a;font-size:12px;text-decoration:none;border:0;border-bottom:1px solid rgba(63,68,58,.28);border-radius:0;background:transparent;padding:0;box-shadow:none;backdrop-filter:none;z-index:1}
 .achievement-afterword:hover{border-color:rgba(63,68,58,.58)}
 .achievement-art{position:relative;width:74px;height:74px;margin-bottom:14px;border-radius:18px;background:#dbdbd2;border:1px solid rgba(37,39,34,.08);box-shadow:inset 0 0 0 1px rgba(248,247,242,.32),0 12px 24px rgba(38,40,34,.08);overflow:hidden}
 .achievement-art:before,.achievement-art:after{content:"";position:absolute}
@@ -303,6 +303,25 @@ button:disabled:hover{transform:none}
 .achievement-unlock-desc{margin:14px 0 22px;color:#626456;font-family:var(--serif);line-height:1.85;font-size:15px}
 .achievement-unlock-actions{display:flex;justify-content:flex-start;gap:10px}
 .achievement-unlock-actions .primary{background:var(--charcoal);color:#f8f7f2;border-color:var(--charcoal)}
+.afterword-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.32);opacity:0;pointer-events:none;transition:.24s ease;z-index:94;backdrop-filter:blur(5px)}
+.afterword-backdrop.show{opacity:1;pointer-events:auto}
+.afterword-sheet{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);width:min(860px,calc(100% - 28px));max-height:min(780px,calc(100vh - 36px));
+  background:rgba(248,247,242,.97);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:30px;box-shadow:0 34px 96px rgba(38,40,34,.28);
+  padding:34px;opacity:0;pointer-events:none;transition:.26s ease;backdrop-filter:blur(20px);z-index:95;overflow:auto;
+}
+.afterword-sheet.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.afterword-close{position:absolute;top:16px;right:16px;width:38px;height:38px;padding:0;border-radius:50%;background:transparent;color:var(--muted);font-size:24px}
+.afterword-kicker{margin:2px 0 8px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.afterword-title{margin:0;font-size:46px;line-height:1.05;font-weight:760;letter-spacing:.02em}
+.afterword-body{margin-top:30px;max-width:700px;color:#505449;font-family:var(--serif);font-size:18px;line-height:2}
+.afterword-body p{margin:0 0 18px}
+.afterword-player{margin-top:28px;padding-top:24px;border-top:1px solid rgba(37,39,34,.1);display:grid;grid-template-columns:118px 1fr;gap:20px;align-items:center}
+.afterword-cover{width:118px;aspect-ratio:1/1;border-radius:20px;overflow:hidden;clip-path:inset(0 round 20px);box-shadow:0 18px 38px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.75)}
+.afterword-track-kicker{margin:0 0 8px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
+.afterword-track-title{margin:0;font-size:28px;line-height:1.16;font-weight:760}
+.afterword-track-meta{margin:8px 0 16px;color:var(--muted)}
+.afterword-play{background:var(--charcoal);color:#f8f7f2;border-color:var(--charcoal)}
 .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120%);background:rgba(36,38,33,.94);color:#f8f7f2;padding:10px 14px;border-radius:999px;font-size:13px;transition:.28s ease;z-index:30}
 .toast.show{transform:translateX(-50%) translateY(0)}
 footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;line-height:1.7;text-align:center}
@@ -495,6 +514,11 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
   .achievement-sheet{width:calc(100% - 22px);max-height:calc(100svh - 24px);padding:22px;border-radius:22px}
   .achievement-grid{grid-template-columns:1fr}
   .achievement-copy{margin-right:34px}
+  .afterword-sheet{width:calc(100% - 22px);max-height:calc(100svh - 24px);padding:26px;border-radius:24px}
+  .afterword-title{font-size:40px}
+  .afterword-body{font-size:16px}
+  .afterword-player{grid-template-columns:1fr}
+  .afterword-cover{width:160px;max-width:68vw}
   .toolbar{position:sticky;top:0;z-index:10;padding:10px 0;backdrop-filter:blur(14px)}
 }
 </style>
@@ -629,6 +653,30 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
   <p class="achievement-unlock-desc" id="achievementUnlockDesc"></p>
   <div class="achievement-unlock-actions">
     <button class="primary" id="achievementUnlockOpen" type="button">去成就看看</button>
+  </div>
+</aside>
+
+<div class="afterword-backdrop" id="afterwordBackdrop"></div>
+<aside class="afterword-sheet" id="afterwordSheet" aria-live="polite">
+  <button class="afterword-close" id="closeAfterword" aria-label="关闭后记">×</button>
+  <h2 class="afterword-title">あとがき</h2>
+  <p class="afterword-kicker">Afterword</p>
+  <div class="afterword-body">
+    <p>这个小站最开始，只是一份由 AI 写给 okra 的日音歌单。</p>
+    <p>后来，它慢慢长出了抽歌、专辑墙、分享卡、墙边的纸条，还有那些一句一句改出来的推荐语。</p>
+    <p>技术在这里没有假装成人。</p>
+    <p>它只是安静地参与：提出一个想法，修改一句文案，修好一个按钮，再把一首歌放到最后。</p>
+    <p>如果你已经走到了这里，谢谢你。</p>
+    <p>希望这首歌，也能陪你坐一会儿。</p>
+  </div>
+  <div class="afterword-player">
+    <div class="afterword-cover cover async" aria-hidden="true"></div>
+    <div>
+      <p class="afterword-track-kicker">Hidden Track</p>
+      <h3 class="afterword-track-title">andata</h3>
+      <p class="afterword-track-meta">坂本龍一 · async</p>
+      <button class="afterword-play" id="afterwordPlay" type="button">播放这首</button>
+    </div>
   </div>
 </aside>
 
@@ -2094,6 +2142,10 @@ const achievementUnlockOpen = document.getElementById("achievementUnlockOpen");
 const achievementUnlockName = document.getElementById("achievementUnlockName");
 const achievementUnlockDesc = document.getElementById("achievementUnlockDesc");
 const achievementUnlockArt = document.getElementById("achievementUnlockArt");
+const afterwordBackdrop = document.getElementById("afterwordBackdrop");
+const afterwordSheet = document.getElementById("afterwordSheet");
+const closeAfterword = document.getElementById("closeAfterword");
+const afterwordPlay = document.getElementById("afterwordPlay");
 const wallLink = document.getElementById("wallLink");
 const toast = document.getElementById("toast");
 let currentFilter = "all";
@@ -2118,6 +2170,7 @@ const achievementStorageKey = "okrajmusicAchievements";
 const firstVisitDateKey = "okrajmusicFirstVisitDate";
 const lastVisitDateKey = "okrajmusicLastVisitDate";
 const afterwordResumeKey = "okrajAfterwordResume";
+const afterwordTrackKey = "坂本龍一||andata";
 const achievements = [
   { id: "first-draw", name: "第一首", desc: "今天，总要有第一首。", art: "art-first-draw" },
   { id: "listen-through", name: "听完再走", desc: "谢谢你没有急着切掉。", art: "art-listen-through" },
@@ -2180,7 +2233,7 @@ function renderAchievements(){
   achievementGrid.innerHTML = achievements.map(item => {
     const view = achievementView(item);
     const afterwordLink = item.id === "later-person" && view.unlocked
-      ? `<a class="achievement-afterword" href="afterword.html">翻到后记</a>`
+      ? `<button class="achievement-afterword" type="button" data-open-afterword>翻到后记</button>`
       : "";
     return `
       <article class="achievement-card${view.unlocked ? " unlocked" : ""}">
@@ -2235,7 +2288,7 @@ function scheduleQueuedAchievementUnlock(delay = 520){
   queuedAchievementTimer = setTimeout(() => {
     queuedAchievementTimer = null;
     if (!queuedAchievementUnlockIds.length) return;
-    if (achievementSheet.classList.contains("show") || achievementUnlock.classList.contains("show")) return;
+    if (achievementSheet.classList.contains("show") || achievementUnlock.classList.contains("show") || afterwordSheet.classList.contains("show")) return;
     const queuedId = queuedAchievementUnlockIds.shift();
     const item = achievementById(queuedId);
     if (!item) return;
@@ -3443,6 +3496,33 @@ function getAlbumByKey(key){
   return albums.find(album => album.key === key);
 }
 
+function openAfterword(){
+  if (!hiddenLibraryUnlocked()) {
+    showToast("这一页还没有翻到");
+    return;
+  }
+  closeAchievements();
+  closeAchievementUnlockModal();
+  afterwordSheet.classList.add("show");
+  afterwordBackdrop.classList.add("show");
+}
+
+function closeAfterwordSheet(){
+  afterwordSheet.classList.remove("show");
+  afterwordBackdrop.classList.remove("show");
+  scheduleQueuedAchievementUnlock(520);
+}
+
+function playAfterwordTrack(){
+  const track = getTrackByKey(afterwordTrackKey);
+  if (!track) return;
+  playbackQueue = null;
+  currentAlbum = null;
+  closeAfterwordSheet();
+  playTrack(track, true, true);
+  playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function closePlatformSheet(){
   platformSheet.classList.remove("show");
   platformBackdrop.classList.remove("show");
@@ -3897,12 +3977,19 @@ achievementBackdrop.addEventListener("click", closeAchievements);
 closeAchievementUnlock.addEventListener("click", closeAchievementUnlockModal);
 achievementUnlockOpen.addEventListener("click", () => {
   if (pendingAchievementUnlockId === "later-person") {
-    window.location.href = "afterword.html";
+    openAfterword();
     return;
   }
   closeAchievementUnlockModal();
   openAchievements();
 });
+achievementGrid.addEventListener("click", event => {
+  if (!event.target.closest("[data-open-afterword]")) return;
+  openAfterword();
+});
+closeAfterword.addEventListener("click", closeAfterwordSheet);
+afterwordBackdrop.addEventListener("click", closeAfterwordSheet);
+afterwordPlay.addEventListener("click", playAfterwordTrack);
 wallLink.addEventListener("click", () => {
   if (!currentTrack) {
     sessionStorage.removeItem("okrajWallTrack");
@@ -4005,6 +4092,7 @@ document.addEventListener("keydown", event => {
     closeQueueSheet();
     closeAchievements();
     closeAchievementUnlockModal();
+    closeAfterwordSheet();
   }
 });
 copyBtn.addEventListener("click", () => {
