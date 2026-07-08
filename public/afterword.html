@@ -36,7 +36,7 @@ body.locked-view .locked{display:block}
 <body>
 <main class="wrap">
   <section class="page unlocked">
-    <a class="back" href="index.html">回到播放器</a>
+    <a class="back" id="backLink" href="index.html">回到播放器</a>
     <h1>あとがき</h1>
     <p class="sub">Afterword</p>
     <div class="essay">
@@ -67,6 +67,7 @@ body.locked-view .locked{display:block}
 </main>
 <script>
 const achievementStorageKey = "okrajmusicAchievements";
+const afterwordResumeKey = "okrajAfterwordResume";
 function hasAfterword(){
   try {
     const raw = localStorage.getItem(achievementStorageKey);
@@ -79,18 +80,43 @@ function hasAfterword(){
 if (!hasAfterword()) document.body.classList.add("locked-view");
 const button = document.getElementById("playBtn");
 const audio = document.getElementById("audio");
+const backLink = document.getElementById("backLink");
+function saveAfterwordResume(){
+  if (!audio || document.body.classList.contains("locked-view")) return;
+  sessionStorage.setItem(afterwordResumeKey, JSON.stringify({
+    trackKey: "坂本龍一||andata",
+    currentTime: audio.currentTime || 0,
+    paused: audio.paused,
+    savedAt: Date.now()
+  }));
+}
 button?.addEventListener("click", () => {
   if (!audio) return;
   if (audio.paused) {
-    audio.play();
-    button.textContent = "暂停";
+    audio.play().then(() => {
+      button.textContent = "暂停";
+      saveAfterwordResume();
+    }).catch(() => {
+      button.textContent = "播放这首";
+    });
   } else {
     audio.pause();
     button.textContent = "播放这首";
+    saveAfterwordResume();
   }
 });
-audio?.addEventListener("ended", () => { button.textContent = "播放这首"; });
-audio?.addEventListener("pause", () => { if (audio.currentTime < audio.duration) button.textContent = "播放这首"; });
+audio?.addEventListener("timeupdate", saveAfterwordResume);
+audio?.addEventListener("play", saveAfterwordResume);
+audio?.addEventListener("pause", () => {
+  if (audio.currentTime < audio.duration) button.textContent = "播放这首";
+  saveAfterwordResume();
+});
+audio?.addEventListener("ended", () => {
+  button.textContent = "播放这首";
+  saveAfterwordResume();
+});
+backLink?.addEventListener("click", saveAfterwordResume);
+window.addEventListener("pagehide", saveAfterwordResume);
 </script>
 </body>
 </html>

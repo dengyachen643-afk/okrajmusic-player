@@ -2109,12 +2109,15 @@ let preparedNextUrl = "";
 let nextAudioPreloader = null;
 let prepareNextTimer = null;
 let pendingAchievementUnlockId = "";
+let queuedAchievementUnlockIds = [];
+let queuedAchievementTimer = null;
 const audioCdnBase = "https://pub-d122a10e688a46009a5b289155ba5cab.r2.dev";
 const missingLocalAudioTracks = new Set();
 const playbackModes = ["shuffle", "sequence", "repeat-one"];
 const achievementStorageKey = "okrajmusicAchievements";
 const firstVisitDateKey = "okrajmusicFirstVisitDate";
 const lastVisitDateKey = "okrajmusicLastVisitDate";
+const afterwordResumeKey = "okrajAfterwordResume";
 const achievements = [
   { id: "first-draw", name: "第一首", desc: "今天，总要有第一首。", art: "art-first-draw" },
   { id: "listen-through", name: "听完再走", desc: "谢谢你没有急着切掉。", art: "art-listen-through" },
@@ -2200,12 +2203,14 @@ function openAchievements(){
 function closeAchievements(){
   achievementSheet.classList.remove("show");
   achievementBackdrop.classList.remove("show");
+  scheduleQueuedAchievementUnlock(520);
 }
 
 function closeAchievementUnlockModal(){
   achievementUnlock.classList.remove("show");
   achievementUnlockBackdrop.classList.remove("show");
   pendingAchievementUnlockId = "";
+  scheduleQueuedAchievementUnlock(520);
 }
 
 function showAchievementUnlock(item){
@@ -2216,6 +2221,32 @@ function showAchievementUnlock(item){
   achievementUnlockOpen.textContent = item.id === "later-person" ? "翻到后记" : "去成就看看";
   achievementUnlock.classList.add("show");
   achievementUnlockBackdrop.classList.add("show");
+}
+
+function queueAchievementUnlock(id){
+  if (!id || pendingAchievementUnlockId === id || queuedAchievementUnlockIds.includes(id)) return;
+  queuedAchievementUnlockIds.push(id);
+  scheduleQueuedAchievementUnlock(520);
+}
+
+function scheduleQueuedAchievementUnlock(delay = 520){
+  if (!queuedAchievementUnlockIds.length) return;
+  if (queuedAchievementTimer) clearTimeout(queuedAchievementTimer);
+  queuedAchievementTimer = setTimeout(() => {
+    queuedAchievementTimer = null;
+    if (!queuedAchievementUnlockIds.length) return;
+    if (achievementSheet.classList.contains("show") || achievementUnlock.classList.contains("show")) return;
+    const queuedId = queuedAchievementUnlockIds.shift();
+    const item = achievementById(queuedId);
+    if (!item) return;
+    if (!unlockedAchievements.has(item.id)) {
+      unlockedAchievements.add(item.id);
+      saveAchievements();
+      renderAchievements();
+      if (item.id === "later-person") render();
+    }
+    showAchievementUnlock(item);
+  }, delay);
 }
 
 function ordinaryAchievementsComplete(){
@@ -2229,18 +2260,17 @@ function unlockAchievement(id, options = {}){
   const item = achievementById(id);
   if (!item) return false;
   unlockedAchievements.add(id);
-  let unlockItem = item;
-  if (id !== "later-person" && ordinaryAchievementsComplete() && !unlockedAchievements.has("later-person")) {
-    const hiddenItem = achievementById("later-person");
-    if (hiddenItem) {
-      unlockedAchievements.add("later-person");
-      unlockItem = hiddenItem;
-      render();
-    }
-  }
+  const shouldQueueHidden = id !== "later-person" && ordinaryAchievementsComplete() && !unlockedAchievements.has("later-person");
   saveAchievements();
   renderAchievements();
-  if (!options.silent) showAchievementUnlock(unlockItem);
+  if (!options.silent) {
+    if (achievementSheet.classList.contains("show") || achievementUnlock.classList.contains("show")) {
+      queueAchievementUnlock(id);
+    } else {
+      showAchievementUnlock(item);
+    }
+    if (shouldQueueHidden && achievementById("later-person")) queueAchievementUnlock("later-person");
+  }
   return true;
 }
 
@@ -2942,7 +2972,7 @@ async function shareTrackImage(track, options = {}){
 function buildAlbums(){
   const map = new Map();
   tracks.forEach((track, index) => {
-    if (isHiddenTrack(track)) return;
+    if (isHiddenTrack(track) && !hiddenLibraryUnlocked()) return;
     const key = albumKeyFromTrack(track);
     if (!map.has(key)) {
       map.set(key, {
@@ -2952,11 +2982,13 @@ function buildAlbums(){
         cover: track.cover,
         tracks: [],
         firstIndex: index,
+        hidden: isHiddenTrack(track),
         tags: [],
         mood: []
       });
     }
     const album = map.get(key);
+    album.hidden = album.hidden || isHiddenTrack(track);
     album.tracks.push(track);
     track.tags.forEach(tag => {
       if (!album.tags.includes(tag)) album.tags.push(tag);
@@ -2965,7 +2997,7 @@ function buildAlbums(){
       if (!album.mood.includes(item)) album.mood.push(item);
     });
   });
-  return [...map.values()].sort((a, b) => a.firstIndex - b.firstIndex);
+  return [...map.values()].sort((a, b) => Number(b.hidden) - Number(a.hidden) || a.firstIndex - b.firstIndex);
 }
 
 let albums = [];
@@ -3784,6 +3816,38 @@ function playTrack(t, autoplay = true, remember = true){
   loadLocalPlayer(t, autoplay);
 }
 
+function restoreAfterwordPlayback(){
+  let resume = null;
+  try {
+    const raw = sessionStorage.getItem(afterwordResumeKey);
+    resume = raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    resume = null;
+  }
+  sessionStorage.removeItem(afterwordResumeKey);
+  if (!resume || resume.trackKey !== "坂本龍一||andata" || !hiddenLibraryUnlocked()) return;
+  if (Date.now() - Number(resume.savedAt || 0) > 30 * 60 * 1000) return;
+  const track = getTrackByKey(resume.trackKey);
+  if (!track) return;
+  playbackQueue = null;
+  currentAlbum = null;
+  playTrack(track, !resume.paused, false);
+  const audio = document.getElementById("localAudio");
+  const resumeTime = Math.max(0, Number(resume.currentTime || 0));
+  const applyResumeTime = () => {
+    if (!audio || !resumeTime) return;
+    try {
+      const maxTime = Number.isFinite(audio.duration) && audio.duration > 1 ? audio.duration - 0.5 : resumeTime;
+      audio.currentTime = Math.min(resumeTime, maxTime);
+    } catch (error) {
+      // Some mobile browsers only allow setting currentTime after metadata settles.
+    }
+  };
+  if (audio?.readyState >= 1) applyResumeTime();
+  else audio?.addEventListener("loadedmetadata", applyResumeTime, { once: true });
+  playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function updateDraw(t, autoplay = true, remember = true){
   updateDrawCard(t);
   playTrack(t, autoplay, remember);
@@ -3959,6 +4023,7 @@ trackVisitAchievements();
 render();
 renderQueueList();
 setDrawActionsEnabled(false);
+restoreAfterwordPlayback();
 </script>
 </body>
 </html>
