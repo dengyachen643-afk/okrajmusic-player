@@ -18,7 +18,7 @@ https://dengyachen643-afk.github.io/okrajmusic-player/
 - 抽歌结果、播放器当前歌曲和专辑详情都可以生成分享图，包含推荐语、歌名、歌手、专辑、封面、站点署名和二维码。
 - 外部打开支持 Apple Music、QQ 音乐、网易云音乐；移动端会优先尝试唤起 App，失败时保留网页兜底。
 - 移动端做了专门适配：专辑墙滑动、播放列表纵向滚动、按钮尺寸、分享入口和播放器跳转都做了整理。
-- 新增「墙边的纸条」页面，用户可以在站内留下便利贴式纸条；未接入 Worker 时为本机预览，接入 Cloudflare Worker + D1 后会变成公开留言墙。
+- 新增「墙边的纸条」页面，用户可以在站内留下便利贴式纸条；当前已接入 Cloudflare Worker + D1，公开留言墙 API 为 `https://okraj-notes.dengyachen643.workers.dev`。
 
 ## 项目结构
 
@@ -56,7 +56,7 @@ http://127.0.0.1:8765/
 
 ## 墙边的纸条
 
-GitHub Pages 只能托管静态页面，不能直接保存公共留言。当前 `public/wall.html` 已经做好前端；如果 `WALL_API_BASE` 为空，会使用浏览器本机存储作为预览。
+GitHub Pages 只能托管静态页面，不能直接保存公共留言。当前 `public/wall.html` 已经接入 Cloudflare Worker + D1；如果未来把 `WALL_API_BASE` 置空，会回到浏览器本机存储预览模式。
 
 要让所有人看到同一面留言墙，需要部署 `worker/notes-worker.js`，并给它绑定 Cloudflare D1 数据库：
 
@@ -65,7 +65,7 @@ GitHub Pages 只能托管静态页面，不能直接保存公共留言。当前 
 3. 创建 Worker，把 `worker/notes-worker.js` 作为代码。
 4. 给 Worker 绑定 D1，绑定名必须是 `DB`。
 5. 给 Worker 设置一个环境变量 `ADMIN_TOKEN`，值自己保存好，不要提交到 GitHub。
-6. 部署后得到 Worker URL，例如 `https://okraj-notes.xxx.workers.dev`。
+6. 部署后得到 Worker URL，例如当前的 `https://okraj-notes.dengyachen643.workers.dev`。
 7. 把 `public/wall.html` 里的 `WALL_API_BASE` 改成这个 URL，再 push。
 
 第一版留言墙只做轻量限制：留言 300 字以内、昵称 24 字以内、暂时不收链接。

@@ -1,0 +1,9 @@
+name = "okraj-notes"
+main = "notes-worker.js"
+compatibility_date = "2026-07-08"
+account_id = "eab571db8fe8680c2627400b4a9d78d4"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "okraj-notes"
+database_id = "399728b0-bdb0-4766-b6a1-78a69df6e8fa"

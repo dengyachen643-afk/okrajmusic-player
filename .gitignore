@@ -11,3 +11,4 @@ artwork_refs/
 .DS_Store
 Thumbs.db
 public/audio/
+.wrangler/
