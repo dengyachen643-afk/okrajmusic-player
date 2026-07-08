@@ -14,15 +14,16 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;ba
 .back{display:inline-flex;margin-bottom:42px;color:#596051;text-decoration:none;font-size:13px;border-bottom:1px solid rgba(89,96,81,.26)}
 h1{margin:0;font-size:52px;line-height:1.05;font-weight:720;letter-spacing:.02em}
 .sub{margin:8px 0 38px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
-.essay{max-width:680px;color:#505449;font-family:var(--serif);font-size:19px;line-height:2.05}
-.essay p{margin:0 0 22px}
+.essay{max-width:680px;color:#505449;font-family:var(--serif);font-size:17px;line-height:1.86}
+.essay p{margin:0 0 15px}
 .player{margin-top:46px;padding-top:30px;border-top:1px solid rgba(37,39,34,.1);display:grid;grid-template-columns:132px 1fr;gap:24px;align-items:center}
 .cover{position:relative;width:132px;aspect-ratio:1/1;border-radius:20px;overflow:hidden;border:1px solid rgba(248,247,242,.8);box-shadow:0 18px 38px rgba(38,40,34,.16);background:linear-gradient(180deg,#17231e 0 8%,#d8d5ca 8% 70%,#f7f5ef 70% 100%)}
 .cover:before{content:"";position:absolute;left:0;right:0;top:8%;height:62%;background:radial-gradient(ellipse at 13% 57%,#181c18 0 8%,transparent 9%),radial-gradient(ellipse at 22% 47%,#1d241e 0 8%,transparent 9%),radial-gradient(ellipse at 35% 52%,#242b22 0 5%,transparent 6%),radial-gradient(ellipse at 67% 58%,#1d3427 0 9%,transparent 10%),linear-gradient(180deg,transparent 0 62%,rgba(42,54,48,.34) 62% 65%,transparent 65%),linear-gradient(90deg,#34463e 0 7%,#849186 7% 9%,#27382f 9% 15%,transparent 15% 100%)}
 .cover:after{content:"Ryuichi Sakamoto\A async";white-space:pre;position:absolute;right:13%;bottom:12%;color:#252821;font-family:Georgia,"Songti SC",serif;font-size:9px;line-height:1.18;text-align:center}
 .song-kicker{margin:0 0 8px;color:#68725f;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
 .song-title{margin:0;font-size:30px;line-height:1.16}
-.song-meta{margin:8px 0 18px;color:var(--muted)}
+.song-meta{margin:8px 0 0;color:var(--muted)}
+.song-note{margin:12px 0 18px;max-width:430px;color:#626456;font-family:var(--serif);font-size:14px;line-height:1.75}
 button{border:1px solid rgba(37,39,34,.1);border-radius:999px;background:var(--charcoal);color:#f8f7f2;padding:11px 18px;font-size:14px;cursor:pointer;transition:.2s ease}
 button:hover{transform:translateY(-1px)}
 audio{display:none}
@@ -30,7 +31,7 @@ audio{display:none}
 body.locked-view .unlocked{display:none}
 body.locked-view .locked{display:block}
 .locked p{max-width:560px;color:var(--muted);font-family:var(--serif);font-size:18px;line-height:1.9}
-@media(max-width:640px){.wrap{width:min(100% - 22px,860px);padding:24px 0}.page{padding:28px;border-radius:28px}h1{font-size:42px}.essay{font-size:17px}.player{grid-template-columns:1fr}.cover{width:180px;max-width:72vw}.song-title{font-size:27px}}
+@media(max-width:640px){.wrap{width:min(100% - 22px,860px);padding:24px 0}.page{padding:28px;border-radius:28px}h1{font-size:42px}.essay{font-size:15px;line-height:1.76}.essay p{margin-bottom:12px}.player{grid-template-columns:1fr}.cover{width:180px;max-width:72vw}.song-title{font-size:27px}.song-note{font-size:13px;line-height:1.68}}
 </style>
 </head>
 <body>
@@ -53,6 +54,7 @@ body.locked-view .locked{display:block}
         <p class="song-kicker">Hidden Track</p>
         <h2 class="song-title">andata</h2>
         <p class="song-meta">坂本龍一 · async</p>
+        <p class="song-note">在意大利语里，andata 是已经离开，也是已经过去。离开不一定是结束，只是把一句没有说完的话，留给后来的人。</p>
         <button id="playBtn" type="button">播放这首</button>
         <audio id="audio" preload="metadata" src="https://pub-d122a10e688a46009a5b289155ba5cab.r2.dev/%E5%9D%82%E6%9C%AC%E9%BE%8D%E4%B8%80%20-%20andata.mp3"></audio>
       </div>
