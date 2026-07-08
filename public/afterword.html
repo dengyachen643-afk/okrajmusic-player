@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>あとがき · 小O的日音播放器</title>
+<style>
+:root{--bg:#eeeee7;--paper:#f8f7f2;--ink:#252722;--muted:#737568;--line:#d9d8cc;--sage:#a9b69c;--charcoal:#30332d;--shadow:0 24px 70px rgba(38,40,34,.12);--sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",system-ui,sans-serif;--serif:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun","Yu Mincho","Hiragino Mincho ProN",serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100svh;background:radial-gradient(circle at 80% 10%,rgba(169,182,156,.22),transparent 30%),linear-gradient(135deg,#eeeee7,#deded5);color:var(--ink);font-family:var(--sans)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E")}
+.wrap{position:relative;width:min(100% - 32px,860px);margin:auto;padding:52px 0}
+.page{border:1px solid rgba(37,39,34,.08);border-radius:34px;background:rgba(248,247,242,.86);box-shadow:var(--shadow);backdrop-filter:blur(18px);padding:46px}
+.back{display:inline-flex;margin-bottom:42px;color:#596051;text-decoration:none;font-size:13px;border-bottom:1px solid rgba(89,96,81,.26)}
+h1{margin:0;font-size:52px;line-height:1.05;font-weight:720;letter-spacing:.02em}
+.sub{margin:8px 0 38px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.essay{max-width:680px;color:#505449;font-family:var(--serif);font-size:19px;line-height:2.05}
+.essay p{margin:0 0 22px}
+.player{margin-top:46px;padding-top:30px;border-top:1px solid rgba(37,39,34,.1);display:grid;grid-template-columns:132px 1fr;gap:24px;align-items:center}
+.cover{position:relative;width:132px;aspect-ratio:1/1;border-radius:20px;overflow:hidden;border:1px solid rgba(248,247,242,.8);box-shadow:0 18px 38px rgba(38,40,34,.16);background:linear-gradient(180deg,#17231e 0 8%,#d8d5ca 8% 70%,#f7f5ef 70% 100%)}
+.cover:before{content:"";position:absolute;left:0;right:0;top:8%;height:62%;background:radial-gradient(ellipse at 13% 57%,#181c18 0 8%,transparent 9%),radial-gradient(ellipse at 22% 47%,#1d241e 0 8%,transparent 9%),radial-gradient(ellipse at 35% 52%,#242b22 0 5%,transparent 6%),radial-gradient(ellipse at 67% 58%,#1d3427 0 9%,transparent 10%),linear-gradient(180deg,transparent 0 62%,rgba(42,54,48,.34) 62% 65%,transparent 65%),linear-gradient(90deg,#34463e 0 7%,#849186 7% 9%,#27382f 9% 15%,transparent 15% 100%)}
+.cover:after{content:"Ryuichi Sakamoto\A async";white-space:pre;position:absolute;right:13%;bottom:12%;color:#252821;font-family:Georgia,"Songti SC",serif;font-size:9px;line-height:1.18;text-align:center}
+.song-kicker{margin:0 0 8px;color:#68725f;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.song-title{margin:0;font-size:30px;line-height:1.16}
+.song-meta{margin:8px 0 18px;color:var(--muted)}
+button{border:1px solid rgba(37,39,34,.1);border-radius:999px;background:var(--charcoal);color:#f8f7f2;padding:11px 18px;font-size:14px;cursor:pointer;transition:.2s ease}
+button:hover{transform:translateY(-1px)}
+audio{display:none}
+.locked{display:none}
+body.locked-view .unlocked{display:none}
+body.locked-view .locked{display:block}
+.locked p{max-width:560px;color:var(--muted);font-family:var(--serif);font-size:18px;line-height:1.9}
+@media(max-width:640px){.wrap{width:min(100% - 22px,860px);padding:24px 0}.page{padding:28px;border-radius:28px}h1{font-size:42px}.essay{font-size:17px}.player{grid-template-columns:1fr}.cover{width:180px;max-width:72vw}.song-title{font-size:27px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="page unlocked">
+    <a class="back" href="index.html">回到播放器</a>
+    <h1>あとがき</h1>
+    <p class="sub">Afterword</p>
+    <div class="essay">
+      <p>这个小站最开始，只是一份由 AI 写给 okra 的日音歌单。</p>
+      <p>后来，它慢慢长出了抽歌、专辑墙、分享卡、墙边的纸条，还有那些一句一句改出来的推荐语。</p>
+      <p>技术在这里没有假装成人。</p>
+      <p>它只是安静地参与：提出一个想法，修改一句文案，修好一个按钮，再把一首歌放到最后。</p>
+      <p>如果你已经走到了这里，谢谢你。</p>
+      <p>希望这首歌，也能陪你坐一会儿。</p>
+    </div>
+    <div class="player">
+      <div class="cover" aria-hidden="true"></div>
+      <div>
+        <p class="song-kicker">Hidden Track</p>
+        <h2 class="song-title">andata</h2>
+        <p class="song-meta">坂本龍一 · async</p>
+        <button id="playBtn" type="button">播放这首</button>
+        <audio id="audio" preload="metadata" src="https://pub-d122a10e688a46009a5b289155ba5cab.r2.dev/%E5%9D%82%E6%9C%AC%E9%BE%8D%E4%B8%80%20-%20andata.mp3"></audio>
+      </div>
+    </div>
+  </section>
+  <section class="page locked">
+    <a class="back" href="index.html">回到播放器</a>
+    <h1>あとがき</h1>
+    <p class="sub">Afterword</p>
+    <p>这一页还没有翻到。等成就墙上的空白被慢慢填满，它会自己出现。</p>
+  </section>
+</main>
+<script>
+const achievementStorageKey = "okrajmusicAchievements";
+function hasAfterword(){
+  try {
+    const raw = localStorage.getItem(achievementStorageKey);
+    const ids = raw ? JSON.parse(raw) : [];
+    return Array.isArray(ids) && ids.includes("later-person");
+  } catch (error) {
+    return false;
+  }
+}
+if (!hasAfterword()) document.body.classList.add("locked-view");
+const button = document.getElementById("playBtn");
+const audio = document.getElementById("audio");
+button?.addEventListener("click", () => {
+  if (!audio) return;
+  if (audio.paused) {
+    audio.play();
+    button.textContent = "暂停";
+  } else {
+    audio.pause();
+    button.textContent = "播放这首";
+  }
+});
+audio?.addEventListener("ended", () => { button.textContent = "播放这首"; });
+audio?.addEventListener("pause", () => { if (audio.currentTime < audio.duration) button.textContent = "播放这首"; });
+</script>
+</body>
+</html>
