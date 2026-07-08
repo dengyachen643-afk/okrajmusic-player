@@ -17,6 +17,32 @@ function cleanText(value, maxLength) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
+function normalizeForModeration(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/\s+/g, "");
+}
+
+function moderationProblem(message, name = "") {
+  const text = `${message} ${name}`;
+  const normalized = normalizeForModeration(text);
+
+  if (/www\.|t\.me\/|telegram|whatsapp|onlyfans|discord\.gg|mailto:/i.test(text)) return true;
+  if (/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(text)) return true;
+  if (/(?:\+?\d[\s-]?){10,}/.test(text)) return true;
+  if (/([^\s])\1{7,}/.test(normalized)) return true;
+
+  const blocked = [
+    "加微信", "加vx", "加v信", "加qq", "加群", "私聊", "约炮", "裸聊",
+    "博彩", "网赌", "时时彩", "贷款", "代孕", "办证", "开发票", "刷单",
+    "返利", "引流", "推广", "广告位", "包养", "操你", "傻逼", "煞笔",
+    "死全家", "去死", "nmsl", "fuck", "porn", "casino"
+  ];
+
+  return blocked.some(word => normalized.includes(normalizeForModeration(word)));
+}
+
 function reject(message, status = 400) {
   return json({ error: message }, status);
 }
@@ -53,6 +79,7 @@ export default {
 
       if (!message) return reject("message required");
       if (/https?:\/\//i.test(message)) return reject("links are not allowed");
+      if (moderationProblem(message, name)) return reject("这张纸条可能太像广告或攻击性内容了，换个说法再贴吧。");
 
       const id = crypto.randomUUID();
       const color = colors[Math.floor(Math.random() * colors.length)];
