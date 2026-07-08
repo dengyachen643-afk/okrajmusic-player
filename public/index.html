@@ -3503,6 +3503,7 @@ function openAfterword(){
   }
   closeAchievements();
   closeAchievementUnlockModal();
+  afterwordPlay.textContent = currentTrack && trackKey(currentTrack) === afterwordTrackKey ? "正在播放" : "播放这首";
   afterwordSheet.classList.add("show");
   afterwordBackdrop.classList.add("show");
 }
@@ -3518,9 +3519,8 @@ function playAfterwordTrack(){
   if (!track) return;
   playbackQueue = null;
   currentAlbum = null;
-  closeAfterwordSheet();
   playTrack(track, true, true);
-  playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  afterwordPlay.textContent = "正在播放";
 }
 
 function closePlatformSheet(){
