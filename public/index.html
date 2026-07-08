@@ -67,7 +67,7 @@ h1 .title-line:last-child{white-space:nowrap}
     linear-gradient(135deg,#f8f7f2 0%,#ece9df 48%,#d8d5cb 100%);
 }
 .local-player audio{display:none}
-.player-cover{width:118px;aspect-ratio:1/1;border-radius:22px;overflow:hidden;box-shadow:0 18px 38px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.7)}
+.player-cover{width:118px;aspect-ratio:1/1;border-radius:22px;overflow:hidden;clip-path:inset(0 round 22px);box-shadow:0 18px 38px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.7)}
 .player-panel{min-width:0;display:grid;gap:13px}
 .player-status{color:var(--sage-dark);font-size:12px;text-transform:uppercase}
 .player-now{min-width:0}
@@ -581,7 +581,7 @@ const tracks = [
       "人生BGM"
     ],
     "cover": "hitsujibungaku",
-    "note": "《more than words》。有些话真的会停在 words 前面。剩下的，让吉他和留白慢慢说完。"
+    "note": "有些话真的会停在 words 前面。剩下的，让吉他和留白慢慢说完。"
   },
   {
     "artist": "きのこ帝国",
@@ -598,7 +598,7 @@ const tracks = [
       "旧伤"
     ],
     "cover": "kinmokusei",
-    "note": "《金木犀の夜》。金木犀会先被闻到。然后才想起，它一直都在那里。"
+    "note": "金木犀会先被闻到。然后才想起，它一直都在那里。"
   },
   {
     "artist": "東京事変",
@@ -649,7 +649,7 @@ const tracks = [
       "夜风"
     ],
     "cover": "lamp",
-    "note": "《夜風》。风不是主角。它只是让夜晚终于开始流动。"
+    "note": "风不是主角。它只是让夜晚终于开始流动。"
   },
   {
     "artist": "toe",
@@ -683,7 +683,7 @@ const tracks = [
       "跳跃"
     ],
     "cover": "tricot",
-    "note": "《庭》。tricot 很少把旋律走直。但乱，不代表没有方向。"
+    "note": "tricot 很少把旋律走直。但乱，不代表没有方向。"
   },
   {
     "artist": "くるり",
@@ -717,7 +717,7 @@ const tracks = [
       "层次"
     ],
     "cover": "sakana",
-    "note": "《目が明く藍色》。「目が明く」是睁开眼。第一眼看见的，不是早晨，是蓝色。"
+    "note": "「目が明く」是睁开眼。第一眼看见的，不是早晨，是蓝色。"
   },
   {
     "artist": "ヨルシカ",
@@ -734,7 +734,7 @@ const tracks = [
       "明亮"
     ],
     "cover": "yorushika",
-    "note": "《老人と海》。海明威借来做了标题。ヨルシカ把它写成了一场关于时间的散步。"
+    "note": "海明威借来做了标题。ヨルシカ把它写成了一场关于时间的散步。"
   },
   {
     "artist": "Homecomings",
@@ -751,7 +751,7 @@ const tracks = [
       "温柔"
     ],
     "cover": "songbirds",
-    "note": "《Songbirds》。鸟已经飞远了。剩下的空气，还记得它飞过。"
+    "note": "鸟已经飞远了。剩下的空气，还记得它飞过。"
   },
   {
     "artist": "betcover!!",
@@ -768,7 +768,7 @@ const tracks = [
       "失控边缘"
     ],
     "cover": "betcover",
-    "note": "《回転・天使》。天使没有落下来。她一直在转。"
+    "note": "天使没有落下来。她一直在转。"
   },
   {
     "artist": "青葉市子",
@@ -802,7 +802,7 @@ const tracks = [
       "青春"
     ],
     "cover": "uchu",
-    "note": "《8films》。八卷胶片。每一卷都很短，却刚好能拼成一个下午。"
+    "note": "八卷胶片。每一卷都很短，却刚好能拼成一个下午。"
   },
   {
     "artist": "Mass of the Fermenting Dregs",
@@ -819,7 +819,7 @@ const tracks = [
       "橙色"
     ],
     "cover": "mass",
-    "note": "《青い、濃い、橙色の日》。一天里怎么会同时有蓝、深蓝和橙色。大概只有青春会这样。"
+    "note": "一天里怎么会同时有蓝、深蓝和橙色。大概只有青春会这样。"
   },
   {
     "artist": "ずっと真夜中でいいのに。",
@@ -836,7 +836,7 @@ const tracks = [
       "夜"
     ],
     "cover": "zutomayo",
-    "note": "《ろんりねす》。Loneliness 被故意写成平假名。孤独一下子没有那么锋利了。"
+    "note": "Loneliness 被故意写成平假名。孤独一下子没有那么锋利了。"
   },
   {
     "artist": "椎名林檎",
@@ -853,7 +853,7 @@ const tracks = [
       "性感"
     ],
     "cover": "ringo",
-    "note": "《丸ノ内サディスティック》。丸之内是东京。Sadistic 却一点也不东京。"
+    "note": "丸之内是东京。Sadistic 却一点也不东京。"
   },
   {
     "artist": "Cö shu Nie",
@@ -870,7 +870,7 @@ const tracks = [
       "收束"
     ],
     "cover": "coshunie",
-    "note": "《give it back》。有些东西不是拿回来。是终于愿意放回去。"
+    "note": "有些东西不是拿回来。是终于愿意放回去。"
   },
   {
     "artist": "Galileo Galilei",
@@ -904,7 +904,7 @@ const tracks = [
       "命运"
     ],
     "cover": "rad",
-    "note": "《前前前世》。「前前前世」没有真的在讲轮回。它只是把一句「终于找到你了」唱得特别年轻。"
+    "note": "「前前前世」没有真的在讲轮回。它只是把一句「终于找到你了」唱得特别年轻。"
   },
   {
     "artist": "Vaundy",
@@ -921,7 +921,7 @@ const tracks = [
       "复古感"
     ],
     "cover": "vaundy",
-    "note": "《踊り子》。舞者没有一直跳。她只是站在那里，灯就亮了。"
+    "note": "舞者没有一直跳。她只是站在那里，灯就亮了。"
   },
   {
     "artist": "女王蜂",
@@ -938,7 +938,7 @@ const tracks = [
       "火"
     ],
     "cover": "ziyoou",
-    "note": "《火炎》。火焰一直往上。女王蜂没有。"
+    "note": "火焰一直往上。女王蜂没有。"
   },
   {
     "artist": "相対性理論",
@@ -955,7 +955,7 @@ const tracks = [
       "冷幽默"
     ],
     "cover": "soutaisei",
-    "note": "《LOVEずっきゅん》。「ずっきゅん」是漫画里的心动拟声。爱情在这里有点怪，也有点好笑。"
+    "note": "「ずっきゅん」是漫画里的心动拟声。爱情在这里有点怪，也有点好笑。"
   },
   {
     "artist": "スピッツ",
@@ -972,7 +972,7 @@ const tracks = [
       "旧夏天"
     ],
     "cover": "spitz",
-    "note": "《チェリー》。樱桃没有出现。青春倒是一直都在。"
+    "note": "樱桃没有出现。青春倒是一直都在。"
   },
   {
     "artist": "坂本慎太郎",
@@ -989,7 +989,7 @@ const tracks = [
       "迷幻"
     ],
     "cover": "sakamoto",
-    "note": "《幽霊の気分で》。当一天幽灵。世界会安静很多。"
+    "note": "当一天幽灵。世界会安静很多。"
   },
   {
     "artist": "cero",
@@ -1006,7 +1006,7 @@ const tracks = [
       "律动"
     ],
     "cover": "cero",
-    "note": "《Summer Soul》。夏天不是季节。是身体终于慢下来以后。"
+    "note": "夏天不是季节。是身体终于慢下来以后。"
   },
   {
     "artist": "離婚伝説",
@@ -1023,7 +1023,7 @@ const tracks = [
       "柔软"
     ],
     "cover": "rikon",
-    "note": "《愛が一層メロウ》。「一層」既是更加，也是更深一层。爱没有变浓，只是沉了一点。"
+    "note": "「一層」既是更加，也是更深一层。爱没有变浓，只是沉了一点。"
   },
   {
     "artist": "Lucky Kilimanjaro",
@@ -1040,7 +1040,7 @@ const tracks = [
       "轻快"
     ],
     "cover": "lk",
-    "note": "《Burning Friday Night》。星期五真正开始的时候。人已经下班了。"
+    "note": "星期五真正开始的时候。人已经下班了。"
   },
   {
     "artist": "LITE",
@@ -1057,7 +1057,7 @@ const tracks = [
       "清醒"
     ],
     "cover": "lite",
-    "note": "《Ef》。没有一句废话。连停顿都像谱子的一部分。"
+    "note": "没有一句废话。连停顿都像谱子的一部分。"
   },
   {
     "artist": "MONO",
@@ -1074,7 +1074,7 @@ const tracks = [
       "宏大"
     ],
     "cover": "mono",
-    "note": "《Ashes in the Snow》。雪很安静。灰烬也是。"
+    "note": "雪很安静。灰烬也是。"
   },
   {
     "artist": "te'",
@@ -1091,7 +1091,7 @@ const tracks = [
       "锐利"
     ],
     "cover": "te",
-    "note": "《美しき旋律も、音を語る言を持たずしては心にも『留』めがたし。》歌名已经把想说的话说完了。剩下的交给吉他。"
+    "note": "歌名已经把想说的话说完了。剩下的交给吉他。"
   },
   {
     "artist": "NUMBER GIRL",
@@ -1108,7 +1108,7 @@ const tracks = [
       "青春"
     ],
     "cover": "numbergirl",
-    "note": "《透明少女》。青春不是透明。是回头以后才透明。"
+    "note": "青春不是透明。是回头以后才透明。"
   },
   {
     "artist": "andymori",
@@ -1125,7 +1125,7 @@ const tracks = [
       "年轻"
     ],
     "cover": "andymori",
-    "note": "《1984》。和奥威尔没有关系。和年轻有关系。"
+    "note": "和奥威尔没有关系。和年轻有关系。"
   },
   {
     "artist": "椿屋四重奏",
@@ -1142,7 +1142,7 @@ const tracks = [
       "湿度"
     ],
     "cover": "tsubakiya",
-    "note": "《紫陽花》。绣球花会跟着土壤改变颜色。所以它总有一点说不准。"
+    "note": "绣球花会跟着土壤改变颜色。所以它总有一点说不准。"
   },
   {
     "artist": "フレデリック",
@@ -1159,7 +1159,7 @@ const tracks = [
       "轻怪"
     ],
     "cover": "frederic",
-    "note": "《オドループ》。一直绕圈。但没有一次回到原点。"
+    "note": "一直绕圈。但没有一次回到原点。"
   },
   {
     "artist": "米津玄師",
@@ -1176,7 +1176,7 @@ const tracks = [
       "记忆"
     ],
     "cover": "lemon",
-    "note": "《Lemon》。柠檬不是味道。是后来很多人想起悲伤时，第一个想到的颜色。"
+    "note": "柠檬不是味道。是后来很多人想起悲伤时，第一个想到的颜色。"
   },
   {
     "artist": "蓮沼執太フィル",
@@ -1193,7 +1193,7 @@ const tracks = [
       "实验"
     ],
     "cover": "hasunuma",
-    "note": "《Eco Echo》。回声不是重复。它只是比原来的声音晚一点回来。"
+    "note": "回声不是重复。它只是比原来的声音晚一点回来。"
   },
   {
     "artist": "くるり",
@@ -1210,7 +1210,7 @@ const tracks = [
       "低温浪漫"
     ],
     "cover": "bara",
-    "note": "《ばらの花》。玫瑰没有盛开。它只是一直放在那里。"
+    "note": "玫瑰没有盛开。它只是一直放在那里。"
   },
   {
     "artist": "KIRINJI",
@@ -1227,7 +1227,7 @@ const tracks = [
       "都市余温"
     ],
     "cover": "aliens",
-    "note": "《エイリアンズ》。外星人不是别人。是城市里每一个觉得自己格格不入的人。"
+    "note": "外星人不是别人。是城市里每一个觉得自己格格不入的人。"
   },
   {
     "artist": "きのこ帝国",
@@ -1244,7 +1244,7 @@ const tracks = [
       "梦游"
     ],
     "cover": "chronostasis",
-    "note": "《クロノスタシス》。Chronostasis。按下快门以后，时间会错觉地停留一瞬。"
+    "note": "Chronostasis。按下快门以后，时间会错觉地停留一瞬。"
   },
   {
     "artist": "フィッシュマンズ",
@@ -1261,7 +1261,7 @@ const tracks = [
       "深夜"
     ],
     "cover": "nightcruising",
-    "note": "《ナイトクルージング》。Night Cruising。开得越慢，夜越长。"
+    "note": "Night Cruising。开得越慢，夜越长。"
   },
   {
     "artist": "GRAPEVINE",
@@ -1278,7 +1278,7 @@ const tracks = [
       "清醒"
     ],
     "cover": "grapevine",
-    "note": "《光について》。不是寻找光。是学会站在光里面。"
+    "note": "不是寻找光。是学会站在光里面。"
   },
   {
     "artist": "toe",
@@ -1312,7 +1312,7 @@ const tracks = [
       "锐利"
     ],
     "cover": "pool",
-    "note": "《POOL》。tricot 最擅长的不是复杂。是复杂还能跳舞。"
+    "note": "tricot 最擅长的不是复杂。是复杂还能跳舞。"
   },
   {
     "artist": "Suchmos",
@@ -1329,7 +1329,7 @@ const tracks = [
       "开车"
     ],
     "cover": "staytune",
-    "note": "《STAY TUNE》。电台不会说「别走」。它只会说，继续听。"
+    "note": "电台不会说「别走」。它只会说，继续听。"
   },
   {
     "artist": "never young beach",
@@ -1346,7 +1346,7 @@ const tracks = [
       "晴天"
     ],
     "cover": "akarui",
-    "note": "《明るい未来》。明るい不只是明亮。也是轻松一点的未来。"
+    "note": "明るい不只是明亮。也是轻松一点的未来。"
   },
   {
     "artist": "Yogee New Waves",
@@ -1363,7 +1363,7 @@ const tracks = [
       "夜色"
     ],
     "cover": "climax",
-    "note": "《Climax Night》。真正的高潮。往往发生在快结束的时候。"
+    "note": "真正的高潮。往往发生在快结束的时候。"
   },
   {
     "artist": "tofubeats",
@@ -1380,7 +1380,7 @@ const tracks = [
       "轻飘"
     ],
     "cover": "suisei",
-    "note": "《水星》。tofubeats 的《水星》，已经变成了日本 City Pop 的一个坐标。"
+    "note": "tofubeats 的《水星》，已经变成了日本 City Pop 的一个坐标。"
   },
   {
     "artist": "TENDRE",
@@ -1397,7 +1397,7 @@ const tracks = [
       "夜行"
     ],
     "cover": "tendre",
-    "note": "《RIDE》。没有人催你。所以终于可以慢一点。"
+    "note": "没有人催你。所以终于可以慢一点。"
   },
   {
     "artist": "SIRUP",
@@ -1414,7 +1414,7 @@ const tracks = [
       "周末"
     ],
     "cover": "sirup",
-    "note": "《LOOP》。有些循环不会把人困住。会让人慢慢松开。"
+    "note": "有些循环不会把人困住。会让人慢慢松开。"
   },
   {
     "artist": "ASIAN KUNG-FU GENERATION",
@@ -1431,7 +1431,7 @@ const tracks = [
       "热血"
     ],
     "cover": "ajikan",
-    "note": "《新世紀のラブソング》。爱没有变。新世纪只是换了问题。"
+    "note": "爱没有变。新世纪只是换了问题。"
   },
   {
     "artist": "サカナクション",
@@ -1448,7 +1448,7 @@ const tracks = [
       "记忆"
     ],
     "cover": "wasurerarenaino",
-    "note": "《忘れられないの》。歌名是「忘不掉呢」。最后那个「の」，让遗憾突然变温柔了。"
+    "note": "歌名是「忘不掉呢」。最后那个「の」，让遗憾突然变温柔了。"
   },
   {
     "artist": "羊文学",
@@ -1465,7 +1465,7 @@ const tracks = [
       "后劲"
     ],
     "cover": "powers1999",
-    "note": "《1999》。明明唱的是 1999。回来的却总是自己的青春。"
+    "note": "明明唱的是 1999。回来的却总是自己的青春。"
   },
   {
     "artist": "カネコアヤノ",
@@ -1482,7 +1482,7 @@ const tracks = [
       "朴素"
     ],
     "cover": "kaneko",
-    "note": "《光の方へ》。不是走向成功。是走向有光的地方。"
+    "note": "不是走向成功。是走向有光的地方。"
   },
   {
     "artist": "Homecomings",
@@ -1499,7 +1499,7 @@ const tracks = [
       "回家路"
     ],
     "cover": "bluehour",
-    "note": "《Blue Hour》。摄影里叫蓝调时刻。白天已经结束，夜晚还没真正开始。"
+    "note": "摄影里叫蓝调时刻。白天已经结束，夜晚还没真正开始。"
   },
   {
     "artist": "Nujabes",
@@ -1516,7 +1516,7 @@ const tracks = [
       "沉静"
     ],
     "cover": "modal",
-    "note": "《Reflection Eternal》。Reflection 是倒影，也是回望。Eternal 才让它慢慢变长。"
+    "note": "Reflection 是倒影，也是回望。Eternal 才让它慢慢变长。"
   },
   {
     "artist": "Nujabes",
@@ -1533,7 +1533,7 @@ const tracks = [
       "器乐"
     ],
     "cover": "modal",
-    "note": "《Sea of Cloud》。云海不是一片云。是站得足够高以后，云也变成了海。"
+    "note": "云海不是一片云。是站得足够高以后，云也变成了海。"
   },
   {
     "artist": "宇多田ヒカル",
@@ -1567,7 +1567,7 @@ const tracks = [
       "温柔"
     ],
     "cover": "yuunagi",
-    "note": "《夕凪》。「夕凪」是傍晚风停下来的那一小段时间。安静得让情绪自己浮上来。"
+    "note": "「夕凪」是傍晚风停下来的那一小段时间。安静得让情绪自己浮上来。"
   },
   {
     "artist": "水中スピカ",
@@ -1584,7 +1584,7 @@ const tracks = [
       "几何"
     ],
     "cover": "oshiroi",
-    "note": "《Oshiroi》。白粉。漂亮这件事，有时候也是一种遮掩。"
+    "note": "白粉。漂亮这件事，有时候也是一种遮掩。"
   },
   {
     "artist": "水中スピカ",
@@ -1601,7 +1601,7 @@ const tracks = [
       "橙色"
     ],
     "cover": "alpenglow",
-    "note": "《Alpenglow》。日落以后。山顶还会再亮一会儿。"
+    "note": "日落以后。山顶还会再亮一会儿。"
   },
   {
     "artist": "藤井風",
@@ -1618,7 +1618,7 @@ const tracks = [
       "释然"
     ],
     "cover": "kaerou",
-    "note": "《帰ろう》。「帰る」和「回家」不完全一样。它更像，终于可以回去了。"
+    "note": "「帰る」和「回家」不完全一样。它更像，终于可以回去了。"
   },
   {
     "artist": "TOMOO",
@@ -1635,7 +1635,7 @@ const tracks = [
       "步伐"
     ],
     "cover": "sonare",
-    "note": "《ソナーレ》。Sonare 在意大利语里，是「发出声音」。"
+    "note": "Sonare 在意大利语里，是「发出声音」。"
   },
   {
     "artist": "Bialystocks",
@@ -1652,7 +1652,7 @@ const tracks = [
       "余韵"
     ],
     "cover": "kotodute",
-    "note": "《言伝》。「言伝」不是亲口说的话。是托别人带去的想念。"
+    "note": "「言伝」不是亲口说的话。是托别人带去的想念。"
   },
   {
     "artist": "ASIAN KUNG-FU GENERATION",
@@ -1686,7 +1686,7 @@ const tracks = [
       "轻盈"
     ],
     "cover": "modal",
-    "note": "《Flowers》。花没有盛开。花只是落下来。"
+    "note": "花没有盛开。花只是落下来。"
   },
   {
     "artist": "mouse on the keys",
@@ -1720,7 +1720,7 @@ const tracks = [
       "长夜"
     ],
     "cover": "luvsic4",
-    "note": "《Luv(sic)》。Love 没有写完。Sick 也没有写完整。剩下的，只能念出来。"
+    "note": "Love 没有写完。Sick 也没有写完整。剩下的，只能念出来。"
   },
   {
     "artist": "Yakkle & Shing02",
@@ -1737,7 +1737,7 @@ const tracks = [
       "远景"
     ],
     "cover": "aimitsushu",
-    "note": "《愛密集》（あいみっしゅう）。念快一点，会悄悄靠近一句 I miss you。一句没有说出口的话，换了一种语言，留在这里。"
+    "note": "あいみっしゅう。念快一点，会悄悄靠近一句 I miss you。一句没有说出口的话，换了一种语言，留在这里。"
   }
 ];
 
@@ -1980,6 +1980,7 @@ let currentAlbum = null;
 let playbackQueue = null;
 let playbackMode = "shuffle";
 let playHistory = [];
+let drawnAt = null;
 let preparedNextTrack = null;
 let preparedNextUrl = "";
 let nextAudioPreloader = null;
@@ -2120,6 +2121,16 @@ function safeFilename(value){
     .replace(/[\\/:*?"<>|]/g, "")
     .replace(/\s+/g, "-")
     .slice(0, 60) || "okrajmusic-share";
+}
+
+function isMobileDevice(){
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+function formatShareDate(date){
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+  const pad = value => String(value).padStart(2, "0");
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 let coverCssText = "";
@@ -2391,7 +2402,9 @@ function canvasToBlob(canvas){
   });
 }
 
-async function createShareImageBlob(track){
+async function createShareImageBlob(track, options = {}){
+  const isDrawShare = options.variant === "draw";
+  const pickedAtText = formatShareDate(options.drawnAt || new Date());
   const canvas = document.createElement("canvas");
   canvas.width = 1080;
   canvas.height = 1440;
@@ -2400,16 +2413,22 @@ async function createShareImageBlob(track){
   const serif = '"Noto Serif SC","Source Han Serif SC","Songti SC",serif';
 
   const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
-  bg.addColorStop(0, "#f2f1eb");
-  bg.addColorStop(.58, "#e5e6dc");
-  bg.addColorStop(1, "#f8f5ec");
+  if (isDrawShare) {
+    bg.addColorStop(0, "#e5eadf");
+    bg.addColorStop(.55, "#d8e0cf");
+    bg.addColorStop(1, "#f4f1e7");
+  } else {
+    bg.addColorStop(0, "#f2f1eb");
+    bg.addColorStop(.58, "#e5e6dc");
+    bg.addColorStop(1, "#f8f5ec");
+  }
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, 1080, 1440);
-  ctx.fillStyle = "rgba(169,182,156,.38)";
+  ctx.fillStyle = isDrawShare ? "rgba(87,100,78,.18)" : "rgba(169,182,156,.38)";
   ctx.beginPath();
   ctx.arc(942, 170, 260, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "rgba(45,48,41,.06)";
+  ctx.fillStyle = isDrawShare ? "rgba(167,124,83,.09)" : "rgba(45,48,41,.06)";
   ctx.beginPath();
   ctx.arc(155, 1202, 320, 0, Math.PI * 2);
   ctx.fill();
@@ -2431,7 +2450,7 @@ async function createShareImageBlob(track){
 
   ctx.fillStyle = "#6a775f";
   ctx.font = `700 27px ${sans}`;
-  ctx.fillText("OKRA JMUSIC PICK", 568, 145);
+  ctx.fillText(isDrawShare ? "OKRA JMUSIC DRAW" : "OKRA JMUSIC PICK", 568, 145);
   ctx.fillStyle = "#252821";
   ctx.font = `850 62px ${sans}`;
   wrapCanvasText(ctx, track.song, 568, 228, 376, 74, 3);
@@ -2444,13 +2463,21 @@ async function createShareImageBlob(track){
   const albumLineHeight = 32;
   const albumLastBaseline = 526;
   drawCanvasLines(ctx, albumLines, 568, albumLastBaseline - (albumLines.length - 1) * albumLineHeight, albumLineHeight);
+  if (isDrawShare) {
+    ctx.fillStyle = "rgba(106,119,95,.14)";
+    roundRect(ctx, 568, 548, 376, 44, 22);
+    ctx.fill();
+    ctx.fillStyle = "#68725f";
+    ctx.font = `700 21px ${sans}`;
+    ctx.fillText(`抽到时间：${pickedAtText}`, 590, 578);
+  }
 
-  ctx.fillStyle = "rgba(169,182,156,.26)";
+  ctx.fillStyle = isDrawShare ? "rgba(118,133,105,.28)" : "rgba(169,182,156,.26)";
   roundRect(ctx, 104, 620, 872, 402, 34);
   ctx.fill();
   ctx.fillStyle = "#6a775f";
   ctx.font = `700 28px ${sans}`;
-  ctx.fillText("推荐语", 150, 686);
+  ctx.fillText(isDrawShare ? "抽到这首" : "推荐语", 150, 686);
   ctx.fillStyle = "#4f554a";
   ctx.font = `700 39px ${serif}`;
   wrapCanvasText(ctx, track.note || "今晚把这首歌交给你。", 150, 765, 780, 68, 4);
@@ -2481,7 +2508,7 @@ async function createShareImageBlob(track){
   ctx.fillStyle = "#6c7064";
   ctx.font = `500 25px ${sans}`;
   ctx.fillText("okrajmusic-player", 104, 1218);
-  ctx.fillText("给今晚留一首歌。", 104, 1278);
+  ctx.fillText(isDrawShare ? "这首是随机数替今晚递来的。" : "给今晚留一首歌。", 104, 1278);
 
   return canvasToBlob(canvas);
 }
@@ -2497,22 +2524,23 @@ function downloadBlob(blob, filename){
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-async function shareTrackImage(track){
+async function shareTrackImage(track, options = {}){
   if (!track) {
     showToast("先抽一首");
     return;
   }
   showToast("正在生成分享图");
   try {
-    const blob = await createShareImageBlob(track);
-    const filename = `${safeFilename(`${track.artist}-${track.song}`)}.png`;
+    const blob = await createShareImageBlob(track, options);
+    const suffix = options.variant === "draw" ? "-draw" : "";
+    const filename = `${safeFilename(`${track.artist}-${track.song}${suffix}`)}.png`;
     const file = new File([blob], filename, { type: "image/png" });
-    const isMobileShareDevice = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    const isMobileShareDevice = isMobileDevice();
     if (isMobileShareDevice && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
       await navigator.share({
         files: [file],
-        title: `${track.song} - ${track.artist}`,
-        text: track.note || "小O的日音播放器"
+        title: options.variant === "draw" ? `我抽到了 ${track.song}` : `${track.song} - ${track.artist}`,
+        text: options.variant === "draw" ? `小O的日音播放器抽到了：${track.song}` : (track.note || "小O的日音播放器")
       });
       showToast("分享图已准备好");
       return;
@@ -2586,11 +2614,45 @@ function qqMusicUrl(t){
   return `https://y.qq.com/n/ryqq/search?w=${query}&t=song`;
 }
 
+function qqMusicMobileUrl(t){
+  const direct = qqMusicLinks[trackKey(t)];
+  const songMid = direct?.match(/songDetail\/([^/?#]+)/)?.[1];
+  if (songMid) return `https://i.y.qq.com/v8/playsong.html?songmid=${encodeURIComponent(songMid)}&source=yqq#wechat_redirect`;
+  return qqMusicUrl(t);
+}
+
+function qqMusicAppUrl(t){
+  const direct = qqMusicLinks[trackKey(t)];
+  const songMid = direct?.match(/songDetail\/([^/?#]+)/)?.[1];
+  if (!songMid) return "";
+  const payload = encodeURIComponent(JSON.stringify({
+    song: [{ type: "0", songmid: songMid }],
+    action: "play"
+  }));
+  return `qqmusic://qq.com/media/playSonglist?p=${payload}`;
+}
+
 function neteaseMusicUrl(t){
   const direct = neteaseMusicLinks[trackKey(t)];
   if (direct) return direct;
   const query = encodeURIComponent(`${t.artist} ${t.song}`);
   return `https://music.163.com/#/search/m/?s=${query}&type=1`;
+}
+
+function neteaseSongId(t){
+  const direct = neteaseMusicLinks[trackKey(t)];
+  return direct?.match(/[?&]id=(\d+)/)?.[1] || "";
+}
+
+function neteaseMusicMobileUrl(t){
+  const id = neteaseSongId(t);
+  if (id) return `https://music.163.com/m/song?id=${id}`;
+  return neteaseMusicUrl(t);
+}
+
+function neteaseMusicAppUrl(t){
+  const id = neteaseSongId(t);
+  return id ? `orpheus://song/${id}` : "";
 }
 
 function trackNumber(t){
@@ -2737,9 +2799,9 @@ function pickPreviousTrack(){
 function platformList(t){
   const key = trackKey(t);
   return [
-    { name: "Apple Music", hint: "\u76f4\u8fbe\u6b4c\u66f2\u9875", cls: "apple", url: appleMusicUrl(t) },
-    { name: "QQ\u97f3\u4e50", hint: qqMusicLinks[key] ? "\u76f4\u8fbe\u6b4c\u66f2\u9875" : "\u6253\u5f00\u641c\u7d22\u7ed3\u679c", cls: "qq", url: qqMusicUrl(t) },
-    { name: "\u7f51\u6613\u4e91\u97f3\u4e50", hint: neteaseMusicLinks[key] ? "\u76f4\u8fbe\u6b4c\u66f2\u9875" : "\u6253\u5f00\u641c\u7d22\u7ed3\u679c", cls: "netease", url: neteaseMusicUrl(t) }
+    { name: "Apple Music", hint: "系统会尝试打开 App", cls: "apple", webUrl: appleMusicUrl(t), appUrl: "" },
+    { name: "QQ音乐", hint: qqMusicLinks[key] ? "App 优先，网页兜底" : "打开搜索结果", cls: "qq", webUrl: qqMusicMobileUrl(t), appUrl: qqMusicAppUrl(t) },
+    { name: "网易云音乐", hint: neteaseMusicLinks[key] ? "App 优先，网页兜底" : "打开搜索结果", cls: "netease", webUrl: neteaseMusicMobileUrl(t), appUrl: neteaseMusicAppUrl(t) }
   ];
 }
 
@@ -3058,7 +3120,7 @@ function openPlatformChooser(t){
   platformTags.innerHTML = t.mood.map(x=>`<span class="tag">${x}</span>`).join("");
   platformNote.textContent = t.note;
   platformOptions.innerHTML = platformList(t).map(p => `
-    <a class="platform-option ${p.cls}" href="${escapeAttr(p.url)}" target="_blank" rel="noopener">
+    <a class="platform-option ${p.cls}" href="${escapeAttr(p.webUrl)}" data-app-url="${escapeAttr(p.appUrl || "")}" data-web-url="${escapeAttr(p.webUrl)}" target="_blank" rel="noopener">
       <strong>${escapeHTML(p.name)}</strong>
       <span>${escapeHTML(p.hint)}</span>
     </a>
@@ -3334,6 +3396,7 @@ function drawRandom(){
   const pool = playableTracks();
   const list = pool.length ? pool : tracks;
   const t = list[Math.floor(Math.random() * list.length)];
+  drawnAt = new Date();
   updateDraw(t, true, true);
 }
 
@@ -3384,7 +3447,20 @@ playerShare.addEventListener("click", () => {
     showToast("先选一首歌");
     return;
   }
-  shareTrackImage(currentTrack);
+  shareTrackImage(currentTrack, { variant: "pick" });
+});
+platformOptions.addEventListener("click", event => {
+  const option = event.target.closest(".platform-option");
+  if (!option) return;
+  const appUrl = option.dataset.appUrl;
+  const webUrl = option.dataset.webUrl || option.href;
+  if (!appUrl || !isMobileDevice()) return;
+  event.preventDefault();
+  showToast("正在尝试打开 App");
+  window.location.href = appUrl;
+  setTimeout(() => {
+    window.location.href = webUrl;
+  }, 900);
 });
 document.addEventListener("click", event => {
   const trigger = event.target.closest(".platform-trigger");
@@ -3416,7 +3492,7 @@ albumDetail.addEventListener("click", event => {
   const trackTarget = event.target.closest(".album-track");
   if (shareTarget) {
     const track = getTrackByKey(shareTarget.dataset.shareTrack);
-    if (track) shareTrackImage(track);
+    if (track) shareTrackImage(track, { variant: "pick" });
     return;
   }
   if (trackTarget) {
@@ -3447,7 +3523,7 @@ copyBtn.addEventListener("click", () => {
     showToast("先抽一首");
     return;
   }
-  shareTrackImage(drawnTrack);
+  shareTrackImage(drawnTrack, { variant: "draw", drawnAt });
 });
 
 render();
