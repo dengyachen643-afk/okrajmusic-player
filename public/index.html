@@ -323,6 +323,28 @@ button:disabled:hover{transform:none}
 .afterword-track-meta{margin:8px 0 0;color:var(--muted)}
 .afterword-track-note{margin:12px 0 16px;max-width:430px;color:#626456;font-family:var(--serif);font-size:14px;line-height:1.75}
 .afterword-play{background:var(--charcoal);color:#f8f7f2;border-color:var(--charcoal)}
+.thanks-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.28);opacity:0;pointer-events:none;transition:.24s ease;z-index:96;backdrop-filter:blur(5px)}
+.thanks-backdrop.show{opacity:1;pointer-events:auto}
+.thanks-sheet{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);width:min(820px,calc(100% - 28px));max-height:min(720px,calc(100vh - 36px));
+  background:rgba(248,247,242,.97);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:30px;box-shadow:0 34px 96px rgba(38,40,34,.26);
+  padding:38px;opacity:0;pointer-events:none;transition:.26s ease;backdrop-filter:blur(20px);z-index:97;overflow:auto;
+}
+.thanks-sheet.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.thanks-close{position:absolute;top:16px;right:16px;width:38px;height:38px;padding:0;border-radius:50%;background:transparent;color:var(--muted);font-size:24px}
+.thanks-title{margin:0;font-size:clamp(50px,8vw,82px);line-height:.96;font-weight:800;letter-spacing:0}
+.thanks-lead{margin:24px 0 0;max-width:520px;color:#626456;font-family:"Times New Roman","Songti SC","SimSun",serif;font-size:22px;line-height:1.7}
+.thanks-list{margin-top:54px;display:grid;gap:16px}
+.thanks-artist{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:center;padding:22px 24px;
+  border:1px solid rgba(37,39,34,.08);border-radius:24px;background:rgba(255,255,250,.48);box-shadow:0 14px 40px rgba(42,43,38,.07);
+}
+.thanks-name{width:max-content;max-width:100%;color:var(--sage-dark);font-size:clamp(24px,4vw,38px);line-height:1.1;font-weight:800;text-decoration:none;border-bottom:2px solid rgba(102,115,95,.24);transition:.22s ease}
+.thanks-name:hover{color:#2f3a43;border-color:rgba(47,58,67,.44)}
+.thanks-line{margin:10px 0 0;color:#626456;font-family:"Times New Roman","Songti SC","SimSun",serif;font-size:20px;line-height:1.55}
+.thanks-mark{width:50px;aspect-ratio:1/1;border-radius:50%;border:1px solid rgba(37,39,34,.1);background:linear-gradient(90deg,transparent 48%,rgba(47,58,67,.5) 48% 52%,transparent 52%),radial-gradient(circle at 50% 50%,rgba(169,182,156,.42) 0 28%,transparent 29%),rgba(238,238,231,.74);opacity:.72}
+.thanks-artist:nth-child(2) .thanks-mark{border-radius:18px;background:linear-gradient(145deg,transparent 0 46%,rgba(47,58,67,.45) 47% 50%,transparent 51%),radial-gradient(circle at 30% 32%,rgba(169,182,156,.38) 0 17%,transparent 18%),radial-gradient(circle at 70% 70%,rgba(47,58,67,.16) 0 28%,transparent 29%),rgba(238,238,231,.74)}
+.thanks-note{margin:46px 0 0;max-width:520px;color:var(--muted);font-family:var(--serif);font-size:14px;line-height:1.8}
 .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120%);background:rgba(36,38,33,.94);color:#f8f7f2;padding:10px 14px;border-radius:999px;font-size:13px;transition:.28s ease;z-index:30}
 .toast.show{transform:translateX(-50%) translateY(0)}
 footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;line-height:1.7;text-align:center}
@@ -525,6 +547,13 @@ footer a:hover{color:#3f443a;border-color:rgba(63,68,58,.48)}
   .afterword-player{grid-template-columns:1fr}
   .afterword-cover{width:160px;max-width:68vw}
   .afterword-track-note{font-size:13px;line-height:1.68}
+  .thanks-sheet{width:calc(100% - 22px);max-height:calc(100svh - 24px);padding:28px 24px;border-radius:24px}
+  .thanks-title{font-size:46px}
+  .thanks-lead{font-size:18px;line-height:1.62}
+  .thanks-list{margin-top:42px}
+  .thanks-artist{grid-template-columns:1fr;padding:20px;gap:16px}
+  .thanks-line{font-size:17px}
+  .thanks-mark{width:44px;justify-self:end}
   .toolbar{position:sticky;top:0;z-index:10;padding:10px 0;backdrop-filter:blur(14px)}
 }
 </style>
@@ -686,11 +715,35 @@ footer a:hover{color:#3f443a;border-color:rgba(63,68,58,.48)}
   </div>
 </aside>
 
+<div class="thanks-backdrop" id="thanksBackdrop"></div>
+<aside class="thanks-sheet" id="thanksSheet" aria-live="polite">
+  <button class="thanks-close" id="closeThanks" aria-label="关闭致谢">×</button>
+  <h2 class="thanks-title">Thanks.</h2>
+  <p class="thanks-lead">Some people never met us.<br>But they still changed us.</p>
+  <div class="thanks-list" aria-label="Acknowledgements">
+    <article class="thanks-artist">
+      <div>
+        <a class="thanks-name" href="https://music.apple.com/cn/artist/%E5%9D%82%E6%9C%AC%E9%BE%99%E4%B8%80/271593168" target="_blank" rel="noreferrer">Ryuichi Sakamoto</a>
+        <p class="thanks-line">Art is long, life is short</p>
+      </div>
+      <div class="thanks-mark" aria-hidden="true"></div>
+    </article>
+    <article class="thanks-artist">
+      <div>
+        <a class="thanks-name" href="https://music.apple.com/cn/artist/nujabes/679712483" target="_blank" rel="noreferrer">Nujabes</a>
+        <p class="thanks-line">The soundtrack to your life.</p>
+      </div>
+      <div class="thanks-mark" aria-hidden="true"></div>
+    </article>
+  </div>
+  <p class="thanks-note">This page is not a profile. It is only a small acknowledgement, left quietly at the edge of the site.</p>
+</aside>
+
 <footer>
   <span>v1.0 · J-music shelf, draw box & share cards</span>
   <span class="credit"><strong>文案和歌单</strong> · GPT 5.5 & Okra</span>
   <span class="credit"><strong>开发</strong> · codex & Okra</span>
-  <span class="credit"><a href="thanks.html">Inspired by Ryuichi Sakamoto & Nujabes</a></span>
+  <span class="credit"><a href="thanks.html" id="thanksLink">Inspired by Ryuichi Sakamoto & Nujabes</a></span>
 </footer>
 
 <script>
@@ -2171,6 +2224,10 @@ const afterwordBackdrop = document.getElementById("afterwordBackdrop");
 const afterwordSheet = document.getElementById("afterwordSheet");
 const closeAfterword = document.getElementById("closeAfterword");
 const afterwordPlay = document.getElementById("afterwordPlay");
+const thanksLink = document.getElementById("thanksLink");
+const thanksBackdrop = document.getElementById("thanksBackdrop");
+const thanksSheet = document.getElementById("thanksSheet");
+const closeThanks = document.getElementById("closeThanks");
 const wallLink = document.getElementById("wallLink");
 const toast = document.getElementById("toast");
 let currentFilter = "all";
@@ -3528,15 +3585,30 @@ function openAfterword(){
   }
   closeAchievements();
   closeAchievementUnlockModal();
+  closeThanksSheet();
   afterwordPlay.textContent = currentTrack && trackKey(currentTrack) === afterwordTrackKey ? "正在播放" : "播放这首";
   afterwordSheet.classList.add("show");
   afterwordBackdrop.classList.add("show");
 }
 
 function closeAfterwordSheet(){
+  const wasOpen = afterwordSheet.classList.contains("show");
   afterwordSheet.classList.remove("show");
   afterwordBackdrop.classList.remove("show");
-  scheduleQueuedAchievementUnlock(520);
+  if (wasOpen) scheduleQueuedAchievementUnlock(520);
+}
+
+function openThanksSheet(){
+  closeAchievements();
+  closeAchievementUnlockModal();
+  closeAfterwordSheet();
+  thanksSheet.classList.add("show");
+  thanksBackdrop.classList.add("show");
+}
+
+function closeThanksSheet(){
+  thanksSheet.classList.remove("show");
+  thanksBackdrop.classList.remove("show");
 }
 
 function playAfterwordTrack(event){
@@ -4023,6 +4095,12 @@ achievementGrid.addEventListener("click", event => {
 closeAfterword.addEventListener("click", closeAfterwordSheet);
 afterwordBackdrop.addEventListener("click", closeAfterwordSheet);
 afterwordPlay.addEventListener("click", playAfterwordTrack);
+thanksLink.addEventListener("click", event => {
+  event.preventDefault();
+  openThanksSheet();
+});
+closeThanks.addEventListener("click", closeThanksSheet);
+thanksBackdrop.addEventListener("click", closeThanksSheet);
 wallLink.addEventListener("click", () => {
   if (!currentTrack) {
     sessionStorage.removeItem("okrajWallTrack");
@@ -4126,6 +4204,7 @@ document.addEventListener("keydown", event => {
     closeAchievements();
     closeAchievementUnlockModal();
     closeAfterwordSheet();
+    closeThanksSheet();
   }
 });
 copyBtn.addEventListener("click", () => {
