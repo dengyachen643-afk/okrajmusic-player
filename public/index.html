@@ -472,6 +472,7 @@ footer a:hover{color:#3f443a;border-color:rgba(63,68,58,.48)}
 .toccatina{background:#0a0b0b} .toccatina:before{content:"sezession  sezession  sezession";position:absolute;left:12%;right:12%;top:30%;color:#2f3433;font-size:11px;line-height:2;text-align:center;text-shadow:0 26px 0 #202524,0 52px 0 #161a19} .toccatina:after{content:"toccatina";position:absolute;left:17%;right:17%;bottom:18%;color:#e9e4d7;font-size:13px;font-weight:600;text-align:center;text-shadow:none}
 .aimitsushu{background:linear-gradient(180deg,#b7cfe0 0 45%,#826f9a 45% 67%,#20304a 67%)} .aimitsushu:before{content:"";position:absolute;left:0;right:0;bottom:24%;height:30%;background:linear-gradient(165deg,transparent 0 34%,#2c4561 34% 55%,transparent 55%),linear-gradient(20deg,transparent 0 47%,#efe6d1 47% 50%,transparent 50%);opacity:.9} .aimitsushu:after{content:"";position:absolute;left:0;right:0;bottom:0;height:31%;background:linear-gradient(180deg,#35445e 0 43%,#0d1826 43%);box-shadow:0 -90px 0 -42px rgba(240,232,215,.56)}
 .async{background:linear-gradient(180deg,#17231e 0 8%,#d8d5ca 8% 70%,#f7f5ef 70% 100%)} .async:before{content:"";position:absolute;left:0;right:0;top:8%;height:62%;padding:0;border:0;border-radius:0;clip-path:none;background:radial-gradient(ellipse at 13% 57%,#181c18 0 8%,transparent 9%),radial-gradient(ellipse at 22% 47%,#1d241e 0 8%,transparent 9%),radial-gradient(ellipse at 35% 52%,#242b22 0 5%,transparent 6%),radial-gradient(ellipse at 67% 58%,#1d3427 0 9%,transparent 10%),linear-gradient(180deg,transparent 0 62%,rgba(42,54,48,.34) 62% 65%,transparent 65%),linear-gradient(90deg,#34463e 0 7%,#849186 7% 9%,#27382f 9% 15%,transparent 15% 100%);filter:drop-shadow(0 10px 12px rgba(25,31,27,.24))} .async:after{content:"Ryuichi Sakamoto\A async";white-space:pre;position:absolute;right:13%;bottom:12%;left:auto;top:auto;width:auto;height:auto;padding:0;border:0;border-radius:0;background:transparent;color:#252821;font-family:Georgia,"Songti SC",serif;font-size:12px;line-height:1.18;text-align:center;letter-spacing:.01em;text-shadow:none;box-shadow:none}
+.bttb{background:linear-gradient(180deg,#f2efe5 0 100%)} .bttb:before{content:"";position:absolute;inset:13% 17% 16%;padding:0;border:0;border-radius:0;clip-path:none;background:linear-gradient(90deg,transparent 0 31%,rgba(49,54,47,.62) 31% 33%,transparent 33% 63%,rgba(49,54,47,.5) 63% 65%,transparent 65%),linear-gradient(180deg,transparent 0 22%,rgba(169,182,156,.22) 22% 24%,transparent 24% 54%,rgba(169,182,156,.18) 54% 56%,transparent 56%),radial-gradient(ellipse at 48% 50%,rgba(245,241,231,.95) 0 28%,rgba(199,189,169,.42) 29% 30%,transparent 31%);box-shadow:inset 0 0 0 1px rgba(37,39,34,.08);filter:drop-shadow(0 10px 12px rgba(42,43,38,.1))} .bttb:after{content:"BTTB";position:absolute;left:12%;right:12%;bottom:10%;color:#30342d;font-family:Georgia,"Times New Roman","Songti SC",serif;font-size:20px;font-weight:700;letter-spacing:.08em;text-align:center;text-shadow:none}
 
 @media(max-width:980px){header{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){
@@ -675,12 +676,11 @@ footer a:hover{color:#3f443a;border-color:rgba(63,68,58,.48)}
     <p>希望这首歌，也能陪你坐一会儿。</p>
   </div>
   <div class="afterword-player">
-    <div class="afterword-cover cover async" aria-hidden="true"></div>
+    <div class="afterword-cover cover bttb" aria-hidden="true"></div>
     <div>
       <p class="afterword-track-kicker">Hidden Track</p>
-      <h3 class="afterword-track-title">andata</h3>
-      <p class="afterword-track-meta">坂本龍一 · async</p>
-      <p class="afterword-track-note">在意大利语里，andata 是已经离开，也是已经过去。离开不一定是结束，只是把一句没有说完的话，留给后来的人。</p>
+      <h3 class="afterword-track-title">aqua</h3>
+      <p class="afterword-track-meta">坂本龍一 · BTTB</p>
       <button class="afterword-play" id="afterwordPlay" type="button">播放这首</button>
     </div>
   </div>
@@ -1890,7 +1890,6 @@ const tracks = [
     "song": "andata",
     "album": "async",
     "tags": [
-      "hidden",
       "afterglow",
       "piano"
     ],
@@ -1901,8 +1900,26 @@ const tracks = [
     ],
     "cover": "async",
     "audioFile": "坂本龍一 - andata.mp3",
-    "hidden": true,
     "note": "在意大利语里，andata 是已经离开，也是已经过去。\n离开不一定是结束，只是把一句没有说完的话，留给后来的人。"
+  },
+  {
+    "artist": "坂本龍一",
+    "song": "aqua",
+    "album": "BTTB",
+    "tags": [
+      "hidden",
+      "afterglow",
+      "piano"
+    ],
+    "mood": [
+      "水",
+      "后来",
+      "静默"
+    ],
+    "cover": "bttb",
+    "audioFile": "坂本龍一 - aqua.mp3",
+    "hidden": true,
+    "note": ""
   }
 ];
 
@@ -1976,7 +1993,8 @@ const appleMusicLinks = {
   "Nujabes||Flowers": "https://music.apple.com/cn/song/flowers/1078915007",
   "mouse on the keys||toccatina": "https://music.apple.com/cn/song/toccatina/268839534",
   "Nujabes / Shing02||Luv (sic) pt4": "https://music.apple.com/cn/song/Luv%20(sic)%20pt4%20(feat.%20Shing02)/1361503707",
-  "Yakkle & Shing02||愛密集": "https://music.apple.com/cn/song/%E6%84%9B%E5%AF%86%E9%9B%86/1499713196"
+  "Yakkle & Shing02||愛密集": "https://music.apple.com/cn/song/%E6%84%9B%E5%AF%86%E9%9B%86/1499713196",
+  "坂本龍一||aqua": "https://music.apple.com/cn/song/aqua/1597194573"
 };
 
 
@@ -2177,7 +2195,7 @@ const achievementStorageKey = "okrajmusicAchievements";
 const firstVisitDateKey = "okrajmusicFirstVisitDate";
 const lastVisitDateKey = "okrajmusicLastVisitDate";
 const afterwordResumeKey = "okrajAfterwordResume";
-const afterwordTrackKey = "坂本龍一||andata";
+const afterwordTrackKey = "坂本龍一||aqua";
 const achievements = [
   { id: "first-draw", name: "第一首", desc: "今天，总要有第一首。", art: "art-first-draw" },
   { id: "listen-through", name: "听完再走", desc: "谢谢你没有急着切掉。", art: "art-listen-through" },
@@ -3920,7 +3938,7 @@ function restoreAfterwordPlayback(){
     resume = null;
   }
   sessionStorage.removeItem(afterwordResumeKey);
-  if (!resume || resume.trackKey !== "坂本龍一||andata" || !hiddenLibraryUnlocked()) return;
+  if (!resume || resume.trackKey !== afterwordTrackKey || !hiddenLibraryUnlocked()) return;
   if (Date.now() - Number(resume.savedAt || 0) > 30 * 60 * 1000) return;
   const track = getTrackByKey(resume.trackKey);
   if (!track) return;
