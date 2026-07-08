@@ -127,11 +127,13 @@ button:disabled:hover{transform:none}
 .shelf-kicker{margin:0 0 8px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
 .shelf-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .shelf-title{margin:0;font-size:30px;line-height:1.15;font-weight:760}
+.shelf-entry-links{display:inline-flex;align-items:center;gap:10px;margin-left:4px;color:var(--muted);font-size:12px}
+.shelf-entry-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:rgba(115,117,104,.78)}
+.shelf-mini-link,.achievement-open{display:inline-flex;align-items:center;justify-content:center;background:transparent;color:#4f554a;border:0;border-radius:0;padding:2px 0;font-size:13px;box-shadow:none;text-decoration:none;border-bottom:1px solid rgba(79,85,74,.24);backdrop-filter:none}
+.shelf-mini-link:hover,.achievement-open:hover{transform:translateY(-1px);color:var(--ink);border-color:rgba(37,39,34,.46)}
 .shelf-copy{margin:9px 0 0;color:var(--muted);font-family:var(--serif);line-height:1.75;font-size:14px}
 .shelf-copy-mobile{display:none}
 .shelf-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.shelf-mini-link,.achievement-open{background:rgba(248,247,242,.72);color:var(--ink);padding:7px 12px;font-size:13px;box-shadow:0 8px 18px rgba(38,40,34,.07);text-decoration:none}
-.shelf-mini-link:hover,.achievement-open:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.18)}
 .shelf-search{margin:0 0 18px}
 .album-shelf{display:grid;gap:28px;overflow:visible;padding:22px 0 12px}
 .shelf-row{
@@ -547,8 +549,11 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
         <p class="shelf-kicker">Album Shelf</p>
         <div class="shelf-title-row">
           <h2 class="shelf-title" id="albumShelfTitle">专辑墙</h2>
-          <button class="achievement-open" id="achievementOpen" type="button">成就</button>
-          <a class="shelf-mini-link" id="wallLink" href="wall.html">墙边的纸条</a>
+          <div class="shelf-entry-links" aria-label="站内入口">
+            <span class="shelf-entry-label">站内</span>
+            <button class="achievement-open" id="achievementOpen" type="button">成就墙</button>
+            <a class="shelf-mini-link" id="wallLink" href="wall.html">墙边的纸条</a>
+          </div>
         </div>
         <p class="shelf-copy shelf-copy-desktop">像在唱片店架子前慢慢翻。默认展示全部，点标签只留下对应氛围的专辑。点击专辑会立刻播放。</p>
         <p class="shelf-copy shelf-copy-mobile">像在唱片店架子前慢慢翻。左右滑动每一层专辑架，点标签只留下对应氛围的专辑。点击专辑会立刻播放。</p>
