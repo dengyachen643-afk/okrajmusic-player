@@ -2799,9 +2799,9 @@ function pickPreviousTrack(){
 function platformList(t){
   const key = trackKey(t);
   return [
-    { name: "Apple Music", hint: "系统会尝试打开 App", cls: "apple", webUrl: appleMusicUrl(t), appUrl: "" },
-    { name: "QQ音乐", hint: qqMusicLinks[key] ? "App 优先，网页兜底" : "打开搜索结果", cls: "qq", webUrl: qqMusicMobileUrl(t), appUrl: qqMusicAppUrl(t) },
-    { name: "网易云音乐", hint: neteaseMusicLinks[key] ? "App 优先，网页兜底" : "打开搜索结果", cls: "netease", webUrl: neteaseMusicMobileUrl(t), appUrl: neteaseMusicAppUrl(t) }
+    { name: "Apple Music", hint: "将跳转 App", cls: "apple", webUrl: appleMusicUrl(t), appUrl: "" },
+    { name: "QQ音乐", hint: "将跳转 App", cls: "qq", webUrl: qqMusicMobileUrl(t), appUrl: qqMusicAppUrl(t) },
+    { name: "网易云音乐", hint: "将跳转 App", cls: "netease", webUrl: neteaseMusicMobileUrl(t), appUrl: neteaseMusicAppUrl(t) }
   ];
 }
 
