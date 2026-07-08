@@ -2133,6 +2133,12 @@ function formatShareDate(date){
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+function formatDrawDate(date){
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+  const pad = value => String(value).padStart(2, "0");
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())} / ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 let coverCssText = "";
 
 function getCoverCssText(){
@@ -2402,8 +2408,112 @@ function canvasToBlob(canvas){
   });
 }
 
+async function createDrawShareImageBlob(track, options = {}){
+  const pickedAtText = formatDrawDate(options.drawnAt || new Date());
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1440;
+  const ctx = canvas.getContext("2d");
+  const sans = '"Inter","Microsoft YaHei","Noto Sans SC","Hiragino Sans GB",Arial,sans-serif';
+  const serif = '"Noto Serif SC","Source Han Serif SC","Songti SC",serif';
+
+  const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
+  bg.addColorStop(0, "#17202b");
+  bg.addColorStop(.56, "#26313d");
+  bg.addColorStop(1, "#d4d0c5");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 1080, 1440);
+  ctx.fillStyle = "rgba(218,220,211,.08)";
+  ctx.beginPath();
+  ctx.arc(902, 172, 250, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(12,17,24,.2)";
+  ctx.beginPath();
+  ctx.arc(98, 1274, 360, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(219,218,208,.08)";
+  ctx.lineWidth = 2;
+  for (let x = 124; x < 960; x += 72) {
+    ctx.beginPath();
+    ctx.moveTo(x, 124);
+    ctx.lineTo(x + 140, 1316);
+    ctx.stroke();
+  }
+
+  ctx.save();
+  ctx.shadowColor = "rgba(4,8,12,.38)";
+  ctx.shadowBlur = 78;
+  ctx.shadowOffsetY = 34;
+  ctx.fillStyle = "rgba(225,225,216,.88)";
+  roundRect(ctx, 58, 58, 964, 1324, 58);
+  ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = "rgba(236,234,224,.48)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, 58, 58, 964, 1324, 58);
+  ctx.stroke();
+
+  ctx.fillStyle = "#2b3541";
+  ctx.font = `850 54px ${sans}`;
+  ctx.fillText("TODAY\u2019S DRAW", 104, 150);
+  ctx.fillStyle = "#6c7480";
+  ctx.font = `700 28px ${sans}`;
+  ctx.fillText("今天抽到这首", 106, 198);
+  ctx.fillStyle = "#1e2935";
+  ctx.font = `850 42px ${sans}`;
+  ctx.fillText(pickedAtText, 104, 274);
+  ctx.strokeStyle = "rgba(39,49,61,.2)";
+  ctx.beginPath();
+  ctx.moveTo(104, 312);
+  ctx.lineTo(976, 312);
+  ctx.stroke();
+
+  await drawShareCover(ctx, track, 104, 372, 340);
+
+  ctx.fillStyle = "#202832";
+  ctx.font = `850 54px ${sans}`;
+  wrapCanvasText(ctx, track.song, 490, 420, 430, 64, 3);
+  ctx.fillStyle = "#56606c";
+  ctx.font = `600 28px ${sans}`;
+  wrapCanvasText(ctx, track.artist, 492, 596, 430, 38, 2);
+  ctx.fillStyle = "#7a7d7a";
+  ctx.font = `500 22px ${sans}`;
+  wrapCanvasText(ctx, `专辑：${track.album}`, 492, 682, 430, 30, 2);
+
+  ctx.fillStyle = "rgba(36,48,61,.92)";
+  roundRect(ctx, 104, 784, 872, 300, 34);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(219,218,208,.12)";
+  ctx.stroke();
+  ctx.fillStyle = "#d8d8cf";
+  ctx.font = `800 30px ${sans}`;
+  ctx.fillText("Draw Note", 150, 850);
+  ctx.fillStyle = "#aeb5bb";
+  ctx.font = `700 22px ${sans}`;
+  ctx.fillText("抽歌签语", 150, 888);
+  ctx.fillStyle = "#eef0e8";
+  ctx.font = `700 36px ${serif}`;
+  wrapCanvasText(ctx, track.note || "今天随机抽到了这首。", 150, 964, 780, 58, 3);
+
+  await drawShareQr(ctx, shareSiteUrl(), 758, 1138, 168);
+  ctx.fillStyle = "#434c55";
+  ctx.font = `700 23px ${sans}`;
+  ctx.fillText("扫码，也抽一首", 750, 1340);
+
+  ctx.fillStyle = "#202832";
+  ctx.font = `800 34px ${sans}`;
+  ctx.fillText("小O的日音播放器", 104, 1180);
+  ctx.fillStyle = "#626a72";
+  ctx.font = `500 24px ${sans}`;
+  ctx.fillText("okrajmusic-player", 104, 1222);
+  ctx.fillText("随机、今日、命运感。", 104, 1284);
+
+  return canvasToBlob(canvas);
+}
+
 async function createShareImageBlob(track, options = {}){
   const isDrawShare = options.variant === "draw";
+  if (isDrawShare) return createDrawShareImageBlob(track, options);
   const pickedAtText = formatShareDate(options.drawnAt || new Date());
   const canvas = document.createElement("canvas");
   canvas.width = 1080;
