@@ -2622,7 +2622,7 @@ async function createDrawShareImageBlob(track, options = {}){
   canvas.height = 1440;
   const ctx = canvas.getContext("2d");
   const sans = '"Inter","Microsoft YaHei","Noto Sans SC","Hiragino Sans GB",Arial,sans-serif';
-  const serif = '"Noto Serif SC","Source Han Serif SC","Songti SC",serif';
+  const noteSerif = '"Klee One","Yuji Syuku","Hannotate SC","Yu Mincho","YuMincho","Hiragino Mincho ProN","Noto Serif CJK JP","Noto Serif CJK SC","Source Han Serif SC","Songti SC","KaiTi",serif';
 
   const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
   bg.addColorStop(0, "#17202b");
@@ -2693,13 +2693,13 @@ async function createDrawShareImageBlob(track, options = {}){
   ctx.strokeStyle = "rgba(219,218,208,.12)";
   ctx.stroke();
   ctx.fillStyle = "#d8d8cf";
-  ctx.font = `800 30px ${sans}`;
+  ctx.font = `700 30px ${noteSerif}`;
   ctx.fillText("Draw Note", 150, 850);
   ctx.fillStyle = "#aeb5bb";
-  ctx.font = `700 22px ${sans}`;
+  ctx.font = `600 23px ${noteSerif}`;
   ctx.fillText("抽歌签语", 150, 888);
   ctx.fillStyle = "#eef0e8";
-  ctx.font = `700 36px ${serif}`;
+  ctx.font = `600 37px ${noteSerif}`;
   wrapCanvasText(ctx, track.note || "今天随机抽到了这首。", 150, 964, 780, 58, 3);
 
   await drawShareQr(ctx, shareSiteUrl(), 758, 1138, 168);
@@ -2728,7 +2728,7 @@ async function createShareImageBlob(track, options = {}){
   canvas.height = 1440;
   const ctx = canvas.getContext("2d");
   const sans = '"Inter","Microsoft YaHei","Noto Sans SC","Hiragino Sans GB",Arial,sans-serif';
-  const serif = '"Noto Serif SC","Source Han Serif SC","Songti SC",serif';
+  const noteSerif = '"Klee One","Yuji Syuku","Hannotate SC","Yu Mincho","YuMincho","Hiragino Mincho ProN","Noto Serif CJK JP","Noto Serif CJK SC","Source Han Serif SC","Songti SC","KaiTi",serif';
 
   const bg = ctx.createLinearGradient(0, 0, 1080, 1440);
   if (isDrawShare) {
@@ -2794,10 +2794,10 @@ async function createShareImageBlob(track, options = {}){
   roundRect(ctx, 104, 620, 872, 402, 34);
   ctx.fill();
   ctx.fillStyle = "#6a775f";
-  ctx.font = `700 28px ${sans}`;
+  ctx.font = `700 29px ${noteSerif}`;
   ctx.fillText(isDrawShare ? "抽到这首" : "推荐语", 150, 686);
   ctx.fillStyle = "#4f554a";
-  ctx.font = `700 39px ${serif}`;
+  ctx.font = `600 40px ${noteSerif}`;
   wrapCanvasText(ctx, track.note || "今晚把这首歌交给你。", 150, 765, 780, 68, 4);
 
   const moods = (track.mood || []).slice(0, 4);
