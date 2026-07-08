@@ -56,6 +56,7 @@ h1 .title-line:last-child{white-space:nowrap}
 .player-kicker{margin:0 0 9px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
 .player-title{margin:0;font-size:24px;line-height:1.25;font-weight:720}
 .player-meta{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+.player-actions{display:flex;gap:8px;align-items:flex-start;justify-content:flex-end;flex-wrap:wrap}
 .player-source{align-self:start;color:var(--muted);background:rgba(248,247,242,.42);text-decoration:none}
 .apple-frame{min-height:160px;border:1px solid rgba(37,39,34,.08);border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#efeee8,#d8d5cb);display:grid;place-items:center}
 .apple-frame iframe{display:block;width:100%;height:220px;border:0;background:#f8f7f2}
@@ -203,8 +204,8 @@ button:disabled:hover{transform:none}
 .album-track-artist{display:block;margin-top:3px;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .platform-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.26);opacity:0;pointer-events:none;transition:.24s ease;z-index:34;backdrop-filter:blur(4px)}
 .platform-backdrop.show{opacity:1;pointer-events:auto}
-.platform-sheet{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140%);width:min(520px,calc(100% - 28px));background:rgba(248,247,242,.96);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:26px;box-shadow:0 26px 80px rgba(38,40,34,.22);padding:22px;transition:.3s ease;backdrop-filter:blur(18px);z-index:35}
-.platform-sheet.show{transform:translateX(-50%) translateY(0)}
+.platform-sheet{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140%);width:min(520px,calc(100% - 28px));background:rgba(248,247,242,.96);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:26px;box-shadow:0 26px 80px rgba(38,40,34,.22);padding:22px;transition:.3s ease;backdrop-filter:blur(18px);z-index:35;opacity:0;pointer-events:none}
+.platform-sheet.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
 .platform-sheet .close{position:absolute;top:14px;right:14px;background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer;padding:4px 8px}
 .platform-kicker{color:var(--sage-dark);font-size:12px;text-transform:uppercase;margin-bottom:10px}
 .platform-title{font-size:24px;font-weight:720;line-height:1.2;margin-right:28px}
@@ -451,7 +452,10 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
           <h2 class="player-title" id="playerTitle">等一首歌开始</h2>
           <p class="player-meta" id="playerMeta">抽一首，或者点开下面的专辑</p>
         </div>
-        <a class="play-link player-source" id="playerSource" href="https://music.apple.com/cn/" target="_blank" rel="noopener">备用打开</a>
+        <div class="player-actions">
+          <button class="play-link player-source" id="playerShare" type="button" disabled>分享</button>
+          <button class="play-link player-source" id="playerSource" type="button" disabled>外部打开</button>
+        </div>
       </div>
       <div class="apple-frame" id="appleFrame">
         <div class="player-empty">
@@ -1949,6 +1953,7 @@ const playerCard = document.querySelector(".player-card");
 const playerTitle = document.getElementById("playerTitle");
 const playerMeta = document.getElementById("playerMeta");
 const playerSource = document.getElementById("playerSource");
+const playerShare = document.getElementById("playerShare");
 const appleFrame = document.getElementById("appleFrame");
 const platformBackdrop = document.getElementById("platformBackdrop");
 const platformSheet = document.getElementById("platformSheet");
@@ -1970,6 +1975,7 @@ const queueCount = document.getElementById("queueCount");
 const toast = document.getElementById("toast");
 let currentFilter = "all";
 let currentTrack = null;
+let drawnTrack = null;
 let currentAlbum = null;
 let playbackQueue = null;
 let playbackMode = "shuffle";
@@ -2423,10 +2429,10 @@ async function createShareImageBlob(track){
   wrapCanvasText(ctx, track.song, 568, 228, 376, 74, 3);
   ctx.fillStyle = "#6c7064";
   ctx.font = `500 31px ${sans}`;
-  wrapCanvasText(ctx, track.artist, 568, 486, 376, 42, 2);
+  wrapCanvasText(ctx, track.artist, 568, 468, 376, 40, 2);
   ctx.fillStyle = "#8b8d82";
   ctx.font = `500 25px ${sans}`;
-  wrapCanvasText(ctx, `专辑：${track.album}`, 568, 588, 376, 36, 2);
+  wrapCanvasText(ctx, `专辑：${track.album}`, 568, 552, 376, 32, 2);
 
   ctx.fillStyle = "rgba(169,182,156,.26)";
   roundRect(ctx, 104, 620, 872, 402, 34);
@@ -3036,7 +3042,6 @@ function openQueueSheet(){
 }
 
 function openPlatformChooser(t){
-  currentTrack = t;
   platformTitle.textContent = t.song;
   platformMeta.textContent = `${t.artist} · ${t.album}`;
   platformTags.innerHTML = t.mood.map(x=>`<span class="tag">${x}</span>`).join("");
@@ -3229,7 +3234,8 @@ function loadLocalPlayer(t, autoplay = true){
   const audioUrl = localAudioUrl(t);
   playerTitle.textContent = t.song;
   playerMeta.textContent = `${t.artist} · ${t.album}`;
-  playerSource.href = appleMusicUrl(t);
+  playerSource.disabled = false;
+  playerShare.disabled = false;
   playerSource.textContent = "外部打开";
   if (!audioUrl) {
     appleFrame.innerHTML = `
@@ -3286,6 +3292,7 @@ function loadLocalPlayer(t, autoplay = true){
 }
 
 function updateDrawCard(t){
+  drawnTrack = t;
   drawCover.className = `draw-cover cover ${t.cover}`;
   drawCover.innerHTML = `<div class="mini">${t.album}</div>`;
   drawSong.textContent = t.song;
@@ -3348,11 +3355,25 @@ closeQueue.addEventListener("click", closeQueueSheet);
 queueBackdrop.addEventListener("click", closeQueueSheet);
 drawBtn.addEventListener("click", drawRandom);
 drawListen.addEventListener("click", () => {
-  if (!currentTrack) {
+  if (!drawnTrack) {
     showToast("先抽一首");
     return;
   }
   playerCard.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+playerSource.addEventListener("click", () => {
+  if (!currentTrack) {
+    showToast("先选一首歌");
+    return;
+  }
+  openPlatformChooser(currentTrack);
+});
+playerShare.addEventListener("click", () => {
+  if (!currentTrack) {
+    showToast("先选一首歌");
+    return;
+  }
+  shareTrackImage(currentTrack);
 });
 document.addEventListener("click", event => {
   const trigger = event.target.closest(".platform-trigger");
@@ -3411,11 +3432,11 @@ document.addEventListener("keydown", event => {
   }
 });
 copyBtn.addEventListener("click", () => {
-  if (!currentTrack) {
+  if (!drawnTrack) {
     showToast("先抽一首");
     return;
   }
-  shareTrackImage(currentTrack);
+  shareTrackImage(drawnTrack);
 });
 
 render();
