@@ -64,10 +64,18 @@ GitHub Pages 只能托管静态页面，不能直接保存公共留言。当前 
 2. 执行 `worker/schema.sql` 建表。
 3. 创建 Worker，把 `worker/notes-worker.js` 作为代码。
 4. 给 Worker 绑定 D1，绑定名必须是 `DB`。
-5. 部署后得到 Worker URL，例如 `https://okraj-notes.xxx.workers.dev`。
-6. 把 `public/wall.html` 里的 `WALL_API_BASE` 改成这个 URL，再 push。
+5. 给 Worker 设置一个环境变量 `ADMIN_TOKEN`，值自己保存好，不要提交到 GitHub。
+6. 部署后得到 Worker URL，例如 `https://okraj-notes.xxx.workers.dev`。
+7. 把 `public/wall.html` 里的 `WALL_API_BASE` 改成这个 URL，再 push。
 
-第一版留言墙只做轻量限制：留言 300 字以内、昵称 24 字以内、暂时不收链接。后续可以再加管理员删除入口或更严格的审核。
+第一版留言墙只做轻量限制：留言 300 字以内、昵称 24 字以内、暂时不收链接。
+
+管理纸条：
+
+- 普通访问：`wall.html`
+- 管理访问：`wall.html?admin=你的_ADMIN_TOKEN`
+
+进入管理模式后，每张纸条会出现「移除」按钮。真正公开部署后，删除请求会由 Worker 校验 `ADMIN_TOKEN`，通过后从 D1 删除对应纸条。
 
 ## v0.4 更新说明
 

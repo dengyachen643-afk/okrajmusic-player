@@ -58,6 +58,9 @@ button:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
 .note-message{margin:0;font-family:var(--serif);font-size:16px;line-height:1.85;white-space:pre-wrap;word-break:break-word}
 .note-track{margin:14px 0 0;color:rgba(37,39,34,.58);font-size:12px;line-height:1.45}
 .note-time{margin:12px 0 0;color:rgba(37,39,34,.48);font-size:11px;font-variant-numeric:tabular-nums}
+.note-remove{display:none;position:absolute;right:10px;top:10px;padding:6px 9px;border-radius:999px;border-color:rgba(37,39,34,.08);background:rgba(248,247,242,.58);color:#5e6559;font-size:12px}
+.admin-mode .note-remove{display:inline-flex}
+.admin-mode .mode{color:#7b2e33}
 .empty{grid-column:1/-1;border:1px dashed rgba(37,39,34,.16);border-radius:24px;padding:34px;text-align:center;color:var(--muted);background:rgba(248,247,242,.42);font-family:var(--serif)}
 footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;text-align:center}
 @media(max-width:900px){.hero{grid-template-columns:1fr}.notes{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -127,7 +130,10 @@ const modeText = document.getElementById("modeText");
 const trackPill = document.getElementById("trackPill");
 const trackText = document.getElementById("trackText");
 const clearTrack = document.getElementById("clearTrack");
+const adminToken = new URLSearchParams(location.search).get("admin") || "";
+const isAdmin = Boolean(adminToken);
 let carriedTrack = readCarriedTrack();
+document.body.classList.toggle("admin-mode", isAdmin);
 
 function escapeHTML(value){
   return String(value ?? "").replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]));
@@ -171,7 +177,8 @@ function renderNotes(notes){
     return;
   }
   notesEl.innerHTML = notes.map((note, index) => `
-    <article class="note" style="--note:${escapeHTML(noteColor(note, index))};--tilt:${tilts[index % tilts.length]}">
+    <article class="note" data-note-id="${escapeHTML(note.id || "")}" style="--note:${escapeHTML(noteColor(note, index))};--tilt:${tilts[index % tilts.length]}">
+      ${isAdmin ? `<button class="note-remove" type="button" data-remove-note="${escapeHTML(note.id || "")}">移除</button>` : ""}
       <div class="note-name">${escapeHTML(note.name || "路过的人")}</div>
       <p class="note-message">${escapeHTML(note.message)}</p>
       ${note.track ? `<p class="note-track">关于：${escapeHTML(note.track)}</p>` : ""}
@@ -195,11 +202,11 @@ function saveLocalNotes(notes){
 
 async function loadNotes(){
   if (!WALL_API_BASE) {
-    modeText.textContent = "本机预览";
+    modeText.textContent = isAdmin ? "本机预览 · 管理" : "本机预览";
     renderNotes(readLocalNotes());
     return;
   }
-  modeText.textContent = "公开纸条墙";
+  modeText.textContent = isAdmin ? "公开纸条墙 · 管理" : "公开纸条墙";
   const response = await fetch(`${WALL_API_BASE}/notes`);
   if (!response.ok) throw new Error("load failed");
   const data = await response.json();
@@ -221,6 +228,29 @@ async function createNote(note){
   });
   if (!response.ok) throw new Error("post failed");
   await loadNotes();
+}
+
+async function deleteNote(id){
+  if (!id) return;
+  if (!confirm("要把这张纸条从墙上取下来吗？")) return;
+  statusText.textContent = "正在取下纸条。";
+  try {
+    if (!WALL_API_BASE) {
+      const notes = readLocalNotes().filter(note => note.id !== id);
+      saveLocalNotes(notes);
+      renderNotes(notes);
+    } else {
+      const response = await fetch(`${WALL_API_BASE}/notes/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { "x-admin-token": adminToken }
+      });
+      if (!response.ok) throw new Error("delete failed");
+      await loadNotes();
+    }
+    statusText.textContent = "纸条已经取下。";
+  } catch (error) {
+    statusText.textContent = "没有取下来，稍后再试一次。";
+  }
 }
 
 function validateNote(message){
@@ -260,6 +290,12 @@ clearTrack.addEventListener("click", () => {
   carriedTrack = null;
   sessionStorage.removeItem("okrajWallTrack");
   renderTrack();
+});
+
+notesEl.addEventListener("click", event => {
+  const removeButton = event.target.closest("[data-remove-note]");
+  if (!removeButton || !isAdmin) return;
+  deleteNote(removeButton.dataset.removeNote);
 });
 
 renderTrack();

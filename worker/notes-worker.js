@@ -1,7 +1,7 @@
 const corsHeaders = {
   "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET, POST, OPTIONS",
-  "access-control-allow-headers": "content-type"
+  "access-control-allow-methods": "GET, POST, DELETE, OPTIONS",
+  "access-control-allow-headers": "content-type, x-admin-token"
 };
 
 const colors = ["#efe2c1", "#dce3d5", "#d8dfdf", "#eee0df", "#e7e1c8", "#d5ddc8", "#d9d4c6"];
@@ -19,6 +19,11 @@ function cleanText(value, maxLength) {
 
 function reject(message, status = 400) {
   return json({ error: message }, status);
+}
+
+function isAdmin(request, env) {
+  const token = request.headers.get("x-admin-token") || "";
+  return Boolean(env.ADMIN_TOKEN) && token === env.ADMIN_TOKEN;
 }
 
 export default {
@@ -58,6 +63,14 @@ export default {
       ).bind(id, name, message, track, page, color, createdAt).run();
 
       return json({ ok: true, id, created_at: createdAt }, 201);
+    }
+
+    const deleteMatch = url.pathname.match(/^\/notes\/([^/]+)$/);
+    if (deleteMatch && request.method === "DELETE") {
+      if (!isAdmin(request, env)) return reject("unauthorized", 401);
+      const id = decodeURIComponent(deleteMatch[1]);
+      await env.DB.prepare("DELETE FROM notes WHERE id = ?").bind(id).run();
+      return json({ ok: true });
     }
 
     return reject("not found", 404);
