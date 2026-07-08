@@ -3514,13 +3514,21 @@ function closeAfterwordSheet(){
   scheduleQueuedAchievementUnlock(520);
 }
 
-function playAfterwordTrack(){
+function playAfterwordTrack(event){
+  event?.preventDefault();
+  event?.stopPropagation();
   const track = getTrackByKey(afterwordTrackKey);
   if (!track) return;
   playbackQueue = null;
   currentAlbum = null;
   playTrack(track, true, true);
   afterwordPlay.textContent = "正在播放";
+  afterwordSheet.classList.add("show");
+  afterwordBackdrop.classList.add("show");
+  requestAnimationFrame(() => {
+    afterwordSheet.classList.add("show");
+    afterwordBackdrop.classList.add("show");
+  });
 }
 
 function closePlatformSheet(){
