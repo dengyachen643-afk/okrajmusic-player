@@ -129,6 +129,8 @@ button:disabled:hover{transform:none}
 .shelf-copy{margin:9px 0 0;color:var(--muted);font-family:var(--serif);line-height:1.75;font-size:14px}
 .shelf-copy-mobile{display:none}
 .shelf-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.utility-actions{display:flex;justify-content:flex-end;margin:0 0 12px}
+.achievement-open{background:rgba(248,247,242,.72);color:var(--ink)}
 .shelf-search{margin:0 0 18px}
 .album-shelf{display:grid;gap:28px;overflow:visible;padding:22px 0 12px}
 .shelf-row{
@@ -243,6 +245,35 @@ button:disabled:hover{transform:none}
 .queue-artist{display:block;margin-top:4px;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .queue-item.active .queue-artist{color:#7b2e33}
 .queue-index{min-width:2ch;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;text-align:right}
+.achievement-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.3);opacity:0;pointer-events:none;transition:.24s ease;z-index:90;backdrop-filter:blur(5px)}
+.achievement-backdrop.show{opacity:1;pointer-events:auto}
+.achievement-sheet{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);width:min(840px,calc(100% - 28px));max-height:min(760px,calc(100vh - 40px));
+  background:rgba(248,247,242,.97);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:26px;box-shadow:0 32px 90px rgba(38,40,34,.25);
+  padding:26px;opacity:0;pointer-events:none;transition:.26s ease;backdrop-filter:blur(18px);z-index:91;overflow:auto;
+}
+.achievement-sheet.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.achievement-close,.achievement-unlock-close{position:absolute;top:14px;right:14px;width:36px;height:36px;padding:0;border-radius:50%;background:transparent;color:var(--muted);font-size:22px}
+.achievement-kicker{margin:0 0 8px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
+.achievement-title{margin:0;font-size:32px;line-height:1.15;font-weight:780}
+.achievement-copy{margin:9px 42px 20px 0;color:var(--muted);font-family:var(--serif);line-height:1.8;font-size:14px}
+.achievement-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.achievement-card{position:relative;min-height:150px;border:1px solid rgba(37,39,34,.08);border-radius:18px;padding:16px;background:rgba(232,231,222,.5);color:rgba(37,39,34,.52);box-shadow:none;overflow:hidden}
+.achievement-card.unlocked{background:linear-gradient(135deg,rgba(248,247,242,.94),rgba(169,182,156,.2));color:var(--ink);border-color:rgba(103,115,95,.28);box-shadow:0 14px 34px rgba(38,40,34,.09)}
+.achievement-card.unlocked:after{content:"";position:absolute;right:16px;top:16px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle,#a9b69c 0 38%,transparent 40%),conic-gradient(from 25deg,rgba(169,182,156,.85),rgba(48,51,45,.2),rgba(169,182,156,.85));opacity:.7}
+.achievement-name{font-size:17px;font-weight:730;line-height:1.25;margin-right:32px}
+.achievement-desc{margin:12px 0 0;font-family:var(--serif);font-size:13px;line-height:1.75}
+.achievement-status{position:absolute;left:16px;bottom:14px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.achievement-unlock{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);width:min(430px,calc(100% - 28px));background:rgba(248,247,242,.98);
+  color:var(--ink);border:1px solid rgba(37,39,34,.12);border-radius:26px;box-shadow:0 32px 90px rgba(38,40,34,.28);padding:28px;z-index:93;opacity:0;pointer-events:none;transition:.26s ease;backdrop-filter:blur(18px);
+}
+.achievement-unlock.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.achievement-unlock-title{margin:0 0 18px;color:var(--sage-dark);font-size:12px;text-transform:uppercase}
+.achievement-unlock-name{margin:0;font-size:28px;line-height:1.18;font-weight:780}
+.achievement-unlock-desc{margin:14px 0 22px;color:#626456;font-family:var(--serif);line-height:1.85;font-size:15px}
+.achievement-unlock-actions{display:flex;justify-content:flex-start;gap:10px}
+.achievement-unlock-actions .primary{background:var(--charcoal);color:#f8f7f2;border-color:var(--charcoal)}
 .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120%);background:rgba(36,38,33,.94);color:#f8f7f2;padding:10px 14px;border-radius:999px;font-size:13px;transition:.28s ease;z-index:30}
 .toast.show{transform:translateX(-50%) translateY(0)}
 footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;line-height:1.7;text-align:center}
@@ -431,6 +462,9 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
   .platform-options{grid-template-columns:1fr}
   .platform-option{min-height:56px}
   .queue-sheet{left:11px;right:11px;top:auto;bottom:14px;width:auto;max-height:72vh;border-radius:22px}
+  .achievement-sheet{width:calc(100% - 22px);max-height:calc(100svh - 24px);padding:22px;border-radius:22px}
+  .achievement-grid{grid-template-columns:1fr}
+  .achievement-copy{margin-right:34px}
   .toolbar{position:sticky;top:0;z-index:10;padding:10px 0;backdrop-filter:blur(14px)}
 }
 </style>
@@ -502,6 +536,9 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
     <div class="shelf-search">
       <input class="search" id="searchInput" placeholder="搜索乐队 / 专辑 / 歌名">
     </div>
+    <div class="utility-actions">
+      <button class="achievement-open" id="achievementOpen" type="button">成就</button>
+    </div>
     <div class="album-shelf" id="albumShelf"></div>
   </section>
 </main>
@@ -539,6 +576,26 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
     <button class="queue-close" id="closeQueue" aria-label="关闭播放列表">×</button>
   </div>
   <div class="queue-list" id="queueList"></div>
+</aside>
+
+<div class="achievement-backdrop" id="achievementBackdrop"></div>
+<aside class="achievement-sheet" id="achievementSheet" aria-live="polite">
+  <button class="achievement-close" id="closeAchievement" aria-label="关闭成就">×</button>
+  <p class="achievement-kicker">Achievement Wall</p>
+  <h2 class="achievement-title">成就</h2>
+  <p class="achievement-copy">一些安静的小记录：抽到、听完、回来，以及偶然翻到的夜晚。</p>
+  <div class="achievement-grid" id="achievementGrid"></div>
+</aside>
+
+<div class="achievement-backdrop" id="achievementUnlockBackdrop"></div>
+<aside class="achievement-unlock" id="achievementUnlock" aria-live="polite">
+  <button class="achievement-unlock-close" id="closeAchievementUnlock" aria-label="关闭获得成就">×</button>
+  <p class="achievement-unlock-title">获得成就</p>
+  <h2 class="achievement-unlock-name" id="achievementUnlockName"></h2>
+  <p class="achievement-unlock-desc" id="achievementUnlockDesc"></p>
+  <div class="achievement-unlock-actions">
+    <button class="primary" id="achievementUnlockOpen" type="button">去成就看看</button>
+  </div>
 </aside>
 
 <footer>
@@ -1972,6 +2029,17 @@ const queueSheet = document.getElementById("queueSheet");
 const closeQueue = document.getElementById("closeQueue");
 const queueList = document.getElementById("queueList");
 const queueCount = document.getElementById("queueCount");
+const achievementOpen = document.getElementById("achievementOpen");
+const achievementBackdrop = document.getElementById("achievementBackdrop");
+const achievementSheet = document.getElementById("achievementSheet");
+const closeAchievement = document.getElementById("closeAchievement");
+const achievementGrid = document.getElementById("achievementGrid");
+const achievementUnlockBackdrop = document.getElementById("achievementUnlockBackdrop");
+const achievementUnlock = document.getElementById("achievementUnlock");
+const closeAchievementUnlock = document.getElementById("closeAchievementUnlock");
+const achievementUnlockOpen = document.getElementById("achievementUnlockOpen");
+const achievementUnlockName = document.getElementById("achievementUnlockName");
+const achievementUnlockDesc = document.getElementById("achievementUnlockDesc");
 const toast = document.getElementById("toast");
 let currentFilter = "all";
 let currentTrack = null;
@@ -1988,9 +2056,113 @@ let prepareNextTimer = null;
 const audioCdnBase = "https://pub-d122a10e688a46009a5b289155ba5cab.r2.dev";
 const missingLocalAudioTracks = new Set();
 const playbackModes = ["shuffle", "sequence", "repeat-one"];
+const achievementStorageKey = "okrajmusicAchievements";
+const firstVisitDateKey = "okrajmusicFirstVisitDate";
+const lastVisitDateKey = "okrajmusicLastVisitDate";
+const achievements = [
+  { id: "first-draw", name: "第一首", desc: "今天，总要有第一首。" },
+  { id: "listen-through", name: "听完再走", desc: "谢谢你没有急着切掉。" },
+  { id: "shelf-walk", name: "唱片架前", desc: "你翻到的不只是专辑，是一排慢慢亮起来的夜晚。" },
+  { id: "second-day", name: "第二天也来", desc: "原来你真的会回来。" },
+  { id: "draw-share", name: "也抽一首", desc: "随机数替你递来了一张签。" },
+  { id: "later-person", name: "后来的人", desc: "谢谢你待到了这里。", hidden: true }
+];
+const hiddenAchievementTrackKey = "";
+let unlockedAchievements = new Set();
 
 function trackKey(t){
   return `${t.artist}||${t.song}`;
+}
+
+function todayKey(){
+  const now = new Date();
+  const pad = value => String(value).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+function readAchievementSet(){
+  try {
+    const raw = localStorage.getItem(achievementStorageKey);
+    const ids = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(ids) ? ids : []);
+  } catch (error) {
+    return new Set();
+  }
+}
+
+function saveAchievements(){
+  localStorage.setItem(achievementStorageKey, JSON.stringify([...unlockedAchievements]));
+}
+
+function achievementById(id){
+  return achievements.find(item => item.id === id);
+}
+
+function achievementView(item){
+  const unlocked = unlockedAchievements.has(item.id);
+  if (item.hidden && !unlocked) {
+    return { name: "？？？", desc: "还没有被发现。", unlocked };
+  }
+  return { name: item.name, desc: item.desc, unlocked };
+}
+
+function renderAchievements(){
+  achievementGrid.innerHTML = achievements.map(item => {
+    const view = achievementView(item);
+    return `
+      <article class="achievement-card${view.unlocked ? " unlocked" : ""}">
+        <div class="achievement-name">${escapeHTML(view.name)}</div>
+        <p class="achievement-desc">${escapeHTML(view.desc)}</p>
+        <div class="achievement-status">${view.unlocked ? "已达成" : "未达成"}</div>
+      </article>
+    `;
+  }).join("");
+}
+
+function openAchievements(){
+  renderAchievements();
+  achievementSheet.classList.add("show");
+  achievementBackdrop.classList.add("show");
+}
+
+function closeAchievements(){
+  achievementSheet.classList.remove("show");
+  achievementBackdrop.classList.remove("show");
+}
+
+function closeAchievementUnlockModal(){
+  achievementUnlock.classList.remove("show");
+  achievementUnlockBackdrop.classList.remove("show");
+}
+
+function showAchievementUnlock(item){
+  achievementUnlockName.textContent = item.name;
+  achievementUnlockDesc.textContent = item.desc;
+  achievementUnlock.classList.add("show");
+  achievementUnlockBackdrop.classList.add("show");
+}
+
+function unlockAchievement(id, options = {}){
+  if (unlockedAchievements.has(id)) return false;
+  const item = achievementById(id);
+  if (!item) return false;
+  unlockedAchievements.add(id);
+  saveAchievements();
+  renderAchievements();
+  if (!options.silent) showAchievementUnlock(item);
+  return true;
+}
+
+function trackVisitAchievements(){
+  const today = todayKey();
+  const firstVisit = localStorage.getItem(firstVisitDateKey);
+  if (!firstVisit) {
+    localStorage.setItem(firstVisitDateKey, today);
+    localStorage.setItem(lastVisitDateKey, today);
+    return;
+  }
+  if (today !== firstVisit) unlockAchievement("second-day");
+  localStorage.setItem(lastVisitDateKey, today);
 }
 
 function albumKeyFromTrack(t){
@@ -2643,6 +2815,7 @@ async function shareTrackImage(track, options = {}){
   showToast("正在生成分享图");
   try {
     const blob = await createShareImageBlob(track, options);
+    if (options.variant === "draw") unlockAchievement("draw-share");
     const suffix = options.variant === "draw" ? "-draw" : "";
     const filename = `${safeFilename(`${track.artist}-${track.song}${suffix}`)}.png`;
     const file = new File([blob], filename, { type: "image/png" });
@@ -3016,10 +3189,16 @@ function renderAlbumShelf(list){
     const rail = document.createElement("span");
     rail.className = "shelf-rail";
     row.appendChild(rail);
+    row._lastScrollLeft = row.scrollLeft;
     row.addEventListener("pointerdown", event => {
       if (event.pointerType === "touch") return;
       scheduleShelfLift(row, event.target, event.clientX, event.clientY);
     });
+    row.addEventListener("scroll", () => {
+      const previous = Number.isFinite(row._lastScrollLeft) ? row._lastScrollLeft : row.scrollLeft;
+      if (Math.abs(row.scrollLeft - previous) > 18) unlockAchievement("shelf-walk");
+      row._lastScrollLeft = row.scrollLeft;
+    }, { passive: true });
     row.addEventListener("pointermove", event => {
       if (event.pointerType === "mouse" || event.pointerType === "touch") return;
       scheduleShelfLift(row, event.target, event.clientX, event.clientY);
@@ -3401,7 +3580,10 @@ function wireLocalPlayer(t, autoplay){
     syncPlaying();
     if (!autoplay) scheduleUpcomingTrack(3000);
   });
-  audio.addEventListener("ended", playNext);
+  audio.addEventListener("ended", () => {
+    unlockAchievement("listen-through");
+    playNext();
+  });
   audio.addEventListener("error", () => {
     state.textContent = "Error";
     showToast("这首本地音频加载失败");
@@ -3502,6 +3684,7 @@ function updateDraw(t, autoplay = true, remember = true){
 }
 
 function drawRandom(){
+  unlockAchievement("first-draw");
   playbackQueue = null;
   currentAlbum = null;
   const pool = playableTracks();
@@ -3509,6 +3692,7 @@ function drawRandom(){
   const t = list[Math.floor(Math.random() * list.length)];
   drawnAt = new Date();
   updateDraw(t, true, true);
+  if (hiddenAchievementTrackKey && trackKey(t) === hiddenAchievementTrackKey) unlockAchievement("later-person");
 }
 
 function showToast(text){
@@ -3538,6 +3722,14 @@ closePlatform.addEventListener("click", closePlatformSheet);
 platformBackdrop.addEventListener("click", closePlatformSheet);
 closeQueue.addEventListener("click", closeQueueSheet);
 queueBackdrop.addEventListener("click", closeQueueSheet);
+achievementOpen.addEventListener("click", openAchievements);
+closeAchievement.addEventListener("click", closeAchievements);
+achievementBackdrop.addEventListener("click", closeAchievements);
+closeAchievementUnlock.addEventListener("click", closeAchievementUnlockModal);
+achievementUnlockOpen.addEventListener("click", () => {
+  closeAchievementUnlockModal();
+  openAchievements();
+});
 drawBtn.addEventListener("click", drawRandom);
 drawListen.addEventListener("click", () => {
   if (!drawnTrack) {
@@ -3627,6 +3819,8 @@ document.addEventListener("keydown", event => {
     closeAlbumSheet();
     closePlatformSheet();
     closeQueueSheet();
+    closeAchievements();
+    closeAchievementUnlockModal();
   }
 });
 copyBtn.addEventListener("click", () => {
@@ -3637,6 +3831,9 @@ copyBtn.addEventListener("click", () => {
   shareTrackImage(drawnTrack, { variant: "draw", drawnAt });
 });
 
+unlockedAchievements = readAchievementSet();
+renderAchievements();
+trackVisitAchievements();
 render();
 renderQueueList();
 setDrawActionsEnabled(false);
