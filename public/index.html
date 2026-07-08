@@ -2028,7 +2028,7 @@ function roundRect(ctx, x, y, width, height, radius){
   ctx.closePath();
 }
 
-function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
+function canvasTextLines(ctx, text, maxWidth, maxLines){
   const source = String(text || "");
   const tokens = [];
   let word = "";
@@ -2093,8 +2093,16 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
     }
     lines[lines.length - 1] = `${last}...`;
   }
+  return lines;
+}
+
+function drawCanvasLines(ctx, lines, x, y, lineHeight){
   lines.forEach((lineText, index) => ctx.fillText(lineText, x, y + index * lineHeight));
   return y + lines.length * lineHeight;
+}
+
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
+  return drawCanvasLines(ctx, canvasTextLines(ctx, text, maxWidth, maxLines), x, y, lineHeight);
 }
 
 function shareSiteUrl(){
@@ -2432,7 +2440,10 @@ async function createShareImageBlob(track){
   wrapCanvasText(ctx, track.artist, 568, 468, 376, 40, 2);
   ctx.fillStyle = "#8b8d82";
   ctx.font = `500 25px ${sans}`;
-  wrapCanvasText(ctx, `专辑：${track.album}`, 568, 552, 376, 32, 2);
+  const albumLines = canvasTextLines(ctx, `专辑：${track.album}`, 376, 2);
+  const albumLineHeight = 32;
+  const albumLastBaseline = 526;
+  drawCanvasLines(ctx, albumLines, 568, albumLastBaseline - (albumLines.length - 1) * albumLineHeight, albumLineHeight);
 
   ctx.fillStyle = "rgba(169,182,156,.26)";
   roundRect(ctx, 104, 620, 872, 402, 34);
