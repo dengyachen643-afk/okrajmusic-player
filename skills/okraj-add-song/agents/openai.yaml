@@ -1,0 +1,4 @@
+interface:
+  display_name: "Okraj Add Song"
+  short_description: "Add songs to okrajmusic-player"
+  default_prompt: "Add or update songs in okrajmusic-player, including track metadata, audio mapping, external platform links, CSS cover art, and verification."

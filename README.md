@@ -12,12 +12,12 @@ https://dengyachen643-afk.github.io/okrajmusic-player/
 
 当前版本可以作为 `v1.0` 使用。核心功能已经闭环：
 
-- 有完整的 70 首日音曲目数据。
+- 有完整的 70 首公开日音曲目数据，以及 1 首隐藏曲。
 - 音频托管在 Cloudflare R2，网页部署在 GitHub Pages。
 - 留言墙接入 Cloudflare Worker + D1。
 - 桌面端和移动端都做了专门适配。
 - 分享图、成就、专辑墙、外部平台跳转都已经可以正常使用。
-- 隐藏成就解锁后会出现「あとがき」后记页，并把隐藏曲加入用户本机曲库。
+- 隐藏成就解锁后会出现「あとがき」后记浮层，并把隐藏曲加入用户本机曲库。
 
 ## 功能
 
@@ -68,8 +68,10 @@ https://dengyachen643-afk.github.io/okrajmusic-player/
 
 ### あとがき
 
-- 隐藏成就解锁后出现的独立后记页。
-- 页面不使用游戏化语言，更像一本书最后的后记。
+- 隐藏成就解锁后出现的后记浮层，仍停留在播放器页面里。
+- 打开后记不会打断原本正在播放的歌曲。
+- 用户可以在后记里选择播放坂本龍一《andata》，这会直接载入主播放器。
+- 后记不使用游戏化语言，更像一本书最后的后记。
 - 解锁后会把坂本龍一《andata》加入当前设备的曲库、专辑墙和随机池。
 - 这个状态跟随浏览器本机数据；如果清空浏览器数据，成就和隐藏曲都会消失。
 
@@ -85,18 +87,21 @@ https://dengyachen643-afk.github.io/okrajmusic-player/
 ```text
 public/
   index.html          主页面：播放器、抽歌、专辑墙、分享图、成就系统
+  afterword.html      后记旧链接兜底页；主流程使用 index.html 内浮层
   wall.html           墙边的纸条页面
 worker/
   notes-worker.js     留言墙 Cloudflare Worker 后端
   schema.sql          D1 建表 SQL
   wrangler.toml       Worker 部署配置
+skills/
+  okraj-add-song/     Codex 加歌流程 skill：曲目、音频、平台映射、CSS 封面
 data/                 外部音乐平台链接候选与备份数据
 music-download-list.md 下载与校对用歌曲清单
 range_server.py       本地预览用 Range 静态服务器
 .github/workflows/    GitHub Pages 自动部署
 ```
 
-音频文件没有放进 Git 仓库。播放器会从 Cloudflare R2 公共地址读取 `track-01.mp3` 到 `track-70.mp3`。
+音频文件没有放进 Git 仓库。播放器会从 Cloudflare R2 公共地址读取 `track-01.mp3` 到 `track-70.mp3`，隐藏曲使用单独的 R2 文件名映射。
 
 ## 本地预览
 
@@ -126,7 +131,22 @@ http://127.0.0.1:8765/
 
 ## 新增歌曲时
 
-新增歌曲需要同步更新几处：
+新增歌曲可以使用仓库里的 Codex skill：
+
+```text
+skills/okraj-add-song/
+```
+
+在 Codex 里可以直接说“用 okraj-add-song 加这首歌”，或者自然说明要新增歌曲、隐藏曲、推荐语、R2 音频名、平台映射或 CSS 专辑封面。这个 skill 会按项目约定处理：
+
+- `public/index.html` 里的曲目数据。
+- R2 音频文件名或完整 URL。
+- Apple Music / QQ 音乐 / 网易云音乐映射。
+- 纯 CSS 专辑封面。
+- 是否进入随机库与专辑墙，或作为隐藏曲等待解锁。
+- 基础验证与提交发布流程。
+
+手动新增歌曲时，仍需要同步更新几处：
 
 1. 把音频上传到 Cloudflare R2，按现有规则命名为 `track-xx.mp3`。
 2. 在 `public/index.html` 中补充歌曲数据、推荐语、专辑、标签、封面类名、平台链接等。
@@ -171,10 +191,11 @@ https://okraj-notes.dengyachen643.workers.dev
 - 完成普通 PICK 分享图和 TODAY'S DRAW 抽歌分享图。
 - 完成 Apple Music、QQ 音乐、网易云音乐的平台选择与移动端 App 跳转尝试。
 - 完成成就墙，包含 CSS 成就图、隐藏成就和解锁弹窗。
-- 完成隐藏后记页，集齐普通成就后解锁坂本龍一《andata》。
+- 完成隐藏后记浮层，集齐普通成就后解锁坂本龍一《andata》。
 - 完成墙边的纸条，从本机预览升级为公开留言墙。
 - 修复移动端播放列表横向露白、平台弹窗误露出、专辑封面裁切、抽歌分享对象错位、进度条与音量键卡顿等问题。
 - 重新整理推荐语文案和分享图字体，让整体更像一张克制的音乐签卡。
+- 沉淀 `okraj-add-song` skill，用于以后稳定地新增歌曲、音频映射和 CSS 专辑封面。
 
 ## Credits
 
