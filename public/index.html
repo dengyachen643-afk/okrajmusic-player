@@ -137,17 +137,17 @@ button:disabled:hover{transform:none}
 .album-shelf{display:grid;gap:28px;overflow:visible;padding:22px 0 12px}
 .shelf-row{
   --album-size:174px;--album-overlap:42px;
-  position:relative;display:flex;align-items:flex-start;min-height:270px;margin:0 -12px;padding:28px 34px 46px;scroll-padding-left:34px;
-  overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;
+  position:relative;display:flex;align-items:flex-start;min-height:270px;margin:0;padding:28px 0 46px;
+  overflow:visible;
 }
 .shelf-row::-webkit-scrollbar{display:none}
-.shelf-rail{position:absolute;left:34px;bottom:20px;width:calc(100% - 68px);height:15px;border-radius:999px;background:linear-gradient(180deg,rgba(248,247,242,.88),rgba(151,147,131,.34));box-shadow:0 14px 26px rgba(38,40,34,.16);pointer-events:none}
+.shelf-rail{position:absolute;left:0;bottom:20px;width:100%;height:15px;border-radius:999px;background:linear-gradient(180deg,rgba(248,247,242,.88),rgba(151,147,131,.34));box-shadow:0 14px 26px rgba(38,40,34,.16);pointer-events:none}
 .album-card{
   position:relative;display:grid;grid-template-rows:var(--album-size) auto;gap:0;align-content:start;width:var(--album-size);min-width:var(--album-size);
   margin-left:calc(var(--album-overlap) * -1);padding:0;border:0;background:transparent;color:var(--ink);text-align:left;cursor:pointer;backdrop-filter:none;
   transform:translateY(0);transition:transform .2s ease,filter .2s ease;
 }
-.album-card:first-child{margin-left:0}
+.album-card:first-of-type{margin-left:0}
 .album-card:hover,.album-card.touch-lift{z-index:18!important;transform:translateY(-18px);filter:saturate(1.04)}
 .album-card.hide{display:none}
 .album-cover{width:var(--album-size);height:var(--album-size);border-radius:12px;box-shadow:0 18px 34px rgba(38,40,34,.16);border:1px solid rgba(248,247,242,.76);transition:.24s ease}
@@ -3950,7 +3950,16 @@ function albumCardHTML(album){
   `;
 }
 
-function albumRows(list, maxPerRow = 8){
+function shelfMaxPerRow(){
+  if (window.matchMedia("(max-width: 680px)").matches) return 6;
+  const width = albumShelf?.clientWidth || 1180;
+  const albumSize = 174;
+  const overlap = 42;
+  const max = Math.floor((width - overlap) / (albumSize - overlap));
+  return Math.max(3, Math.min(8, max));
+}
+
+function albumRows(list, maxPerRow = shelfMaxPerRow()){
   if (!list.length) return [];
   const rowCount = Math.ceil(list.length / maxPerRow);
   const baseSize = Math.floor(list.length / rowCount);
@@ -4027,58 +4036,30 @@ function renderAlbumShelf(list){
     row.appendChild(rail);
     row._lastScrollLeft = row.scrollLeft;
     row._shelfTravel = 0;
-    const markShelfTravel = (previous, current) => {
-      const distance = Math.abs(current - previous);
-      if (distance < 1) return;
-      row._shelfTravel += distance;
+    row._shelfVisitedCards = new Set();
+    const markShelfTravel = distance => {
       const albumSize = parseFloat(getComputedStyle(row).getPropertyValue("--album-size")) || 160;
+      row._shelfTravel += distance;
       if (row._shelfTravel >= albumSize * 3) unlockAchievement("shelf-walk");
+    };
+    const markShelfCardVisit = card => {
+      if (!card) return;
+      row._shelfVisitedCards.add(card.dataset.albumKey || String(row._shelfVisitedCards.size));
+      if (row._shelfVisitedCards.size >= 4) unlockAchievement("shelf-walk");
     };
     row.addEventListener("pointerdown", event => {
       if (event.pointerType === "touch") return;
-      row._dragStartX = event.clientX;
-      row._dragStartScrollLeft = row.scrollLeft;
-      row._isShelfDragging = true;
-      row._shelfSuppressClickUntil = 0;
-      if (event.pointerType === "mouse") row.setPointerCapture?.(event.pointerId);
       scheduleShelfLift(row, event.target, event.clientX, event.clientY);
     });
     row.addEventListener("scroll", () => {
       const previous = Number.isFinite(row._lastScrollLeft) ? row._lastScrollLeft : row.scrollLeft;
-      markShelfTravel(previous, row.scrollLeft);
+      markShelfTravel(Math.abs(row.scrollLeft - previous));
       row._lastScrollLeft = row.scrollLeft;
     }, { passive: true });
-    row.addEventListener("wheel", event => {
-      const maxScroll = row.scrollWidth - row.clientWidth;
-      if (maxScroll <= 0) return;
-      const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
-      if (!delta) return;
-      const before = row.scrollLeft;
-      row.scrollLeft = Math.max(0, Math.min(maxScroll, before + delta));
-      if (row.scrollLeft !== before) {
-        event.preventDefault();
-        markShelfTravel(before, row.scrollLeft);
-        row._lastScrollLeft = row.scrollLeft;
-      }
-    }, { passive: false });
     row.addEventListener("pointermove", event => {
-      if (row._isShelfDragging && event.pointerType === "mouse") {
-        const maxScroll = row.scrollWidth - row.clientWidth;
-        const delta = event.clientX - row._dragStartX;
-        if (maxScroll > 0 && Math.abs(delta) > 4) {
-          const before = row.scrollLeft;
-          row.scrollLeft = Math.max(0, Math.min(maxScroll, row._dragStartScrollLeft - delta));
-          if (row.scrollLeft !== before) {
-            row._shelfSuppressClickUntil = Date.now() + 180;
-            markShelfTravel(before, row.scrollLeft);
-            row._lastScrollLeft = row.scrollLeft;
-          }
-          event.preventDefault();
-        }
-        scheduleShelfLift(row, event.target, event.clientX, event.clientY);
-        return;
-      }
-      if (event.pointerType === "mouse" || event.pointerType === "touch") return;
+      if (event.pointerType === "touch") return;
+      const card = cardFromShelfPoint(row, event.target, event.clientX, event.clientY);
+      markShelfCardVisit(card);
       scheduleShelfLift(row, event.target, event.clientX, event.clientY);
     });
     row.addEventListener("touchstart", event => {
@@ -4112,7 +4093,6 @@ function renderAlbumShelf(list){
     });
     ["pointerup", "pointercancel", "pointerleave"].forEach(eventName => {
       row.addEventListener(eventName, () => {
-        row._isShelfDragging = false;
         setTimeout(() => clearShelfLift(row), 220);
       });
     });
@@ -4126,7 +4106,6 @@ function renderAlbumShelf(list){
       card.dataset.text = albumSearchText(album);
       card.innerHTML = albumCardHTML(album);
       card.addEventListener("click", () => {
-        if (Date.now() < (row._shelfSuppressClickUntil || 0)) return;
         const open = () => {
           openAlbum(album);
           playAlbum(album, album.tracks[0], false);
@@ -4814,6 +4793,11 @@ document.addEventListener("keydown", event => {
     closeAfterwordSheet();
     closeThanksSheet();
   }
+});
+let shelfResizeTimer = 0;
+window.addEventListener("resize", () => {
+  window.clearTimeout(shelfResizeTimer);
+  shelfResizeTimer = window.setTimeout(render, 120);
 });
 copyBtn.addEventListener("click", () => {
   if (!drawnTrack) {
