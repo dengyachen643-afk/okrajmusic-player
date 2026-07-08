@@ -2256,6 +2256,17 @@ function trackVisitAchievements(){
   localStorage.setItem(lastVisitDateKey, today);
 }
 
+function applyAchievementTestPreset(){
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("test") !== "almost-afterword") return;
+  unlockedAchievements = new Set(["first-draw", "listen-through", "shelf-walk", "second-day"]);
+  saveAchievements();
+  params.delete("test");
+  const cleanQuery = params.toString();
+  const cleanUrl = `${window.location.pathname}${cleanQuery ? `?${cleanQuery}` : ""}${window.location.hash}`;
+  window.history.replaceState(null, "", cleanUrl);
+}
+
 function albumKeyFromTrack(t){
   return `${t.artist}||${t.album}`;
 }
@@ -3941,6 +3952,7 @@ copyBtn.addEventListener("click", () => {
 });
 
 unlockedAchievements = readAchievementSet();
+applyAchievementTestPreset();
 if (ordinaryAchievementsComplete() && !unlockedAchievements.has("later-person")) unlockAchievement("later-person");
 renderAchievements();
 trackVisitAchievements();
