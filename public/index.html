@@ -2498,7 +2498,8 @@ async function createDrawShareImageBlob(track, options = {}){
   await drawShareQr(ctx, shareSiteUrl(), 758, 1138, 168);
   ctx.fillStyle = "#434c55";
   ctx.font = `700 23px ${sans}`;
-  ctx.fillText("扫码，也抽一首", 750, 1340);
+  const drawQrLabel = "扫码，也抽一首";
+  ctx.fillText(drawQrLabel, 758 + 84 - ctx.measureText(drawQrLabel).width / 2, 1340);
 
   ctx.fillStyle = "#202832";
   ctx.font = `800 34px ${sans}`;
