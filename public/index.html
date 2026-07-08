@@ -130,7 +130,8 @@ button:disabled:hover{transform:none}
 .shelf-copy{margin:9px 0 0;color:var(--muted);font-family:var(--serif);line-height:1.75;font-size:14px}
 .shelf-copy-mobile{display:none}
 .shelf-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.achievement-open{background:rgba(248,247,242,.72);color:var(--ink);padding:7px 12px;font-size:13px;box-shadow:0 8px 18px rgba(38,40,34,.07)}
+.shelf-mini-link,.achievement-open{background:rgba(248,247,242,.72);color:var(--ink);padding:7px 12px;font-size:13px;box-shadow:0 8px 18px rgba(38,40,34,.07);text-decoration:none}
+.shelf-mini-link:hover,.achievement-open:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.18)}
 .shelf-search{margin:0 0 18px}
 .album-shelf{display:grid;gap:28px;overflow:visible;padding:22px 0 12px}
 .shelf-row{
@@ -304,8 +305,6 @@ button:disabled:hover{transform:none}
 footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;line-height:1.7;text-align:center}
 footer .credit{display:block;margin-top:4px}
 footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
-.footer-note{display:inline-flex;margin-top:12px;align-items:center;justify-content:center;border:1px solid rgba(37,39,34,.1);border-radius:999px;padding:10px 14px;background:rgba(248,247,242,.68);color:#3f443a;text-decoration:none;transition:.22s ease;backdrop-filter:blur(12px)}
-.footer-note:hover{transform:translateY(-1px);border-color:rgba(37,39,34,.22)}
 
 /* stronger cover associations, still handmade CSS covers */
 .akane{background:linear-gradient(0deg,rgba(161,69,55,.92),rgba(161,69,55,.92)) 0 56%/100% 20% no-repeat,linear-gradient(90deg,#e8e1d3 0 48%,#abb09f 48% 50%,#f6f2e8 50% 100%),repeating-linear-gradient(90deg,rgba(45,45,38,.25) 0 1px,transparent 1px 34px)} .akane:before{content:"";position:absolute;inset:auto 0 0;height:39%;background:repeating-linear-gradient(90deg,#2e312e 0 40px,#f3efe5 40px 72px,#51564c 72px 108px);opacity:.58}
@@ -549,6 +548,7 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
         <div class="shelf-title-row">
           <h2 class="shelf-title" id="albumShelfTitle">专辑墙</h2>
           <button class="achievement-open" id="achievementOpen" type="button">成就</button>
+          <a class="shelf-mini-link" id="wallLink" href="wall.html">墙边的纸条</a>
         </div>
         <p class="shelf-copy shelf-copy-desktop">像在唱片店架子前慢慢翻。默认展示全部，点标签只留下对应氛围的专辑。点击专辑会立刻播放。</p>
         <p class="shelf-copy shelf-copy-mobile">像在唱片店架子前慢慢翻。左右滑动每一层专辑架，点标签只留下对应氛围的专辑。点击专辑会立刻播放。</p>
@@ -630,7 +630,6 @@ footer .credit strong{color:#3f443a;font-family:var(--sans);font-size:12px;text-
   <span>v0.4 · J-music shelf, draw box & share cards · made for 小O</span>
   <span class="credit"><strong>Credits</strong> · 歌单 by Okra & GPT 5.5 · 文案 by GPT 5.5 · 前后端 by Codex (GPT 5.5) & Okra</span>
   <span class="credit">由人类耳朵选歌，由机器手指拧紧螺丝。</span>
-  <a class="footer-note" id="wallLink" href="wall.html">墙边的纸条</a>
 </footer>
 
 <script>
