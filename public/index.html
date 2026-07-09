@@ -2803,6 +2803,7 @@ let preparedNextTrack = null;
 let preparedNextUrl = "";
 let nextAudioPreloader = null;
 let prepareNextTimer = null;
+let localPlayerController = null;
 let pendingAchievementUnlockId = "";
 let queuedAchievementUnlockIds = [];
 let queuedAchievementTimer = null;
@@ -4512,6 +4513,9 @@ function wireLocalPlayer(t, autoplay){
   let isSeeking = false;
   let pendingSeekRatio = null;
   if (!audio || !playToggle || !modeButton || !previousButton || !nextButton || !queueButton || !seek || !elapsed || !duration || !state) return;
+  if (localPlayerController) localPlayerController.abort();
+  localPlayerController = new AbortController();
+  const audioListenerOptions = { signal: localPlayerController.signal };
 
   const syncPlaying = () => {
     playToggle.innerHTML = audio.paused ? icons.play : icons.pause;
@@ -4599,33 +4603,33 @@ function wireLocalPlayer(t, autoplay){
   audio.addEventListener("loadedmetadata", () => {
     applyPendingSeek();
     syncTime();
-  });
-  audio.addEventListener("timeupdate", syncTime);
-  audio.addEventListener("play", syncPlaying);
+  }, audioListenerOptions);
+  audio.addEventListener("timeupdate", syncTime, audioListenerOptions);
+  audio.addEventListener("play", syncPlaying, audioListenerOptions);
   audio.addEventListener("playing", () => {
     syncPlaying();
     scheduleUpcomingTrack(1200);
-  });
-  audio.addEventListener("pause", syncPlaying);
-  audio.addEventListener("seeking", () => { state.textContent = "Loading"; });
+  }, audioListenerOptions);
+  audio.addEventListener("pause", syncPlaying, audioListenerOptions);
+  audio.addEventListener("seeking", () => { state.textContent = "Loading"; }, audioListenerOptions);
   audio.addEventListener("seeked", () => {
     syncPlaying();
     syncTime();
     if (!audio.paused) scheduleUpcomingTrack(2500);
-  });
-  audio.addEventListener("waiting", () => { state.textContent = "Loading"; });
+  }, audioListenerOptions);
+  audio.addEventListener("waiting", () => { state.textContent = "Loading"; }, audioListenerOptions);
   audio.addEventListener("canplay", () => {
     syncPlaying();
     if (!autoplay) scheduleUpcomingTrack(3000);
-  });
+  }, audioListenerOptions);
   audio.addEventListener("ended", () => {
     unlockAchievement("listen-through");
     playNext();
-  });
+  }, audioListenerOptions);
   audio.addEventListener("error", () => {
     state.textContent = "Error";
     showToast("这首本地音频加载失败");
-  });
+  }, audioListenerOptions);
   if (autoplay) {
     audio.play().catch(() => {
       syncPlaying();
@@ -4650,11 +4654,10 @@ function loadLocalPlayer(t, autoplay = true){
     `;
     return;
   }
-  const oldAudio = document.getElementById("localAudio");
-  if (oldAudio) {
-    oldAudio.pause();
-    oldAudio.removeAttribute("src");
-    oldAudio.load();
+  const reusableAudio = document.getElementById("localAudio");
+  if (reusableAudio && localPlayerController) {
+    localPlayerController.abort();
+    localPlayerController = null;
   }
   appleFrame.innerHTML = `
     <div class="local-player">
@@ -4683,14 +4686,18 @@ function loadLocalPlayer(t, autoplay = true){
     </div>
   `;
   const audioMount = document.getElementById("audioMount");
-  const preparedAudio = takePreparedAudioFor(t, audioUrl);
-  if (!preparedAudio) clearPreparedNext();
-  const audio = preparedAudio || new Audio();
+  const preparedAudio = reusableAudio ? null : takePreparedAudioFor(t, audioUrl);
+  if (reusableAudio || !preparedAudio) clearPreparedNext();
+  const audio = reusableAudio || preparedAudio || new Audio();
   audio.id = "localAudio";
   audio.preload = "auto";
-  if (!preparedAudio) audio.src = audioUrl;
   if (autoplay) audio.setAttribute("autoplay", "");
   else audio.removeAttribute("autoplay");
+  audio.autoplay = Boolean(autoplay);
+  if (audio.getAttribute("src") !== audioUrl) {
+    audio.src = audioUrl;
+    audio.load();
+  }
   audioMount.replaceWith(audio);
   wireLocalPlayer(t, autoplay);
 }
