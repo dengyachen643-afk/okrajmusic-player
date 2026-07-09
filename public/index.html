@@ -4598,13 +4598,8 @@ function configureMediaSession(t, audio){
     const next = pickNextTrack();
     if (next) playTrack(next, true, next !== currentTrack);
   });
-  setHandler("seekbackward", event => {
-    audio.currentTime = Math.max(0, audio.currentTime - (event.seekOffset || 10));
-  });
-  setHandler("seekforward", event => {
-    const duration = Number.isFinite(audio.duration) ? audio.duration : audio.currentTime + 10;
-    audio.currentTime = Math.min(duration, audio.currentTime + (event.seekOffset || 10));
-  });
+  setHandler("seekbackward", null);
+  setHandler("seekforward", null);
   setHandler("seekto", event => {
     if (typeof event.seekTime !== "number") return;
     audio.currentTime = event.seekTime;
