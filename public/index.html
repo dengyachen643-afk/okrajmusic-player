@@ -4575,6 +4575,7 @@ function configureMediaSession(t, audio){
     }
     try {
       navigator.mediaSession.metadata = new MediaMetadata(metadata);
+      updateMediaPlaybackState(audio);
     } catch (error) {}
   };
   setMetadata("");
@@ -4588,7 +4589,7 @@ function configureMediaSession(t, audio){
     } catch (error) {}
   };
 
-  setHandler("play", () => audio.play().catch(() => {}));
+  setHandler("play", () => audio.play().then(() => updateMediaPlaybackState(audio)).catch(() => {}));
   setHandler("pause", () => audio.pause());
   setHandler("previoustrack", () => {
     const previous = pickPreviousTrack();
@@ -4702,7 +4703,7 @@ function wireLocalPlayer(t, autoplay){
   });
   playToggle.addEventListener("click", () => {
     if (audio.paused) {
-      audio.play().catch(() => showToast("浏览器需要你点一下播放"));
+      audio.play().then(() => updateMediaPlaybackState(audio)).catch(() => showToast("浏览器需要你点一下播放"));
     } else {
       audio.pause();
     }
@@ -4736,6 +4737,7 @@ function wireLocalPlayer(t, autoplay){
   audio.addEventListener("play", syncPlaying, audioListenerOptions);
   audio.addEventListener("playing", () => {
     syncPlaying();
+    requestAnimationFrame(() => updateMediaPlaybackState(audio));
     scheduleUpcomingTrack(1200);
   }, audioListenerOptions);
   audio.addEventListener("pause", syncPlaying, audioListenerOptions);
@@ -4760,7 +4762,10 @@ function wireLocalPlayer(t, autoplay){
     showToast("这首本地音频加载失败");
   }, audioListenerOptions);
   if (autoplay) {
-    audio.play().catch(() => {
+    audio.play().then(() => {
+      syncPlaying();
+      updateMediaPlaybackState(audio);
+    }).catch(() => {
       syncPlaying();
       state.textContent = "Loading";
     });
