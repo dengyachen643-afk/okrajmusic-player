@@ -2996,6 +2996,14 @@ function albumKeyFromTrack(t){
   return `${artist}||${album}`;
 }
 
+function albumYearForTrack(t){
+  return albumYears[albumKeyFromTrack(t)] || "";
+}
+
+function trackMetaText(t){
+  return [t.artist, albumYearForTrack(t), t.album].filter(Boolean).join(" \u00b7 ");
+}
+
 function escapeAttr(value){
   return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
@@ -3664,6 +3672,103 @@ async function shareTrackImage(track, options = {}){
   }
 }
 
+const albumYears = {
+  "フジファブリック||茜色の夕日 - Single": "2005",
+  "羊文学||more than words - EP": "2023",
+  "きのこ帝国||タイム・ラプス": "2018",
+  "東京事変||深夜枠": "2012",
+  "Fishmans||LONG SEASON": "1996",
+  "Lamp||木洩陽通りにて": "2005",
+  "toe||For Long Tomorrow": "2009",
+  "tricot||A N D": "2015",
+  "くるり||琥珀色の街、上海蟹の朝 - EP": "2016",
+  "サカナクション||魚図鑑": "2018",
+  "ヨルシカ||老人と海 - Single": "2021",
+  "Homecomings||WHALE LIVING": "2018",
+  "betcover!!||時間": "2021",
+  "青葉市子||0": "2013",
+  "宇宙コンビニ||染まる音を確認したら": "2013",
+  "Mass of the Fermenting Dregs||ワールドイズユアーズ - EP": "2009",
+  "ずっと真夜中でいいのに。||ぐされ": "2021",
+  "椎名林檎||無罪モラトリアム": "1999",
+  "Cö shu Nie||give it back - Single": "2021",
+  "Galileo Galilei||青い栞 - Single": "2011",
+  "RADWIMPS||人間開花": "2016",
+  "Vaundy||replica": "2023",
+  "女王蜂||十": "2019",
+  "相対性理論||シフォン主義 - EP": "2008",
+  "スピッツ||インディゴ地平線": "1996",
+  "坂本慎太郎||幻とのつきあい方": "2011",
+  "cero||Obscure Ride": "2015",
+  "離婚伝説||愛が一層メロウ - Single": "2024",
+  "Lucky Kilimanjaro||Fullcolor - EP": "2018",
+  "LITE||Phantasia": "2008",
+  "MONO||Hymn to the Immortal Wind": "2009",
+  "te'||それは、鳴り響く世界から現実的な音を「歌」おうとする思考。": "2005",
+  "NUMBER GIRL||SCHOOL GIRL DISTORTIONAL ADDICT": "1999",
+  "andymori||ファンファーレと熱狂": "2010",
+  "椿屋四重奏||紫陽花/螺旋階段 - EP": "2005",
+  "フレデリック||oddloop": "2014",
+  "米津玄師||STRAY SHEEP": "2020",
+  "蓮沼執太フィル||Eco Echo - Single": "2021",
+  "くるり||TEAM ROCK": "2001",
+  "KIRINJI||3": "2000",
+  "きのこ帝国||フェイクワールドワンダーランド": "2014",
+  "フィッシュマンズ||空中キャンプ": "1996",
+  "GRAPEVINE||Lifetime": "1999",
+  "toe||the book about my idle plot on a vague anxiety": "2005",
+  "tricot||T H E": "2013",
+  "Suchmos||THE KIDS": "2017",
+  "never young beach||fam fam": "2016",
+  "Yogee New Waves||PARAISO": "2014",
+  "tofubeats||lost decade": "2013",
+  "TENDRE||NOT IN ALMIGHTY": "2018",
+  "SIRUP||FEEL GOOD": "2018",
+  "ASIAN KUNG-FU GENERATION||マジックディスク": "2010",
+  "サカナクション||834.194": "2019",
+  "羊文学||1999 - Single": "2019",
+  "カネコアヤノ||燦々": "2019",
+  "Nujabes||Modal Soul": "2005",
+  "宇多田ヒカル||ULTRA BLUE": "2006",
+  "宇多田ヒカル||初恋": "2018",
+  "水中スピカ||mEq": "2021",
+  "水中スピカ||Osm": "2022",
+  "藤井風||HELP EVER HURT NEVER": "2020",
+  "TOMOO||ソナーレ - Single": "2023",
+  "Bialystocks||言伝 - Single": "2022",
+  "ASIAN KUNG-FU GENERATION||ソルファ": "2004",
+  "mouse on the keys||Sezession - EP": "2007",
+  "Nujabes/Shing02||Luv(sic) Hexalogy": "2015",
+  "Yakkle & Shing02||愛密集 - EP": "2025",
+  "坂本龍一||async": "2017",
+  "aiko||残心残暑": "2024",
+  "ASIAN KUNG-FU GENERATION||荒野を歩け": "2017",
+  "BLU-SWING||REVISION": "2019",
+  "Cornelius||Mellow Waves": "2017",
+  "Fishmans||宇宙 日本 世田谷": "1997",
+  "Lia||AIR ORIGINAL SOUNDTRACK": "2002",
+  "Ogre You Asshole||フォグランプ": "2009",
+  "SUPERCAR||スリーアウトチェンジ": "1998",
+  "toe||HEAR YOU": "2015",
+  "Vaundy||融解sink": "2021",
+  "world's end girlfriend||Hurtbreak Wonderland": "2007",
+  "きのこ帝国||猫とアレルギー": "2015",
+  "イエロー・マジック・オーケストラ||Solid State Survivor": "1979",
+  "クラムボン||imagination リマスター": "2003",
+  "ハンバート ハンバート||FOLK 2": "2018",
+  "ヨルシカ||二人称": "2020",
+  "坂本龍一||1996 (Re-Mastered)": "1996",
+  "大瀧詠一||A LONG VACATION": "1981",
+  "星野源||FILM": "2012",
+  "椎名林檎||芒に月": "2015",
+  "羊毛とおはな||LIVE IN LIVING '09": "2009",
+  "Shing02/Cradle Orchestra||Zone of Zen": "2010",
+  "ハイスイノナサ||Body of the Animal": "2012",
+  "椎名林檎||座禅エクスタシー": "2008",
+  "水中スピカ||Lux": "2023",
+  "坂本龍一||BTTB": "1998"
+};
+
 function stableShelfRank(value){
   let hash = 2166136261;
   for (const char of value) {
@@ -3685,6 +3790,7 @@ function buildAlbums(){
         title: track.album,
         cover: track.cover,
         tracks: [],
+        year: albumYears[key] || "",
         firstIndex: index,
         hidden: isHiddenTrack(track),
         tags: [],
@@ -4258,13 +4364,14 @@ function renderAlbumDetail(album){
   const selectedTrack = album.tracks.includes(currentTrack) ? currentTrack : album.tracks[0];
   const note = selectedTrack?.note || "这张专辑还没写下介绍，但已经可以直接播放。";
   const shareTrack = selectedTrack || album.tracks[0];
+  const albumMeta = [album.artist, album.year, `${album.tracks.length} \u9996`].filter(Boolean).map(escapeHTML).join(" \u00b7 ");
   albumDetail.innerHTML = `
     <div class="album-detail">
       <div class="album-detail-cover cover ${escapeAttr(album.cover)}"></div>
       <div>
         <div class="album-detail-kicker">Album Detail</div>
         <h3 class="album-detail-title">${escapeHTML(album.title)}</h3>
-        <div class="album-detail-meta">${escapeHTML(album.artist)} · ${album.tracks.length} 首</div>
+        <div class="album-detail-meta">${albumMeta}</div>
         <div class="tags">${album.mood.slice(0, 6).map(x=>`<span class="tag">${escapeHTML(x)}</span>`).join("")}</div>
         <p class="album-detail-note">${escapeHTML(note)}</p>
         <div class="album-actions">
@@ -4325,7 +4432,7 @@ function openQueueSheet(){
 
 function openPlatformChooser(t){
   platformTitle.textContent = t.song;
-  platformMeta.textContent = `${t.artist} · ${t.album}`;
+  platformMeta.textContent = trackMetaText(t);
   platformTags.innerHTML = t.mood.map(x=>`<span class="tag">${x}</span>`).join("");
   platformNote.textContent = t.note;
   platformOptions.innerHTML = platformList(t).map(p => `
@@ -4518,7 +4625,7 @@ function wireLocalPlayer(t, autoplay){
 function loadLocalPlayer(t, autoplay = true){
   const audioUrl = localAudioUrl(t);
   playerTitle.textContent = t.song;
-  playerMeta.textContent = `${t.artist} · ${t.album}`;
+  playerMeta.textContent = trackMetaText(t);
   playerSource.disabled = false;
   playerShare.disabled = false;
   playerSource.textContent = "外部打开";
@@ -4544,7 +4651,7 @@ function loadLocalPlayer(t, autoplay = true){
         <div class="player-status" id="playerState">Ready</div>
         <div class="player-now">
           <strong>${escapeHTML(t.song)}</strong>
-          <span>${escapeHTML(t.artist)} · ${escapeHTML(t.album)}</span>
+          <span>${escapeHTML(trackMetaText(t))}</span>
         </div>
         <div class="player-controls">
           <div class="transport">
@@ -4581,7 +4688,7 @@ function updateDrawCard(t){
   drawCover.className = `draw-cover cover ${t.cover}`;
   drawCover.innerHTML = `<div class="mini">${t.album}</div>`;
   drawSong.textContent = t.song;
-  drawArtist.textContent = `${t.artist} · ${t.album}`;
+  drawArtist.textContent = trackMetaText(t);
   drawNote.textContent = t.note;
   setDrawActionsEnabled(true);
 }
