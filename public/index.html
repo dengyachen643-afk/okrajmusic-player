@@ -4664,6 +4664,7 @@ function wireLocalPlayer(t, autoplay){
     setRangeProgress(seek, ratio);
     elapsed.textContent = formatTime(audio.currentTime);
     duration.textContent = formatTime(audio.duration);
+    if (!audio.paused) updateMediaPlaybackState(audio, "playing");
     updateMediaPosition(audio);
   };
   const applyPendingSeek = () => {
@@ -4759,7 +4760,7 @@ function wireLocalPlayer(t, autoplay){
   }, audioListenerOptions);
   audio.addEventListener("waiting", () => { state.textContent = "Loading"; }, audioListenerOptions);
   audio.addEventListener("canplay", () => {
-    syncPlaying();
+    syncPlaying(autoplay ? "playing" : "");
     if (!autoplay) scheduleUpcomingTrack(3000);
   }, audioListenerOptions);
   audio.addEventListener("ended", () => {
