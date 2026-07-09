@@ -4553,13 +4553,14 @@ function updateMediaPosition(audio){
   } catch (error) {}
 }
 
-function updateMediaPlaybackState(audio){
+function updateMediaPlaybackState(audio, preferredState = ""){
   if (!("mediaSession" in navigator) || !audio) return;
-  navigator.mediaSession.playbackState = audio.paused ? "paused" : "playing";
+  navigator.mediaSession.playbackState = preferredState || (audio.paused ? "paused" : "playing");
 }
 
-function configureMediaSession(t, audio){
+function configureMediaSession(t, audio, expectedState = ""){
   if (!("mediaSession" in navigator) || !audio || !t) return;
+  const expectedPlaybackState = expectedState || (audio.autoplay ? "playing" : "");
   const setMetadata = artworkUrl => {
     const metadata = {
       title: t.song,
@@ -4575,7 +4576,7 @@ function configureMediaSession(t, audio){
     }
     try {
       navigator.mediaSession.metadata = new MediaMetadata(metadata);
-      updateMediaPlaybackState(audio);
+      updateMediaPlaybackState(audio, expectedPlaybackState);
     } catch (error) {}
   };
   setMetadata("");
@@ -4605,7 +4606,14 @@ function configureMediaSession(t, audio){
     if (typeof event.seekTime !== "number") return;
     audio.currentTime = event.seekTime;
   });
-  updateMediaPlaybackState(audio);
+  updateMediaPlaybackState(audio, expectedPlaybackState);
+  updateMediaPosition(audio);
+}
+
+function refreshCurrentMediaSession(){
+  const audio = document.getElementById("localAudio");
+  if (!audio || !currentTrack) return;
+  updateMediaPlaybackState(audio, audio.paused ? "paused" : "playing");
   updateMediaPosition(audio);
 }
 
@@ -4642,11 +4650,12 @@ function wireLocalPlayer(t, autoplay){
   localPlayerController = new AbortController();
   const audioListenerOptions = { signal: localPlayerController.signal };
 
-  const syncPlaying = () => {
-    playToggle.innerHTML = audio.paused ? icons.play : icons.pause;
-    playToggle.setAttribute("aria-label", audio.paused ? "播放" : "暂停");
-    state.textContent = audio.paused ? "Ready" : "Playing";
-    updateMediaPlaybackState(audio);
+  const syncPlaying = (preferredState = "") => {
+    const isPlaying = preferredState === "playing" || (!preferredState && !audio.paused);
+    playToggle.innerHTML = isPlaying ? icons.pause : icons.play;
+    playToggle.setAttribute("aria-label", isPlaying ? "暂停" : "播放");
+    state.textContent = isPlaying ? "Playing" : "Ready";
+    updateMediaPlaybackState(audio, preferredState);
   };
   const syncTime = () => {
     if (isSeeking || pendingSeekRatio !== null) return;
@@ -4685,9 +4694,9 @@ function wireLocalPlayer(t, autoplay){
     if (next) playTrack(next, true, next !== currentTrack);
   };
 
-  configureMediaSession(t, audio);
+  configureMediaSession(t, audio, autoplay ? "playing" : "");
   updateModeButton(modeButton);
-  syncPlaying();
+  syncPlaying(autoplay ? "playing" : "");
   syncTime();
 
   modeButton.addEventListener("click", () => {
@@ -5068,6 +5077,8 @@ document.addEventListener("keydown", event => {
     closeWallSheet();
   }
 });
+document.addEventListener("visibilitychange", refreshCurrentMediaSession);
+window.addEventListener("pageshow", refreshCurrentMediaSession);
 let touchStartY = 0;
 document.addEventListener("touchstart", event => {
   if (event.touches.length !== 1) return;
