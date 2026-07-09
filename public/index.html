@@ -353,6 +353,16 @@ button:disabled:hover{transform:none}
 .thanks-mark{width:50px;aspect-ratio:1/1;border-radius:50%;border:1px solid rgba(37,39,34,.1);background:linear-gradient(90deg,transparent 48%,rgba(47,58,67,.5) 48% 52%,transparent 52%),radial-gradient(circle at 50% 50%,rgba(169,182,156,.42) 0 28%,transparent 29%),rgba(238,238,231,.74);opacity:.72}
 .thanks-artist:nth-child(2) .thanks-mark{border-radius:18px;background:linear-gradient(145deg,transparent 0 46%,rgba(47,58,67,.45) 47% 50%,transparent 51%),radial-gradient(circle at 30% 32%,rgba(169,182,156,.38) 0 17%,transparent 18%),radial-gradient(circle at 70% 70%,rgba(47,58,67,.16) 0 28%,transparent 29%),rgba(238,238,231,.74)}
 .thanks-note{margin:46px 0 0;max-width:520px;color:var(--muted);font-family:var(--serif);font-size:14px;line-height:1.8}
+.wall-backdrop{position:fixed;inset:0;background:rgba(20,21,18,.28);opacity:0;pointer-events:none;transition:.24s ease;z-index:98;backdrop-filter:blur(5px)}
+.wall-backdrop.show{opacity:1;pointer-events:auto}
+.wall-sheet{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.98);width:min(1040px,calc(100% - 28px));height:min(780px,calc(100vh - 36px));
+  background:rgba(248,247,242,.97);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:30px;box-shadow:0 34px 96px rgba(38,40,34,.26);
+  padding:0;opacity:0;pointer-events:none;transition:.26s ease;backdrop-filter:blur(20px);z-index:99;overflow:hidden;
+}
+.wall-sheet.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.wall-close{position:absolute;top:14px;right:14px;width:38px;height:38px;padding:0;border-radius:50%;background:rgba(248,247,242,.78);color:var(--muted);font-size:24px;z-index:2}
+.wall-frame{display:block;width:100%;height:100%;border:0;background:#eeeee7}
 .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120%);background:rgba(36,38,33,.94);color:#f8f7f2;padding:10px 14px;border-radius:999px;font-size:13px;transition:.28s ease;z-index:30}
 .toast.show{transform:translateX(-50%) translateY(0)}
 footer{margin-top:34px;color:var(--muted);font-family:var(--serif);font-size:13px;line-height:1.7;text-align:center}
@@ -603,6 +613,8 @@ footer a:hover{color:#3f443a;border-color:rgba(63,68,58,.48)}
   .thanks-artist{grid-template-columns:1fr;padding:20px;gap:16px}
   .thanks-line{font-size:17px}
   .thanks-mark{width:44px;justify-self:end}
+  .wall-sheet{width:calc(100% - 22px);height:calc(100svh - 24px);border-radius:24px}
+  .wall-close{top:12px;right:12px}
   .toolbar{position:sticky;top:0;z-index:10;padding:10px 0;backdrop-filter:blur(14px)}
 }
 </style>
@@ -790,6 +802,12 @@ footer a:hover{color:#3f443a;border-color:rgba(63,68,58,.48)}
     </article>
   </div>
   <p class="thanks-note">This page is not a profile. It is only a small acknowledgement, left quietly at the edge of the site.</p>
+</aside>
+
+<div class="wall-backdrop" id="wallBackdrop"></div>
+<aside class="wall-sheet" id="wallSheet" aria-live="polite">
+  <button class="wall-close" id="closeWall" aria-label="关闭墙边的纸条">×</button>
+  <iframe class="wall-frame" id="wallFrame" title="墙边的纸条"></iframe>
 </aside>
 
 <footer>
@@ -2790,6 +2808,10 @@ const thanksBackdrop = document.getElementById("thanksBackdrop");
 const thanksSheet = document.getElementById("thanksSheet");
 const closeThanks = document.getElementById("closeThanks");
 const wallLink = document.getElementById("wallLink");
+const wallBackdrop = document.getElementById("wallBackdrop");
+const wallSheet = document.getElementById("wallSheet");
+const closeWall = document.getElementById("closeWall");
+const wallFrame = document.getElementById("wallFrame");
 const toast = document.getElementById("toast");
 let currentFilter = "all";
 let currentTrack = null;
@@ -2939,7 +2961,7 @@ function scheduleQueuedAchievementUnlock(delay = 520){
   queuedAchievementTimer = setTimeout(() => {
     queuedAchievementTimer = null;
     if (!queuedAchievementUnlockIds.length) return;
-    if (achievementSheet.classList.contains("show") || achievementUnlock.classList.contains("show") || afterwordSheet.classList.contains("show")) return;
+    if (achievementSheet.classList.contains("show") || achievementUnlock.classList.contains("show") || afterwordSheet.classList.contains("show") || wallSheet.classList.contains("show")) return;
     const queuedId = queuedAchievementUnlockIds.shift();
     const item = achievementById(queuedId);
     if (!item) return;
@@ -4326,6 +4348,23 @@ function closeThanksSheet(){
   thanksBackdrop.classList.remove("show");
 }
 
+function openWallSheet(){
+  closeAchievements();
+  closeAchievementUnlockModal();
+  closeAfterwordSheet();
+  closeThanksSheet();
+  wallFrame.src = `wall.html?embed=1&t=${Date.now()}`;
+  wallSheet.classList.add("show");
+  wallBackdrop.classList.add("show");
+}
+
+function closeWallSheet(){
+  const wasOpen = wallSheet.classList.contains("show");
+  wallSheet.classList.remove("show");
+  wallBackdrop.classList.remove("show");
+  if (wasOpen) scheduleQueuedAchievementUnlock(520);
+}
+
 function playAfterwordTrack(event){
   event?.preventDefault();
   event?.stopPropagation();
@@ -4823,16 +4862,20 @@ thanksLink.addEventListener("click", event => {
 });
 closeThanks.addEventListener("click", closeThanksSheet);
 thanksBackdrop.addEventListener("click", closeThanksSheet);
-wallLink.addEventListener("click", () => {
+closeWall.addEventListener("click", closeWallSheet);
+wallBackdrop.addEventListener("click", closeWallSheet);
+wallLink.addEventListener("click", event => {
+  event.preventDefault();
   if (!currentTrack) {
     sessionStorage.removeItem("okrajWallTrack");
-    return;
+  } else {
+    sessionStorage.setItem("okrajWallTrack", JSON.stringify({
+      song: currentTrack.song,
+      artist: currentTrack.artist,
+      album: currentTrack.album
+    }));
   }
-  sessionStorage.setItem("okrajWallTrack", JSON.stringify({
-    song: currentTrack.song,
-    artist: currentTrack.artist,
-    album: currentTrack.album
-  }));
+  openWallSheet();
 });
 drawBtn.addEventListener("click", drawRandom);
 drawListen.addEventListener("click", () => {
@@ -4927,6 +4970,7 @@ document.addEventListener("keydown", event => {
     closeAchievementUnlockModal();
     closeAfterwordSheet();
     closeThanksSheet();
+    closeWallSheet();
   }
 });
 let touchStartY = 0;
@@ -4937,7 +4981,7 @@ document.addEventListener("touchstart", event => {
 document.addEventListener("touchmove", event => {
   if (event.touches.length !== 1) return;
   const target = event.target;
-  if (target?.closest?.(".shelf-row,.queue-list,.album-sheet,.achievement-sheet,.afterword-sheet,.thanks-sheet")) return;
+  if (target?.closest?.(".shelf-row,.queue-list,.album-sheet,.achievement-sheet,.afterword-sheet,.thanks-sheet,.wall-sheet")) return;
   const dy = event.touches[0].clientY - touchStartY;
   if (window.scrollY <= 0 && dy > 10) event.preventDefault();
 }, { passive: false });
