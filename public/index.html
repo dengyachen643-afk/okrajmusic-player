@@ -2826,6 +2826,7 @@ let preparedNextUrl = "";
 let nextAudioPreloader = null;
 let prepareNextTimer = null;
 let localPlayerController = null;
+let intendedPlaybackState = "paused";
 let pendingAchievementUnlockId = "";
 let queuedAchievementUnlockIds = [];
 let queuedAchievementTimer = null;
@@ -4553,14 +4554,33 @@ function updateMediaPosition(audio){
   } catch (error) {}
 }
 
+function normalizePlaybackState(state){
+  return state === "playing" || state === "paused" ? state : "";
+}
+
+function resolveMediaPlaybackState(audio, preferredState = ""){
+  const normalizedState = normalizePlaybackState(preferredState);
+  if (normalizedState) return normalizedState;
+  if (intendedPlaybackState === "playing" && audio && !audio.ended) return "playing";
+  return audio && !audio.paused ? "playing" : "paused";
+}
+
 function updateMediaPlaybackState(audio, preferredState = ""){
   if (!("mediaSession" in navigator) || !audio) return;
-  navigator.mediaSession.playbackState = preferredState || (audio.paused ? "paused" : "playing");
+  const playbackState = resolveMediaPlaybackState(audio, preferredState);
+  navigator.mediaSession.playbackState = playbackState;
+}
+
+function setPlaybackIntent(state, audio = document.getElementById("localAudio")){
+  const normalizedState = normalizePlaybackState(state);
+  if (!normalizedState) return;
+  intendedPlaybackState = normalizedState;
+  updateMediaPlaybackState(audio, normalizedState);
 }
 
 function configureMediaSession(t, audio, expectedState = ""){
   if (!("mediaSession" in navigator) || !audio || !t) return;
-  const expectedPlaybackState = expectedState || (audio.autoplay ? "playing" : "");
+  const expectedPlaybackState = normalizePlaybackState(expectedState) || (audio.autoplay ? "playing" : intendedPlaybackState);
   const setMetadata = artworkUrl => {
     const metadata = {
       title: t.song,
@@ -4590,8 +4610,16 @@ function configureMediaSession(t, audio, expectedState = ""){
     } catch (error) {}
   };
 
-  setHandler("play", () => audio.play().then(() => updateMediaPlaybackState(audio)).catch(() => {}));
-  setHandler("pause", () => audio.pause());
+  setHandler("play", () => {
+    setPlaybackIntent("playing", audio);
+    audio.play().then(() => setPlaybackIntent("playing", audio)).catch(() => {
+      if (audio.paused) setPlaybackIntent("paused", audio);
+    });
+  });
+  setHandler("pause", () => {
+    setPlaybackIntent("paused", audio);
+    audio.pause();
+  });
   setHandler("previoustrack", () => {
     const previous = pickPreviousTrack();
     if (previous) playTrack(previous, true, false);
@@ -4613,7 +4641,7 @@ function configureMediaSession(t, audio, expectedState = ""){
 function refreshCurrentMediaSession(){
   const audio = document.getElementById("localAudio");
   if (!audio || !currentTrack) return;
-  updateMediaPlaybackState(audio, audio.paused ? "paused" : "playing");
+  updateMediaPlaybackState(audio, resolveMediaPlaybackState(audio));
   updateMediaPosition(audio);
 }
 
@@ -4651,11 +4679,12 @@ function wireLocalPlayer(t, autoplay){
   const audioListenerOptions = { signal: localPlayerController.signal };
 
   const syncPlaying = (preferredState = "") => {
-    const isPlaying = preferredState === "playing" || (!preferredState && !audio.paused);
+    const playbackState = resolveMediaPlaybackState(audio, preferredState);
+    const isPlaying = playbackState === "playing";
     playToggle.innerHTML = isPlaying ? icons.pause : icons.play;
     playToggle.setAttribute("aria-label", isPlaying ? "暂停" : "播放");
     state.textContent = isPlaying ? "Playing" : "Ready";
-    updateMediaPlaybackState(audio, preferredState);
+    updateMediaPlaybackState(audio, playbackState);
   };
   const syncTime = () => {
     if (isSeeking || pendingSeekRatio !== null) return;
@@ -4664,7 +4693,7 @@ function wireLocalPlayer(t, autoplay){
     setRangeProgress(seek, ratio);
     elapsed.textContent = formatTime(audio.currentTime);
     duration.textContent = formatTime(audio.duration);
-    if (!audio.paused) updateMediaPlaybackState(audio, "playing");
+    if (!audio.paused || intendedPlaybackState === "playing") setPlaybackIntent("playing", audio);
     updateMediaPosition(audio);
   };
   const applyPendingSeek = () => {
@@ -4695,7 +4724,8 @@ function wireLocalPlayer(t, autoplay){
     if (next) playTrack(next, true, next !== currentTrack);
   };
 
-  configureMediaSession(t, audio, autoplay ? "playing" : "");
+  setPlaybackIntent(autoplay ? "playing" : "paused", audio);
+  configureMediaSession(t, audio, autoplay ? "playing" : "paused");
   updateModeButton(modeButton);
   syncPlaying(autoplay ? "playing" : "");
   syncTime();
@@ -4713,8 +4743,13 @@ function wireLocalPlayer(t, autoplay){
   });
   playToggle.addEventListener("click", () => {
     if (audio.paused) {
-      audio.play().then(() => updateMediaPlaybackState(audio)).catch(() => showToast("浏览器需要你点一下播放"));
+      setPlaybackIntent("playing", audio);
+      audio.play().then(() => setPlaybackIntent("playing", audio)).catch(() => {
+        if (audio.paused) setPlaybackIntent("paused", audio);
+        showToast("浏览器需要你点一下播放");
+      });
     } else {
+      setPlaybackIntent("paused", audio);
       audio.pause();
     }
   });
@@ -4744,13 +4779,20 @@ function wireLocalPlayer(t, autoplay){
     updateMediaPosition(audio);
   }, audioListenerOptions);
   audio.addEventListener("timeupdate", syncTime, audioListenerOptions);
-  audio.addEventListener("play", syncPlaying, audioListenerOptions);
+  audio.addEventListener("play", () => {
+    setPlaybackIntent("playing", audio);
+    syncPlaying("playing");
+  }, audioListenerOptions);
   audio.addEventListener("playing", () => {
-    syncPlaying();
-    requestAnimationFrame(() => updateMediaPlaybackState(audio));
+    setPlaybackIntent("playing", audio);
+    syncPlaying("playing");
+    requestAnimationFrame(() => setPlaybackIntent("playing", audio));
     scheduleUpcomingTrack(1200);
   }, audioListenerOptions);
-  audio.addEventListener("pause", syncPlaying, audioListenerOptions);
+  audio.addEventListener("pause", () => {
+    if (intendedPlaybackState !== "playing" || audio.ended) setPlaybackIntent("paused", audio);
+    syncPlaying();
+  }, audioListenerOptions);
   audio.addEventListener("seeking", () => { state.textContent = "Loading"; }, audioListenerOptions);
   audio.addEventListener("seeked", () => {
     syncPlaying();
@@ -4764,6 +4806,7 @@ function wireLocalPlayer(t, autoplay){
     if (!autoplay) scheduleUpcomingTrack(3000);
   }, audioListenerOptions);
   audio.addEventListener("ended", () => {
+    setPlaybackIntent("paused", audio);
     unlockAchievement("listen-through");
     playNext();
   }, audioListenerOptions);
@@ -4772,9 +4815,10 @@ function wireLocalPlayer(t, autoplay){
     showToast("这首本地音频加载失败");
   }, audioListenerOptions);
   if (autoplay) {
+    setPlaybackIntent("playing", audio);
     audio.play().then(() => {
-      syncPlaying();
-      updateMediaPlaybackState(audio);
+      setPlaybackIntent("playing", audio);
+      syncPlaying("playing");
     }).catch(() => {
       syncPlaying();
       state.textContent = "Loading";
