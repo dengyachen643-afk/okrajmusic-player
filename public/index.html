@@ -22,14 +22,14 @@
   --radius:24px;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;overscroll-behavior-y:none}
 body{
   margin:0;min-height:100vh;color:var(--ink);
   background:
     radial-gradient(circle at top left,rgba(169,182,156,.42),transparent 34rem),
     radial-gradient(circle at bottom right,rgba(216,213,203,.66),transparent 30rem),
     linear-gradient(120deg,#eeeeea,#e4e4dc 48%,#efeee8);
-  font-family:var(--sans);
+  font-family:var(--sans);overscroll-behavior-y:none;
 }
 body:before{
   content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
@@ -178,7 +178,7 @@ button:disabled:hover{transform:none}
 .card .play-links{margin-top:14px}
 .drawer .tags{margin:10px 0 4px}
 .drawer .tag{color:#e7e8dd;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12)}
-.drawer{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140%);width:min(760px,calc(100% - 28px));background:rgba(36,38,33,.95);color:#f6f4ed;border:1px solid rgba(255,255,255,.1);border-radius:26px;box-shadow:0 26px 80px rgba(0,0,0,.28);padding:20px 22px;transition:.32s ease;backdrop-filter:blur(16px);z-index:20}
+.drawer{display:none!important;position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140%);width:min(760px,calc(100% - 28px));background:rgba(36,38,33,.95);color:#f6f4ed;border:1px solid rgba(255,255,255,.1);border-radius:26px;box-shadow:0 26px 80px rgba(0,0,0,.28);padding:20px 22px;transition:.32s ease;backdrop-filter:blur(16px);z-index:20}
 .drawer.show{transform:translateX(-50%) translateY(0)}
 .drawer .d-meta{color:#c7cabc;font-size:13px;margin-bottom:8px}
 .drawer .d-title{font-size:22px;line-height:1.28;margin-bottom:10px;font-weight:700}
@@ -4803,8 +4803,24 @@ document.addEventListener("keydown", event => {
     closeThanksSheet();
   }
 });
+let touchStartY = 0;
+document.addEventListener("touchstart", event => {
+  if (event.touches.length !== 1) return;
+  touchStartY = event.touches[0].clientY;
+}, { passive: true });
+document.addEventListener("touchmove", event => {
+  if (event.touches.length !== 1) return;
+  const target = event.target;
+  if (target?.closest?.(".shelf-row,.queue-list,.album-sheet,.achievement-sheet,.afterword-sheet,.thanks-sheet")) return;
+  const dy = event.touches[0].clientY - touchStartY;
+  if (window.scrollY <= 0 && dy > 10) event.preventDefault();
+}, { passive: false });
 let shelfResizeTimer = 0;
+let lastRenderWidth = window.innerWidth;
 window.addEventListener("resize", () => {
+  const width = window.innerWidth;
+  if (Math.abs(width - lastRenderWidth) < 8) return;
+  lastRenderWidth = width;
   window.clearTimeout(shelfResizeTimer);
   shelfResizeTimer = window.setTimeout(render, 120);
 });
