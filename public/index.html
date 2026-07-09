@@ -3182,6 +3182,7 @@ function formatDrawDate(date){
 }
 
 let coverCssText = "";
+const mediaArtworkUrlCache = new Map();
 
 function getCoverCssText(){
   if (coverCssText) return coverCssText;
@@ -3380,6 +3381,23 @@ async function drawShareCover(ctx, track, x, y, size){
   roundRect(ctx, x, y, size, size, 44);
   ctx.stroke();
   ctx.restore();
+}
+
+async function mediaArtworkForTrack(track){
+  if (!track) return "";
+  const key = track.cover || trackKey(track);
+  if (mediaArtworkUrlCache.has(key)) return mediaArtworkUrlCache.get(key);
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#eeeee7";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await drawShareCover(ctx, track, 0, 0, 512);
+  const blob = await canvasToBlob(canvas);
+  const url = URL.createObjectURL(blob);
+  mediaArtworkUrlCache.set(key, url);
+  return url;
 }
 
 function drawQrFallback(ctx, x, y, size, value){
@@ -4542,13 +4560,27 @@ function updateMediaPlaybackState(audio){
 
 function configureMediaSession(t, audio){
   if (!("mediaSession" in navigator) || !audio || !t) return;
-  try {
-    navigator.mediaSession.metadata = new MediaMetadata({
+  const setMetadata = artworkUrl => {
+    const metadata = {
       title: t.song,
       artist: t.artist,
       album: t.album
-    });
-  } catch (error) {}
+    };
+    if (artworkUrl) {
+      metadata.artwork = [
+        { src: artworkUrl, sizes: "512x512", type: "image/png" },
+        { src: artworkUrl, sizes: "256x256", type: "image/png" },
+        { src: artworkUrl, sizes: "128x128", type: "image/png" }
+      ];
+    }
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata(metadata);
+    } catch (error) {}
+  };
+  setMetadata("");
+  mediaArtworkForTrack(t).then(artworkUrl => {
+    if (artworkUrl && currentTrack === t) setMetadata(artworkUrl);
+  }).catch(() => {});
 
   const setHandler = (action, handler) => {
     try {
