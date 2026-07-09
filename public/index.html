@@ -4523,6 +4523,64 @@ function setRangeProgress(input, value){
   input.style.setProperty("--progress", `${value}%`);
 }
 
+function updateMediaPosition(audio){
+  if (!("mediaSession" in navigator) || typeof navigator.mediaSession.setPositionState !== "function") return;
+  if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+  try {
+    navigator.mediaSession.setPositionState({
+      duration: audio.duration,
+      playbackRate: audio.playbackRate || 1,
+      position: Math.min(audio.currentTime || 0, audio.duration)
+    });
+  } catch (error) {}
+}
+
+function updateMediaPlaybackState(audio){
+  if (!("mediaSession" in navigator) || !audio) return;
+  navigator.mediaSession.playbackState = audio.paused ? "paused" : "playing";
+}
+
+function configureMediaSession(t, audio){
+  if (!("mediaSession" in navigator) || !audio || !t) return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: t.song,
+      artist: t.artist,
+      album: t.album
+    });
+  } catch (error) {}
+
+  const setHandler = (action, handler) => {
+    try {
+      navigator.mediaSession.setActionHandler(action, handler);
+    } catch (error) {}
+  };
+
+  setHandler("play", () => audio.play().catch(() => {}));
+  setHandler("pause", () => audio.pause());
+  setHandler("previoustrack", () => {
+    const previous = pickPreviousTrack();
+    if (previous) playTrack(previous, true, false);
+  });
+  setHandler("nexttrack", () => {
+    const next = pickNextTrack();
+    if (next) playTrack(next, true, next !== currentTrack);
+  });
+  setHandler("seekbackward", event => {
+    audio.currentTime = Math.max(0, audio.currentTime - (event.seekOffset || 10));
+  });
+  setHandler("seekforward", event => {
+    const duration = Number.isFinite(audio.duration) ? audio.duration : audio.currentTime + 10;
+    audio.currentTime = Math.min(duration, audio.currentTime + (event.seekOffset || 10));
+  });
+  setHandler("seekto", event => {
+    if (typeof event.seekTime !== "number") return;
+    audio.currentTime = event.seekTime;
+  });
+  updateMediaPlaybackState(audio);
+  updateMediaPosition(audio);
+}
+
 function modeLabel(mode){
   if (mode === "sequence") return "顺序播放";
   if (mode === "repeat-one") return "单曲循环";
@@ -4560,6 +4618,7 @@ function wireLocalPlayer(t, autoplay){
     playToggle.innerHTML = audio.paused ? icons.play : icons.pause;
     playToggle.setAttribute("aria-label", audio.paused ? "播放" : "暂停");
     state.textContent = audio.paused ? "Ready" : "Playing";
+    updateMediaPlaybackState(audio);
   };
   const syncTime = () => {
     if (isSeeking || pendingSeekRatio !== null) return;
@@ -4568,6 +4627,7 @@ function wireLocalPlayer(t, autoplay){
     setRangeProgress(seek, ratio);
     elapsed.textContent = formatTime(audio.currentTime);
     duration.textContent = formatTime(audio.duration);
+    updateMediaPosition(audio);
   };
   const applyPendingSeek = () => {
     if (pendingSeekRatio === null || !audio.duration) return false;
@@ -4597,6 +4657,7 @@ function wireLocalPlayer(t, autoplay){
     if (next) playTrack(next, true, next !== currentTrack);
   };
 
+  configureMediaSession(t, audio);
   updateModeButton(modeButton);
   syncPlaying();
   syncTime();
@@ -4642,6 +4703,7 @@ function wireLocalPlayer(t, autoplay){
   audio.addEventListener("loadedmetadata", () => {
     applyPendingSeek();
     syncTime();
+    updateMediaPosition(audio);
   }, audioListenerOptions);
   audio.addEventListener("timeupdate", syncTime, audioListenerOptions);
   audio.addEventListener("play", syncPlaying, audioListenerOptions);
@@ -4654,6 +4716,7 @@ function wireLocalPlayer(t, autoplay){
   audio.addEventListener("seeked", () => {
     syncPlaying();
     syncTime();
+    updateMediaPosition(audio);
     if (!audio.paused) scheduleUpcomingTrack(2500);
   }, audioListenerOptions);
   audio.addEventListener("waiting", () => { state.textContent = "Loading"; }, audioListenerOptions);
