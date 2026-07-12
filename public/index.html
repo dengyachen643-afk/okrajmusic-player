@@ -31,6 +31,7 @@ body{
     linear-gradient(120deg,#eeeeea,#e4e4dc 48%,#efeee8);
   font-family:var(--sans);overscroll-behavior-y:none;
 }
+body.queue-open{overflow:hidden}
 body:before{
   content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
@@ -238,14 +239,14 @@ button:disabled:hover{transform:none}
   position:fixed;right:28px;top:48px;width:min(520px,calc(100% - 32px));max-height:min(760px,calc(100vh - 80px));
   background:rgba(248,247,242,.96);color:var(--ink);border:1px solid rgba(37,39,34,.1);border-radius:16px;
   box-shadow:0 28px 80px rgba(38,40,34,.22);padding:22px 0 12px;z-index:37;opacity:0;pointer-events:none;transform:translateY(14px);
-  transition:.26s ease;backdrop-filter:blur(18px);display:grid;grid-template-rows:auto 1fr;overflow:hidden;overscroll-behavior:contain;
+  transition:.26s ease;backdrop-filter:blur(18px);display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden;overscroll-behavior:contain;min-height:0;
 }
 .queue-sheet.show{opacity:1;pointer-events:auto;transform:translateY(0)}
 .queue-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 22px 16px;border-bottom:1px solid rgba(37,39,34,.08)}
 .queue-title{font-size:24px;font-weight:760}
 .queue-title span{font-size:14px;color:var(--muted);font-weight:520;margin-left:6px}
 .queue-close{width:36px;height:36px;padding:0;border-radius:50%;background:transparent;color:var(--muted);font-size:22px}
-.queue-list{max-width:100%;overflow-x:hidden;overflow-y:auto;padding:8px 0;overscroll-behavior:contain;touch-action:pan-y}
+.queue-list{max-width:100%;min-height:0;overflow-x:hidden;overflow-y:auto;padding:8px 0;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}
 .queue-item{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;max-width:100%;min-width:0;padding:10px 22px;border:0;border-radius:0;background:transparent;text-align:left;color:var(--ink);backdrop-filter:none;touch-action:pan-y}
 .queue-item:hover{transform:none;background:rgba(37,39,34,.05)}
 .queue-item.active{color:#7b2e33;background:rgba(169,182,156,.18)}
@@ -595,7 +596,7 @@ footer a:hover{color:#3f443a;border-color:rgba(63,68,58,.48)}
   .song{min-height:auto}
   .platform-options{grid-template-columns:1fr}
   .platform-option{min-height:56px}
-  .queue-sheet{left:11px;right:11px;top:auto;bottom:14px;width:auto;max-height:72vh;border-radius:22px}
+  .queue-sheet{left:11px;right:11px;top:auto;bottom:14px;width:auto;height:min(72vh,calc(100svh - 28px));max-height:72vh;border-radius:22px}
   .achievement-sheet{width:calc(100% - 22px);max-height:calc(100svh - 24px);padding:22px;border-radius:22px}
   .achievement-grid{grid-template-columns:1fr}
   .achievement-copy{margin-right:34px}
@@ -2827,6 +2828,8 @@ let nextAudioPreloader = null;
 let prepareNextTimer = null;
 let localPlayerController = null;
 let intendedPlaybackState = "paused";
+let queueTouchY = 0;
+let randomBuckets = new Map();
 let pendingAchievementUnlockId = "";
 let queuedAchievementUnlockIds = [];
 let queuedAchievementTimer = null;
@@ -3564,7 +3567,7 @@ async function createDrawShareImageBlob(track, options = {}){
 
   ctx.fillStyle = "#202832";
   ctx.font = `800 34px ${sans}`;
-  ctx.fillText("小O的日音播放器", 104, 1180);
+  ctx.fillText("O's 日音播放器", 104, 1180);
   ctx.fillStyle = "#626a72";
   ctx.font = `500 24px ${sans}`;
   ctx.fillText("okrajmusic-player", 104, 1222);
@@ -3676,7 +3679,7 @@ async function createShareImageBlob(track, options = {}){
 
   ctx.fillStyle = "#252821";
   ctx.font = `800 36px ${sans}`;
-  ctx.fillText("小O的日音播放器", 104, 1174);
+  ctx.fillText("O's 日音播放器", 104, 1174);
   ctx.fillStyle = "#6c7064";
   ctx.font = `500 25px ${sans}`;
   ctx.fillText("okrajmusic-player", 104, 1218);
@@ -3713,7 +3716,7 @@ async function shareTrackImage(track, options = {}){
       await navigator.share({
         files: [file],
         title: options.variant === "draw" ? `我抽到了 ${track.song}` : `${track.song} - ${track.artist}`,
-        text: options.variant === "draw" ? `小O的日音播放器抽到了：${track.song}` : (track.note || "小O的日音播放器")
+        text: options.variant === "draw" ? `O's 日音播放器抽到了：${track.song}` : (track.note || "O's 日音播放器")
       });
       showToast("分享图已准备好");
       return;
@@ -3971,6 +3974,29 @@ function scopedPlayableQueue(){
   return playbackQueue ? playbackQueue.filter(t => localAudioUrl(t)) : [];
 }
 
+function randomIndex(length){
+  if (length <= 0) return 0;
+  if (window.crypto?.getRandomValues) {
+    const values = new Uint32Array(1);
+    window.crypto.getRandomValues(values);
+    return values[0] % length;
+  }
+  return Math.floor(Math.random() * length);
+}
+
+function shuffleTracks(pool){
+  const shuffled = [...pool];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomIndex(index + 1);
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function randomPoolKey(pool){
+  return pool.map(trackKey).join("\u001f");
+}
+
 function trackAtOffset(offset){
   const pool = playableTracks();
   if (!pool.length) return null;
@@ -3983,10 +4009,14 @@ function trackAtOffset(offset){
 function pickRandomTrack(pool = playableTracks()){
   if (!pool.length) return null;
   if (pool.length === 1) return pool[0];
-  let next = pool[Math.floor(Math.random() * pool.length)];
-  while (next === currentTrack) {
-    next = pool[Math.floor(Math.random() * pool.length)];
-  }
+  const candidates = pool.filter(t => t !== currentTrack);
+  const poolKey = randomPoolKey(pool);
+  const candidateKeys = new Set(candidates.map(trackKey));
+  let bucket = randomBuckets.get(poolKey) || [];
+  bucket = bucket.filter(t => candidateKeys.has(trackKey(t)));
+  if (!bucket.length) bucket = shuffleTracks(candidates);
+  const next = bucket.shift();
+  randomBuckets.set(poolKey, bucket);
   return next;
 }
 
@@ -4409,6 +4439,7 @@ function closePlatformSheet(){
 function closeQueueSheet(){
   queueSheet.classList.remove("show");
   queueBackdrop.classList.remove("show");
+  document.body.classList.remove("queue-open");
 }
 
 function closeAlbumSheet(){
@@ -4499,6 +4530,7 @@ function openQueueSheet(){
   renderQueueList();
   queueSheet.classList.add("show");
   queueBackdrop.classList.add("show");
+  document.body.classList.add("queue-open");
 }
 
 function openPlatformChooser(t){
@@ -4954,7 +4986,7 @@ function drawRandom(){
   currentAlbum = null;
   const pool = playableTracks();
   const list = pool.length ? pool : libraryTracks();
-  const t = list[Math.floor(Math.random() * list.length)];
+  const t = pickRandomTrack(list);
   drawnAt = new Date();
   updateDraw(t, true, true);
 }
@@ -4986,6 +5018,25 @@ closePlatform.addEventListener("click", closePlatformSheet);
 platformBackdrop.addEventListener("click", closePlatformSheet);
 closeQueue.addEventListener("click", closeQueueSheet);
 queueBackdrop.addEventListener("click", closeQueueSheet);
+queueSheet.addEventListener("touchstart", event => {
+  if (event.touches.length !== 1) return;
+  queueTouchY = event.touches[0].clientY;
+}, { passive: true });
+queueSheet.addEventListener("touchmove", event => {
+  if (!queueSheet.classList.contains("show") || event.touches.length !== 1) return;
+  const list = event.target.closest(".queue-list");
+  if (!list) {
+    event.preventDefault();
+    return;
+  }
+  const currentY = event.touches[0].clientY;
+  const deltaY = currentY - queueTouchY;
+  queueTouchY = currentY;
+  const atTop = list.scrollTop <= 0;
+  const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
+  if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) event.preventDefault();
+  event.stopPropagation();
+}, { passive: false });
 achievementOpen.addEventListener("click", openAchievements);
 closeAchievement.addEventListener("click", closeAchievements);
 achievementBackdrop.addEventListener("click", closeAchievements);
